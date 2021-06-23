@@ -48,7 +48,7 @@ error_reporting(E_ALL);
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 <!--===============================================================================================-->
 </head>
 <body>
@@ -76,7 +76,6 @@ error_reporting(E_ALL);
 						<input class="input100" type="password" name="password" placeholder="Password">
 						<span class="focus-input100"></span>
 					</div>
-					<div class="g-recaptcha" data-sitekey="6Lesvu4ZAAAAABMaEj7F5HLPDTXaBxFbU9zR1EyN"></div>
 					<div class="flex-sb-m w-full p-t-3 p-b-24">
 						<div class="contact100-form-checkbox">
 							<input class="input-checkbox100" id="ckb1" type="checkbox" name="remember-me">
@@ -111,45 +110,7 @@ error_reporting(E_ALL);
 
         if (isset($_POST['register']))
         {   
-                    // para cuando supere el captcha
-            
-            if (isset($_POST['g-recaptcha-response']))
-            {
-                $captcha = $_POST['g-recaptcha-response'];
-            }
-            
-            if (!$captcha)
-            {
-                
-                echo '
-                <script type=\'text/javascript\'>
-                
-                const notyf = new Notyf();
-                notyf
-                  .error({
-                    message: \'Please check the captcha form!\',
-                    duration: 3500,
-                    dismissible: true
-                  });                
-                
-                </script>
-                ';
-                
-            return;
-            }
-            
-            
-            $secretKey = "6Lesvu4ZAAAAAGe8uZnps4nHKWdn_tB-pLnYou18";
-            $ip = $_SERVER['REMOTE_ADDR'];
-            $url = 'https://www.google.com/recaptcha/api/siteverify?secret=' . urlencode($secretKey) .  '&response=' . urlencode($captcha);
-            $response = file_get_contents($url);
-            $responseKeys = json_decode($response,true);  
-
-                
-            // para cuando supere lo del captcha:
-
-            if ($responseKeys["success"])
-            {  
+                    
 
                 $username = xss_clean(mysqli_real_escape_string($link, $_POST['username']));
                 
@@ -330,7 +291,7 @@ error_reporting(E_ALL);
                             
                           echo '<META HTTP-EQUIV="REFRESH" CONTENT="2;URL=../dashboard/">';
                           exit();
-                    }
+                    
                 }
             }
         }
