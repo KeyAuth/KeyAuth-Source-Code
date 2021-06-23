@@ -1,0 +1,7 @@
+Source code in this repository is covered by the KeyAuth License v1.0.
+
+Bitwarden License v1.0:
+https://github.com/bitwarden/server/blob/master/LICENSE_KEYAUTH.txt
+
+No grant of any rights in the trademarks, service marks, or logos of KeyAuth is
+made.
