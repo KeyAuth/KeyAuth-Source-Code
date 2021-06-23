@@ -209,7 +209,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <a href="https://keyauth.com/register" target="_blank" class="btn btn-secondary mb-3 mt-2 mr-3 animate-up-2"><span class="fas fa-user-plus mr-2"></span> Register</a>
                             <div class="mt-1">
                                 <!-- Place this tag where you want the button to render. -->
-                                <a class="github-button" href="https://github.com/creativetimofficial/impact-design-system" data-color-scheme="no-preference: dark; light: light; dark: light;" data-icon="octicon-star" data-size="large" data-show-count="true">Star</a>                            
+                                <a class="github-button" href="https://github.com/KeyAuth/KeyAuth-Source-Code" data-color-scheme="no-preference: dark; light: light; dark: light;" data-icon="octicon-star" data-size="large" data-show-count="true">Star</a>                            
                             </div>
                         </div>
                     </div>
@@ -484,13 +484,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <h2 class="h1 font-weight-light mb-3"><strong>Open source</strong> project</h2>
                 <p class="lead mb-4">Impact design system is an open source project featuring premium components, front pages and a dashboard. There's also a Pro version available with more components, pages and plugins.</p>
                 <div class="d-flex align-items-center">
-                    <a href="https://github.com/creativetimofficial/impact-design-system" target="_blank" class="btn btn-secondary mr-4 animate-up-2">
+                    <a href="https://github.com/KeyAuth/KeyAuth-Source-Code" target="_blank" class="btn btn-secondary mr-4 animate-up-2">
                         View on GitHub
                     </a>
                     <!-- Place this tag where you want the button to render. -->
                     <div class="mt-2">
                         <!-- Place this tag where you want the button to render. -->
-                        <a class="github-button" href="https://github.com/creativetimofficial/impact-design-system" data-color-scheme="no-preference: dark; light: light; dark: light;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star themesberg/pixel-bootstrap-ui-kit on GitHub">Star</a>                            
+                        <a class="github-button" href="https://github.com/KeyAuth/KeyAuth-Source-Code" data-color-scheme="no-preference: dark; light: light; dark: light;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star themesberg/pixel-bootstrap-ui-kit on GitHub">Star</a>                            
                     </div>
                 </div>
             </div>
@@ -598,7 +598,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <h6></h6>
                 <ul class="links-vertical">
                     <li><a target="_blank" href="https://keyauth.com/discord">Support</a></li>
-                    <li><a target="_blank" href="https://github.com/">License</a>
+                    <li><a target="_blank" href="https://github.com/KeyAuth/KeyAuth-Source-Code/LICENSE.md">License</a>
                     </li>
                 </ul>
             </div>
