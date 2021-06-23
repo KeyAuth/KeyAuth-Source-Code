@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="143px" height="135px" viewBox="0 0 143 135" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55 (78076) - https://sketchapp.com -->
+    <title>icn_fluxo_speaker</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-4.000000, -7.000000)" fill-rule="nonzero">
+            <g id="icn_fluxo_speaker" transform="translate(4.000000, 7.000000)">
+                <path d="M45.1578947,82.5 L15.0526316,82.5 L15.0526316,52.5 L45.1578947,52.5 L45.1578947,82.5 Z M15.0526316,37.5 C6.77368421,37.5 0,44.25 0,52.5 L0,82.5 C0,90.75 6.77368421,97.5 15.0526316,97.5 L45.1578947,97.5 L45.1578947,37.5 L15.0526316,37.5 Z" id="Shape" fill="#4D5BED"></path>
+                <rect id="Rectangle" fill="#4D5BED" x="30.1052632" y="82.5" width="15.0526316" height="52.5"></rect>
+                <path d="M143,67.5 C143,62.25 139.989474,57 135.473684,54.75 L135.473684,0 L120.421053,0 L112.894737,15 L45.1578947,37.5 L45.1578947,97.5 L112.894737,120 L120.421053,135 L135.473684,135 L135.473684,80.25 C139.989474,78 143,72.75 143,67.5 Z M120.421053,106.5 L117.410526,105.75 L60.2105263,87 L60.2105263,48 L117.410526,29.25 L120.421053,28.5 L120.421053,106.5 Z" id="Shape" fill-opacity="0.65" fill="#7C87FB"></path>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,6 @@
+[02-Jun-2021 03:14:49 Europe/London] PHP Warning:  include(../../../includes/settings.php): failed to open stream: No such file or directory in /home/hazarda1/public_html/panel/register/index.php on line 2
+[02-Jun-2021 03:14:49 Europe/London] PHP Warning:  include(): Failed opening '../../../includes/settings.php' for inclusion (include_path='.:/opt/alt/php72/usr/share/pear') in /home/hazarda1/public_html/panel/register/index.php on line 2
+[01-Jun-2021 22:19:19 America/New_York] PHP Fatal error:  Uncaught Error: Call to undefined function generateRandomString() in /home/hazarda1/public_html/panel/register/index.php:305
+Stack trace:
+#0 {main}
+  thrown in /home/hazarda1/public_html/panel/register/index.php on line 305
