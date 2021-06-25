@@ -1,5 +1,6 @@
 # KeyAuth-Source-Code
 KeyAuth is an open source authentication system with cloud-hosted subscriptions available aswell, view at https://keyauth.com
+*You're not allowed to sell KeyAuth. source made avaliable only for personal use.*
 
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/KeyAuth/KeyAuth-Source-Code?label=CodeFactor&cacheSeconds=3600)](https://www.codefactor.io/repository/github/KeyAuth/KeyAuth-Source-Code)
 [![Release](https://img.shields.io/github/v/release/KeyAuth/KeyAuth-Source-Code?label=Release&color=brightgreen&cacheSeconds=3600)](https://github.com/KeyAuth/KeyAuth-Source-Code/releases/latest)
