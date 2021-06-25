@@ -82,9 +82,6 @@ function register($un,$key,$pw,$hwid,$secret)
             }
 			
 
-            // update key to used
-            mysqli_query($link, "UPDATE `keys` SET `status` = 'Used' WHERE `key` = '$key'");
-
             // add current time to key time
             $expiry = $expires + time();
 
@@ -99,6 +96,9 @@ function register($un,$key,$pw,$hwid,$secret)
                 return 'no_subs_for_level';
 
             }
+			
+			// update key to used
+            mysqli_query($link, "UPDATE `keys` SET `status` = 'Used' WHERE `key` = '$key'");
 
             while ($row = mysqli_fetch_array($result))
             {
