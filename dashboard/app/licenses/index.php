@@ -212,7 +212,7 @@ else // app already selected, load page like normal
 						</a>
 						</li>
 						<li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://reddit.com/r/KeyAuth" target="reddit"> <i class="mdi mdi-reddit font-24"></i>
+						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
 						</a>
 						</li>
                         <!-- ============================================================== -->
@@ -1144,7 +1144,7 @@ $(document).ready(function(){
                                                     if($row["status"] == "Used")
                                                     {
                                                     echo "
-                                                        <td><script>document.write(convertTimestamp(". $row["expires"] ."));</script></td>
+                                                        <td>". ($row["expires"]/86400) ." Day(s)</td>
                                                         <td><script>document.write(convertTimestamp(". $row["lastlogin"] ."));</script></td>
                                                         <td><label class=\"badge badge-danger\">Used</label></td>
                                                         ";
@@ -1152,14 +1152,14 @@ $(document).ready(function(){
                                                     else if($row["status"] == "Banned")
                                                     {
                                                     echo"
-                                                        <td><script>document.write(convertTimestamp(". $row["expires"] ."));</script></td>
+                                                        <td>". ($row["expires"]/86400) ." Day(s)</td>
                                                         <td><script>document.write(convertTimestamp(". $row["lastlogin"] ."));</script></td>
                                                         <td><label class=\"badge badge-danger\">Banned</label></td>";
                                                     }
                                                     else if($row["status"] == "Expired")
                                                     {
                                                     echo "
-                                                        <td><script>document.write(convertTimestamp(". $row["expires"] ."));</script></td>
+                                                        <td>". ($row["expires"]/86400) ." Day(s)</td>
                                                         <td><script>document.write(convertTimestamp(". $row["lastlogin"] ."));</script></td>
                                                         <td><label class=\"badge badge-danger\">Expired</label></td>
                                                         ";

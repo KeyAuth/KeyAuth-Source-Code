@@ -138,7 +138,7 @@ if (!isset($_SESSION['username'])) {
 						</a>
 						</li>
 						<li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://reddit.com/r/KeyAuth" target="reddit"> <i class="mdi mdi-reddit font-24"></i>
+						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
 						</a>
 						</li>
                         <!-- ============================================================== -->
