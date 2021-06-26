@@ -1341,7 +1341,6 @@ if($role !== "seller")
     $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `app` = '$name' AND `username` = '$username'");
     if($result->num_rows == 0)
     {
-        Die("You do not own account you were attemping to modify balance for.");
 		mysqli_close($link);
 		if($format == "text")
 		{

@@ -463,8 +463,8 @@ $(document).ready(function(){
             {
 							mysqli_close($link);
 							error("You dont own application!");
-                            return;
                             echo "<meta http-equiv='Refresh' Content='2'>";
+							return;
             }
             $_SESSION['secret'] = $secret;
             $_SESSION['app'] = $secret;
