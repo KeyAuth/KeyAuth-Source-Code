@@ -1,40 +1,36 @@
 <?php
-
 ob_start();
 
 include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
 
-if (!isset($_SESSION['username'])) {
-         header("Location: ../../../login/");
-        exit();
+if (!isset($_SESSION['username']))
+{
+    header("Location: ../../../login/");
+    exit();
 }
 
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+$row = mysqli_fetch_array($result);
 
-	        $username = $_SESSION['username'];
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-            $row = mysqli_fetch_array($result);
-            
-            $isbanned = $row['isbanned'];
-            if($isbanned == "1")
-            {
-                die("ur banned");
-            }
-        
-            $role = $row['role'];
-            $_SESSION['role'] = $role;
-			
-			if($role != "developer" && $role != "seller")
-						{
-							die("Must Upgrade To Manage Accounts");
-							return;
-						}
-			
-			$darkmode = $row['darkmode'];
+$isbanned = $row['isbanned'];
+if ($isbanned == "1")
+{
+    die("ur banned");
+}
 
-			
-                            
+$role = $row['role'];
+$_SESSION['role'] = $role;
+
+if ($role != "developer" && $role != "seller")
+{
+    die("Must Upgrade To Manage Accounts");
+}
+
+$darkmode = $row['darkmode'];
+
 ?>
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -70,7 +66,14 @@ if (!isset($_SESSION['username'])) {
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php if ($darkmode == 0)
+{
+    echo "dark";
+}
+else
+{
+    echo "light";
+} ?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -180,8 +183,8 @@ if (!isset($_SESSION['username'])) {
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
                         <?php
-						sidebar($role);
-						?>
+sidebar($role);
+?>
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -244,17 +247,17 @@ if (!isset($_SESSION['username'])) {
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Account Application:</label>
                                                         <select name="app" class="form-control"><?php
-        $username = $_SESSION['username'];
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    echo "  <option>". $row["name"]. "</option>";
-                }
-            }
-        
-        ?></select>
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
+if (mysqli_num_rows($result) > 0)
+{
+    while ($row = mysqli_fetch_array($result))
+    {
+        echo "  <option>" . $row["name"] . "</option>";
+    }
+}
+
+?></select>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Account Username:</label>
@@ -278,26 +281,25 @@ if (!isset($_SESSION['username'])) {
                                     </div>
 									</div>
                     <?php
-					
-							
-                    if(isset($_POST['createacc']))
-                    {
-                        $role = sanitize($_POST['role']);
 
-                        $app = sanitize($_POST['app']);
-                        $username = sanitize($_POST['username']);
-                        $email = sanitize($_POST['email']);
-                        $password = sanitize($_POST['pw']);
-                        
-                        $pass_encrypted = password_hash($password, PASSWORD_BCRYPT);
-                        $owner = $_SESSION['username'];
+if (isset($_POST['createacc']))
+{
+    $role = sanitize($_POST['role']);
 
-                                            $user_check = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `username` = '$username'") or die(mysqli_error($link));
-                    $do_user_check = mysqli_num_rows($user_check);
-    
-                    if ($do_user_check > 0)
-                    {
-                                            echo '
+    $app = sanitize($_POST['app']);
+    $username = sanitize($_POST['username']);
+    $email = sanitize($_POST['email']);
+    $password = sanitize($_POST['pw']);
+
+    $pass_encrypted = password_hash($password, PASSWORD_BCRYPT);
+    $owner = $_SESSION['username'];
+
+    $user_check = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `username` = '$username'") or die(mysqli_error($link));
+    $do_user_check = mysqli_num_rows($user_check);
+
+    if ($do_user_check > 0)
+    {
+        echo '
                     <script type=\'text/javascript\'>
                     
                     const notyf = new Notyf();
@@ -310,15 +312,20 @@ if (!isset($_SESSION['username'])) {
                     
                     </script>
                     ';
-                      echo '<meta http-equiv="refresh" content="5">';
-                     return;
-                    }										                                            $email_check = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `email` = '$email'") or die(mysqli_error($link));                    $do_email_check = mysqli_num_rows($email_check);                        if ($do_email_check > 0)                    {                                            echo '                    <script type=\'text/javascript\'>                                        const notyf = new Notyf();                    notyf                      .error({                        message: \'Email already taken!\',                        duration: 3500,                        dismissible: true                      });                                                        </script>                    ';                      echo '<meta http-equiv="refresh" content="5">';                     return;                    }
+        echo '<meta http-equiv="refresh" content="5">';
+        return;
+    }
+    $email_check = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `email` = '$email'") or die(mysqli_error($link));
+    $do_email_check = mysqli_num_rows($email_check);
+    if ($do_email_check > 0)
+    {
+        echo '                    <script type=\'text/javascript\'>                                        const notyf = new Notyf();                    notyf                      .error({                        message: \'Email already taken!\',                        duration: 3500,                        dismissible: true                      });                                                        </script>                    ';
+        echo '<meta http-equiv="refresh" content="5">';
+        return;
+    }
 
-
-
-
-                        mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `isbanned`, `img`, `balance`) VALUES ('$username','$email','$pass_encrypted','','$role','$app','$owner',0,'https://i.imgur.com/TrwYFBa.png', '0|0|0|0|0|0')") or die(mysqli_error($link));
-                                                echo '
+    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `isbanned`, `img`, `balance`) VALUES ('$username','$email','$pass_encrypted','','$role','$app','$owner',0,'https://i.imgur.com/TrwYFBa.png', '0|0|0|0|0|0')") or die(mysqli_error($link));
+    echo '
                         <script type=\'text/javascript\'>
                         
                         const notyf = new Notyf();
@@ -331,28 +338,26 @@ if (!isset($_SESSION['username'])) {
                         
                         </script>
                         ';
-                    }
-                   
-                            if (isset($_POST['deleteapp']))
-        {
-            $app = $_SESSION['app'];
-            $owner = $_SESSION['username'];
-            
-            mysqli_query($link, "DELETE FROM `files` WHERE `uploader` = '$owner' AND `app` = '$app'") or die(mysqli_error($link)); // delete files
-            
-            mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '$app'") or die(mysqli_error($link)); // delete keys
-            
-            mysqli_query($link, "DELETE FROM `logs` WHERE `logowner` = '$owner' AND `logapp` = '$app'") or die(mysqli_error($link)); // delete logs
-            
-            $result = mysqli_query($link, "DELETE FROM `apps` WHERE `secret` = '$app'") or die(mysqli_error($link));
-            if ($result) {
-            $_SESSION['app'] = NULL;
-			success("Successfully deleted App!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";         
 }
-        }
-		
-		          ?>
+
+if (isset($_POST['deleteapp']))
+{
+    $app = $_SESSION['app'];
+    $owner = $_SESSION['username'];
+
+    mysqli_query($link, "DELETE FROM `files` WHERE `uploader` = '$owner' AND `app` = '$app'") or die(mysqli_error($link)); // delete files
+    mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '$app'") or die(mysqli_error($link)); // delete keys
+    mysqli_query($link, "DELETE FROM `logs` WHERE `logowner` = '$owner' AND `logapp` = '$app'") or die(mysqli_error($link)); // delete logs
+    $result = mysqli_query($link, "DELETE FROM `apps` WHERE `secret` = '$app'") or die(mysqli_error($link));
+    if ($result)
+    {
+        $_SESSION['app'] = NULL;
+        success("Successfully deleted App!");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+    }
+}
+
+?>
 
 <script type="text/javascript">
 
@@ -385,44 +390,41 @@ $(document).ready(function(){
                                         </thead>
                                         <tbody>
 <?php
-		
-        ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `owner` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `owner` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
+if (mysqli_num_rows($result) > 0)
+{
+    while ($row = mysqli_fetch_array($result))
+    {
 
-                                                    echo "<tr>";
+        echo "<tr>";
 
-                                                    echo "  <td>". $row["username"]. "</td>";
+        echo "  <td>" . $row["username"] . "</td>";
 
-                                                    echo "  <td>". $row["role"]. "</td>";
-													
-                                                    echo "  <td>". $row["app"]. "</td>";
-													
-													if($row["role"] == "Manager")
-													{
-													echo "  <td>N/A</td>";	
-													}
-													else{
-                                                    echo "  <td>". $row["balance"]. "</td>";
-                                                    }
-                                                    // echo "  <td>". $row["status"]. "</td>";
+        echo "  <td>" . $row["role"] . "</td>";
 
-                                                    echo'<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        echo "  <td>" . $row["app"] . "</td>";
+
+        if ($row["role"] == "Manager")
+        {
+            echo "  <td>N/A</td>";
+        }
+        else
+        {
+            echo "  <td>" . $row["balance"] . "</td>";
+        }
+        // echo "  <td>". $row["status"]. "</td>";
+        echo '<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
                                             </button>
                                             <div class="dropdown-menu"><form method="post">
                                                 <button class="dropdown-item" name="deleteacc" value="' . $row['username'] . '">Delete</button>
 												<button class="dropdown-item" name="editacc" value="' . $row['username'] . '">Edit</button></div></td></tr></form>';
 
-                                                }
+    }
 
-                                            }
-                                            
-		
+}
 
-                                        ?>
+?>
                                         </tbody>
                                         <tfoot>
                                             <tr>
@@ -458,61 +460,54 @@ $(document).ready(function(){
                 <!-- Footer callback -->
                 
                 <?php
-				if(isset($_POST['deleteacc']))
-				{
-					$account = sanitize($_POST['deleteacc']);
-					mysqli_query($link, "DELETE FROM `accounts` WHERE `owner` = '".$_SESSION['username']."' AND `username` = '$account'");
-					if(mysqli_affected_rows($link) != 0)
-					{
-						success("Account Successfully Deleted!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-					}
-					else
-					{
-						mysqli_close($link);
-						error("Failed To Delete Account!");
-					}	
-				}	
-			
-			
-				
-				if(isset($_POST['editacc']))
-				{
-					$account = sanitize($_POST['editacc']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$account' AND `owner` = '".$_SESSION['username']."'");
-                    if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Account not Found!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$row = mysqli_fetch_array($result);
-					
-					$balance = $row["balance"];
+if (isset($_POST['deleteacc']))
+{
+    $account = sanitize($_POST['deleteacc']);
+    mysqli_query($link, "DELETE FROM `accounts` WHERE `owner` = '" . $_SESSION['username'] . "' AND `username` = '$account'");
+    if (mysqli_affected_rows($link) != 0)
+    {
+        success("Account Successfully Deleted!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+    }
+    else
+    {
+        mysqli_close($link);
+        error("Failed To Delete Account!");
+    }
+}
 
-                            
+if (isset($_POST['editacc']))
+{
+    $account = sanitize($_POST['editacc']);
 
-                            $balance = explode("|", $balance);
+    $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
+    if (mysqli_num_rows($result) == 0)
+    {
+        mysqli_close($link);
+        error("Account not Found!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
 
-                            
+    $row = mysqli_fetch_array($result);
 
-                            $day = $balance[0];
+    $balance = $row["balance"];
 
-                            $week = $balance[1];
+    $balance = explode("|", $balance);
 
-                            $month = $balance[2];
+    $day = $balance[0];
 
-                            $threemonth = $balance[3];
+    $week = $balance[1];
 
-                            $sixmonth = $balance[4];
+    $month = $balance[2];
 
-                            $life = $balance[5];
-							
-					
-					echo'<div id="edit-account" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
+    $threemonth = $balance[3];
+
+    $sixmonth = $balance[4];
+
+    $life = $balance[5];
+
+    echo '<div id="edit-account" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -555,27 +550,27 @@ $(document).ready(function(){
                                         </div>
                                     </div>
 									</div>';
-				}
-				
-				if(isset($_POST['saveacc']))
-				{
-					$account = sanitize($_POST['account']);
-					
-					$day = sanitize($_POST['daybalance']);
-					$week = sanitize($_POST['weekbalance']);
-					$month = sanitize($_POST['monthbalance']);
-					$threemonth = sanitize($_POST['threemonthbalance']);
-					$sixmonth = sanitize($_POST['sixmonthbalance']);
-					$lifetime = sanitize($_POST['lifebalance']);
-				
-					$balance = $day . '|' . $week . '|' . $month . '|' . $threemonth . '|' . $sixmonth . '|' . $lifetime;
+}
 
-					mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '$account' AND `owner` = '".$_SESSION['username']."'");
-		
-					success("Successfully Updated Settings!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-					?>
+if (isset($_POST['saveacc']))
+{
+    $account = sanitize($_POST['account']);
+
+    $day = sanitize($_POST['daybalance']);
+    $week = sanitize($_POST['weekbalance']);
+    $month = sanitize($_POST['monthbalance']);
+    $threemonth = sanitize($_POST['threemonthbalance']);
+    $sixmonth = sanitize($_POST['sixmonthbalance']);
+    $lifetime = sanitize($_POST['lifebalance']);
+
+    $balance = $day . '|' . $week . '|' . $month . '|' . $threemonth . '|' . $sixmonth . '|' . $lifetime;
+
+    mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
+
+    success("Successfully Updated Settings!");
+    echo "<meta http-equiv='Refresh' Content='2'>";
+}
+?>
                 
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->

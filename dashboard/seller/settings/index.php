@@ -1,40 +1,36 @@
 <?php
-
 ob_start();
 
 include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
 
-if (!isset($_SESSION['username'])) {
-         header("Location: ../../../login/");
-        exit();
+if (!isset($_SESSION['username']))
+{
+    header("Location: ../../../login/");
+    exit();
 }
 
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+$row = mysqli_fetch_array($result);
 
-	        $username = $_SESSION['username'];
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-            $row = mysqli_fetch_array($result);
-            
-            $isbanned = $row['isbanned'];
-            if($isbanned == "1")
-            {
-                die("ur banned");
-            }
-        
-            $role = $row['role'];
-            $_SESSION['role'] = $role;
-			
-			if($role != "developer" && $role != "seller")
-						{
-							die("Must Upgrade To Seller");
-							return;
-						}
-			
-			$darkmode = $row['darkmode'];
+$isbanned = $row['isbanned'];
+if ($isbanned == "1")
+{
+    die("ur banned");
+}
 
-			
-                            
+$role = $row['role'];
+$_SESSION['role'] = $role;
+
+if ($role != "developer" && $role != "seller")
+{
+    die("Must Upgrade To Seller");
+}
+
+$darkmode = $row['darkmode'];
+
 ?>
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -71,16 +67,17 @@ if (!isset($_SESSION['username'])) {
 <![endif]-->
 <?php
 
-
 if (!$_SESSION['app']) // no app selected yet
+
 {
-    
 
     $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "'"); // select all apps where owner is current user
     if (mysqli_num_rows($result) > 0) // if the user already owns an app, proceed to change app or load only app
+    
     {
 
         if (mysqli_num_rows($result) == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
+        
         {
             $row = mysqli_fetch_array($result);
             $_SESSION['name'] = $row["name"];
@@ -97,7 +94,9 @@ if (!$_SESSION['app']) // no app selected yet
                 </script>
                 ';
         }
-        else // otherwise if the user has more than one app, choose which app to load
+        else
+        // otherwise if the user has more than one app, choose which app to load
+        
         {
             echo '
                 <script type=\'text/javascript\'>
@@ -110,7 +109,8 @@ if (!$_SESSION['app']) // no app selected yet
                 ';
         }
     }
-    else // if user doesnt have any apps created, take them to the screen to create an app
+    else
+    // if user doesnt have any apps created, take them to the screen to create an app
     
     {
         echo '
@@ -125,7 +125,8 @@ if (!$_SESSION['app']) // no app selected yet
     }
 
 }
-else // app already selected, load page like normal
+else
+// app already selected, load page like normal
 
 {
     echo '
@@ -142,7 +143,14 @@ else // app already selected, load page like normal
 
 ?>
 </head>
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php if ($darkmode == 0)
+{
+    echo "dark";
+}
+else
+{
+    echo "light";
+} ?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -252,8 +260,8 @@ else // app already selected, load page like normal
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
                         <?php
-						sidebar($role);
-						?>
+sidebar($role);
+?>
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -297,42 +305,42 @@ else // app already selected, load page like normal
    </form>
         </div>
         <?php
-        if (isset($_POST['appname']))
-        {
-            $appname = sanitize($_POST['appname']);
-            $result = mysqli_query($link, "SELECT * FROM apps WHERE name='$appname' AND owner='".$_SESSION['username']."'");
-            if (mysqli_num_rows($result) > 0)
-            {
-				mysqli_close($link);
-				error("You already own application with this name!");
-                echo "<meta http-equiv='Refresh' Content='2;'>";
-                return;
-            }
-            
-            $owner = $_SESSION['username'];
-			
-            $ownerid = $_SESSION['ownerid'];
-            $gen = generateRandomString();
-            $clientsecret = hash('sha256', $gen);
-            $sellerkey = generateRandomString();
-            $result = mysqli_query($link, "INSERT INTO `apps`(`owner`, `name`, `secret`, `ownerid`, `enabled`, `hwidcheck`, `sellerkey`) VALUES ('".$owner."','".$appname."','".$clientsecret."','$ownerid', '1','1','$sellerkey')");
-            if($result)
-            {
-                $_SESSION['secret'] = $clientsecret;
-				success("Successfully Created App!");
-                $_SESSION['app'] = $clientsecret;
-                $_SESSION['name'] = $appname;
-                $_SESSION['sellerkey'] = $sellerkey;
-                echo "<meta http-equiv='Refresh' Content='2;'>";     
-            }
-            else
-            {
-                printf("Error message: %s\n", $link->error);
-            }
-        }
-        
-        
-        ?>
+if (isset($_POST['appname']))
+{
+    $appname = sanitize($_POST['appname']);
+    $result = mysqli_query($link, "SELECT * FROM apps WHERE name='$appname' AND owner='" . $_SESSION['username'] . "'");
+    if (mysqli_num_rows($result) > 0)
+    {
+        mysqli_close($link);
+        error("You already own application with this name!");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        return;
+    }
+
+    $owner = $_SESSION['username'];
+
+    $ownerid = $_SESSION['ownerid'];
+    $gen = generateRandomString();
+    $clientsecret = hash('sha256', $gen);
+    $sellerkey = generateRandomString();
+    $result = mysqli_query($link, "INSERT INTO `apps`(`owner`, `name`, `secret`, `ownerid`, `enabled`, `hwidcheck`, `sellerkey`) VALUES ('" . $owner . "','" . $appname . "','" . $clientsecret . "','$ownerid', '1','1','$sellerkey')");
+    mysqli_query($link, "INSERT INTO `subscriptions` (`name`, `level`, `app`) VALUES ('default', '1', '$clientsecret')");
+    if ($result)
+    {
+        $_SESSION['secret'] = $clientsecret;
+        success("Successfully Created App!");
+        $_SESSION['app'] = $clientsecret;
+        $_SESSION['name'] = $appname;
+        $_SESSION['sellerkey'] = $sellerkey;
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+    }
+    else
+    {
+        printf("Error message: %s\n", $link->error);
+    }
+}
+
+?>
 			
 			<div class="main-panel" id="changeapp" style="padding-left:30px;display:none;">
              <!-- Page Heading -->
@@ -343,17 +351,17 @@ else // app already selected, load page like normal
                     <form class="text-left" method="POST" action="">
 <select class="form-control" name="taskOption">
         <?php
-        $username = $_SESSION['username'];
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    echo "  <option>". $row["name"]. "</option>";
-                }
-            }
-        
-        ?>
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
+if (mysqli_num_rows($result) > 0)
+{
+    while ($row = mysqli_fetch_array($result))
+    {
+        echo "  <option>" . $row["name"] . "</option>";
+    }
+}
+
+?>
 </select>    
     <!-- Do SQL query and print them out -->
 
@@ -378,34 +386,34 @@ $(document).ready(function(){
 
 </script>
    <?php
-           if (isset($_POST['change']))
+if (isset($_POST['change']))
+{
+    $selectOption = sanitize($_POST['taskOption']);
+    ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
+    if (mysqli_num_rows($result) > 0)
+    {
+        while ($row = mysqli_fetch_array($result))
         {
-            $selectOption = sanitize($_POST['taskOption']);
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    $secret = $row["secret"];
-                    $sellerkey = $row["sellerkey"];
-                }
-            }
-            else
-            {
-							mysqli_close($link);
-							error("You dont own application!");
-                            return;
-                            echo "<meta http-equiv='Refresh' Content='2'>";
-            }
-            $_SESSION['secret'] = $secret;
-            $_SESSION['app'] = $secret;
-            $_SESSION['name'] = $selectOption;
-            $_SESSION['sellerkey'] = $sellerkey;
-			
-            success("You have changed Applications!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
+            $secret = $row["secret"];
+            $sellerkey = $row["sellerkey"];
         }
-   ?>
+    }
+    else
+    {
+        mysqli_close($link);
+        error("You dont own application!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
+    $_SESSION['secret'] = $secret;
+    $_SESSION['app'] = $secret;
+    $_SESSION['name'] = $selectOption;
+    $_SESSION['sellerkey'] = $sellerkey;
+
+    success("You have changed Applications!");
+    echo "<meta http-equiv='Refresh' Content='2;'>";
+}
+?>
    </div>
    
             <!-- ============================================================== -->
@@ -463,16 +471,15 @@ $(document).ready(function(){
 
 
 						<?php
+($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
+if (mysqli_num_rows($result) > 0)
+{
+    while ($row = mysqli_fetch_array($result))
+    {
+        $sellerkey = $row['sellerkey'];
+    }
+}
 
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    $sellerkey = $row['sellerkey'];
-                }
-            }
-            
 ?>
 
                         <div class="card">
@@ -496,9 +503,9 @@ $(document).ready(function(){
                                         <label for="example-tel-input" class="col-2 col-form-label">Seller Link</label>
                                         <div class="col-10">
                                             <label class="form-control"><?php
-                                            echo '<a href="https://keyauth.com/api/seller/?sellerkey='.$sellerkey.'&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text" target="webhooklink" class="secretlink">https://keyauth.com/api/seller/?sellerkey='.$sellerkey.'&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text</a>';
-                                        
-											?></label>
+echo '<a href="https://keyauth.com/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text" target="webhooklink" class="secretlink">https://keyauth.com/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text</a>';
+
+?></label>
                                         </div>
                                     </div>
                                     <a href="JavaScript:newPopup('https://discord.com/api/oauth2/authorize?client_id=808227154931875893&amp;permissions=268443648&amp;scope=bot');" class="btn btn-info"> <i class="fab fa-discord"></i>  Add Discord Bot</a>
@@ -526,13 +533,20 @@ $(document).ready(function(){
                 <!-- Footer callback -->
                 
                 <?php
-				
-				if(isset($_POST['refreshseller']))
+if (isset($_POST['refreshseller']))
 {
-	$algos = array('ripemd128','md5','md4','tiger128,4','haval128,3','haval128,4','haval128,5');
-	$sellerkey = hash($algos[array_rand($algos)],generateRandomString());
-	mysqli_query($link, "UPDATE `apps` SET `sellerkey` = '$sellerkey' WHERE `secret` = '".$_SESSION['app']."'");
-	echo '
+    $algos = array(
+        'ripemd128',
+        'md5',
+        'md4',
+        'tiger128,4',
+        'haval128,3',
+        'haval128,4',
+        'haval128,5'
+    );
+    $sellerkey = hash($algos[array_rand($algos) ], generateRandomString());
+    mysqli_query($link, "UPDATE `apps` SET `sellerkey` = '$sellerkey' WHERE `secret` = '" . $_SESSION['app'] . "'");
+    echo '
                             <script type=\'text/javascript\'>
                             
                             const notyf = new Notyf();
@@ -545,7 +559,7 @@ $(document).ready(function(){
                             
                             </script>
                             ';
-                            echo "<meta http-equiv='Refresh' Content='2;'>";
+    echo "<meta http-equiv='Refresh' Content='2;'>";
 }
 
 ?>
