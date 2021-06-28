@@ -3,6 +3,11 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 <br>
 *You're not allowed to sell KeyAuth. source made avaliable only for personal use.*
 
+You may purchase a subscription for cheaper than the cost of hosting this yourself at https://keyauth.com/
+You may also use our tester subscription which is completley free with less features.
+
+No support is given towards setup of self-hosted KeyAuth. You may recieve support if you have an active cloud-hosted subscription of KeyAuth though, https://keyauth.com/discord
+
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/KeyAuth/KeyAuth-Source-Code?label=CodeFactor&cacheSeconds=3600)](https://www.codefactor.io/repository/github/KeyAuth/KeyAuth-Source-Code)
 [![Release](https://img.shields.io/github/v/release/KeyAuth/KeyAuth-Source-Code?label=Release&color=brightgreen&cacheSeconds=3600)](https://github.com/KeyAuth/KeyAuth-Source-Code/releases/latest)
 [![Discord](https://img.shields.io/discord/824397012685291520?label=Discord&cacheSeconds=3600)](https://discord.gg/8CqcCTbEEh)
@@ -21,7 +26,7 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 
 Some pages such as the API endpoint that upgrades users after they purchase a subscription have been omitted to prevent violation of the license (No Commercial Access Allowed)
 
-You may purchase a subscription for cheaper than the cost of hosting this yourself at https://keyauth.com/
-You may also use our tester subscription which is completley free with less features.
+How to get SSL key?
 
-No support is given towards setup of self-hosted KeyAuth. You may recieve support if you have an active cloud-hosted subscription of KeyAuth though, https://keyauth.com/discord 
+c#: https://www.mediafire.com/file/2089zh0kd5s8urn/GetSSChsarp.exe/file - watch this video: https://a.pomf.cat/ontnkt.mp4
+c++: https://www.ssllabs.com/ - watch this video: https://a.pomf.cat/cglexh.mp4
