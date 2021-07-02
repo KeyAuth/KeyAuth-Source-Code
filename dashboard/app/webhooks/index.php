@@ -294,9 +294,6 @@ if (isset($_POST['genwebhook']))
         $ua = 'KeyAuth';
     }
 
-    echo $ua;
-    echo $base;
-
     $webid = generateRandomString();
     mysqli_query($link, "INSERT INTO `webhooks` (`webid`, `baselink`, `useragent`, `app`, `owner`) VALUES ('$webid','$base', '$ua', '" . $_SESSION['app'] . "','" . $_SESSION['username'] . "')");
 
@@ -501,7 +498,7 @@ if (isset($_POST['change']))
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Add Webhooks</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">Ã—</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
@@ -528,7 +525,7 @@ if (isset($_POST['change']))
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Rename Application</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">Ã—</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
@@ -681,7 +678,7 @@ if (isset($_POST['editwebhook']))
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Edit Webhook</h4>
-                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">Ã—</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post"> 
