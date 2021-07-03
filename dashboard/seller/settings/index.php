@@ -304,43 +304,7 @@ sidebar($role);
    <button type="submit" name"ccreateapp" class="btn btn-primary" style="color:white;">Submit</button>
    </form>
         </div>
-        <?php
-if (isset($_POST['appname']))
-{
-    $appname = sanitize($_POST['appname']);
-    $result = mysqli_query($link, "SELECT * FROM apps WHERE name='$appname' AND owner='" . $_SESSION['username'] . "'");
-    if (mysqli_num_rows($result) > 0)
-    {
-        mysqli_close($link);
-        error("You already own application with this name!");
-        echo "<meta http-equiv='Refresh' Content='2;'>";
-        return;
-    }
-
-    $owner = $_SESSION['username'];
-
-    $ownerid = $_SESSION['ownerid'];
-    $gen = generateRandomString();
-    $clientsecret = hash('sha256', $gen);
-    $sellerkey = generateRandomString();
-    $result = mysqli_query($link, "INSERT INTO `apps`(`owner`, `name`, `secret`, `ownerid`, `enabled`, `hwidcheck`, `sellerkey`) VALUES ('" . $owner . "','" . $appname . "','" . $clientsecret . "','$ownerid', '1','1','$sellerkey')");
-    mysqli_query($link, "INSERT INTO `subscriptions` (`name`, `level`, `app`) VALUES ('default', '1', '$clientsecret')");
-    if ($result)
-    {
-        $_SESSION['secret'] = $clientsecret;
-        success("Successfully Created App!");
-        $_SESSION['app'] = $clientsecret;
-        $_SESSION['name'] = $appname;
-        $_SESSION['sellerkey'] = $sellerkey;
-        echo "<meta http-equiv='Refresh' Content='2;'>";
-    }
-    else
-    {
-        printf("Error message: %s\n", $link->error);
-    }
-}
-
-?>
+        
 			
 			<div class="main-panel" id="changeapp" style="padding-left:30px;display:none;">
              <!-- Page Heading -->
@@ -427,7 +391,7 @@ if (isset($_POST['change']))
 					<?php heador($role, $link); ?>
 					<form method="post">
 					<button name="refreshseller" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to refresh Seller Key? This will make it such that previous links to manage your application will NOT work. Only refresh seller key if your current one got revealed to an unauthorized user.')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> Refresh Seller Key</button></form><br>
-							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=uJ0Umy_C6Fg" target="tutorial">https://youtube.com/watch?v=uJ0Umy_C6Fg</a> You may also join Discord and ask for help!
+							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
                                         </div>
                     <div id="rename-app" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">

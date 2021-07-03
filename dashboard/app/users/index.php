@@ -1,38 +1,41 @@
 <?php
+
 ob_start();
 
 include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
 
-if (!isset($_SESSION['username']))
-{
-    header("Location: ../../../login/");
-    exit();
+if (!isset($_SESSION['username'])) {
+         header("Location: ../../../login/");
+        exit();
 }
 
-$username = $_SESSION['username'];
-($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-$row = mysqli_fetch_array($result);
 
-$isbanned = $row['isbanned'];
-if ($isbanned == "1")
-{
-    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
-    session_destroy();
-    exit();
-}
-
-$role = $row['role'];
-$_SESSION['role'] = $role;
-
-if ($role == "Reseller")
+	        $username = $_SESSION['username'];
+            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+            $row = mysqli_fetch_array($result);
+            
+            $isbanned = $row['isbanned'];
+            if($isbanned == "1")
+            {
+				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>"; 
+				session_destroy();
+				exit();
+            }
+        
+            $role = $row['role'];
+            $_SESSION['role'] = $role;
+			
+			    if($role == "Reseller")
 {
     die('Resellers Not Allowed Here');
 }
+			
+			$darkmode = $row['darkmode'];
 
-$darkmode = $row['darkmode'];
-
+			
+                            
 ?>
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -69,17 +72,16 @@ $darkmode = $row['darkmode'];
 <![endif]-->
 <?php
 
-if (!$_SESSION['app']) // no app selected yet
 
+if (!$_SESSION['app']) // no app selected yet
 {
+    
 
     $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "'"); // select all apps where owner is current user
     if (mysqli_num_rows($result) > 0) // if the user already owns an app, proceed to change app or load only app
-    
     {
 
         if (mysqli_num_rows($result) == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
-        
         {
             $row = mysqli_fetch_array($result);
             $_SESSION['name'] = $row["name"];
@@ -96,9 +98,7 @@ if (!$_SESSION['app']) // no app selected yet
                 </script>
                 ';
         }
-        else
-        // otherwise if the user has more than one app, choose which app to load
-        
+        else // otherwise if the user has more than one app, choose which app to load
         {
             echo '
                 <script type=\'text/javascript\'>
@@ -111,8 +111,7 @@ if (!$_SESSION['app']) // no app selected yet
                 ';
         }
     }
-    else
-    // if user doesnt have any apps created, take them to the screen to create an app
+    else // if user doesnt have any apps created, take them to the screen to create an app
     
     {
         echo '
@@ -127,8 +126,7 @@ if (!$_SESSION['app']) // no app selected yet
     }
 
 }
-else
-// app already selected, load page like normal
+else // app already selected, load page like normal
 
 {
     echo '
@@ -145,14 +143,7 @@ else
 
 ?>
 </head>
-<body data-theme="<?php if ($darkmode == 0)
-{
-    echo "dark";
-}
-else
-{
-    echo "light";
-} ?>">
+<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -262,8 +253,8 @@ else
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
                         <?php
-sidebar($role);
-?>
+						sidebar($role);
+						?>
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -306,66 +297,7 @@ sidebar($role);
    <button type="submit" name"ccreateapp" class="btn btn-primary" style="color:white;">Submit</button>
    </form>
         </div>
-        <?php
-if (isset($_POST['appname']))
-{
-    $appname = sanitize($_POST['appname']);
-    $result = mysqli_query($link, "SELECT * FROM apps WHERE name='$appname' AND owner='" . $_SESSION['username'] . "'");
-    if (mysqli_num_rows($result) > 0)
-    {
-        mysqli_close($link);
-        error("You already own application with this name!");
-        echo "<meta http-equiv='Refresh' Content='2;'>";
-        return;
-    }
-
-    $owner = $_SESSION['username'];
-
-    if ($role == "tester")
-    {
-        $result = mysqli_query($link, "SELECT * FROM apps WHERE owner='$owner'");
-
-        if (mysqli_num_rows($result) > 0)
-        {
-            mysqli_close($link);
-            error("Tester plan only supports one application!");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-
-            return;
-        }
-
-    }
-
-    if ($role == "Manager")
-    {
-        mysqli_close($link);
-        error("Manager Accounts Are Not Allowed To Create Applications");
-        echo "<meta http-equiv='Refresh' Content='2;'>";
-        return;
-    }
-
-    $ownerid = $_SESSION['ownerid'];
-    $gen = generateRandomString();
-    $clientsecret = hash('sha256', $gen);
-    $sellerkey = generateRandomString();
-    $result = mysqli_query($link, "INSERT INTO `apps`(`owner`, `name`, `secret`, `ownerid`, `enabled`, `hwidcheck`, `sellerkey`) VALUES ('" . $owner . "','" . $appname . "','" . $clientsecret . "','$ownerid', '1','1','$sellerkey')");
-    mysqli_query($link, "INSERT INTO `subscriptions` (`name`, `level`, `app`) VALUES ('default', '1', '$clientsecret')");
-    if ($result)
-    {
-        $_SESSION['secret'] = $clientsecret;
-        success("Successfully Created App!");
-        $_SESSION['app'] = $clientsecret;
-        $_SESSION['name'] = $appname;
-        $_SESSION['sellerkey'] = $sellerkey;
-        echo "<meta http-equiv='Refresh' Content='2;'>";
-    }
-    else
-    {
-        printf("Error message: %s\n", $link->error);
-    }
-}
-
-?>
+        
 			
 			<div class="main-panel" id="changeapp" style="padding-left:30px;display:none;">
              <!-- Page Heading -->
@@ -376,17 +308,17 @@ if (isset($_POST['appname']))
                     <form class="text-left" method="POST" action="">
 <select class="form-control" name="taskOption">
         <?php
-$username = $_SESSION['username'];
-($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
-if (mysqli_num_rows($result) > 0)
-{
-    while ($row = mysqli_fetch_array($result))
-    {
-        echo "  <option>" . $row["name"] . "</option>";
-    }
-}
-
-?>
+        $username = $_SESSION['username'];
+        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
+        if (mysqli_num_rows($result) > 0)
+            {
+                while ($row = mysqli_fetch_array($result))
+                {
+                    echo "  <option>". $row["name"]. "</option>";
+                }
+            }
+        
+        ?>
 </select>    
     <!-- Do SQL query and print them out -->
 
@@ -411,34 +343,34 @@ $(document).ready(function(){
 
 </script>
    <?php
-if (isset($_POST['change']))
-{
-    $selectOption = sanitize($_POST['taskOption']);
-    ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
-    if (mysqli_num_rows($result) > 0)
-    {
-        while ($row = mysqli_fetch_array($result))
+           if (isset($_POST['change']))
         {
-            $secret = $row["secret"];
-            $sellerkey = $row["sellerkey"];
+            $selectOption = sanitize($_POST['taskOption']);
+        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
+        if (mysqli_num_rows($result) > 0)
+            {
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $secret = $row["secret"];
+                    $sellerkey = $row["sellerkey"];
+                }
+            }
+            else
+            {
+							mysqli_close($link);
+							error("You dont own application!");
+                            echo "<meta http-equiv='Refresh' Content='2'>";
+							return;
+            }
+            $_SESSION['secret'] = $secret;
+            $_SESSION['app'] = $secret;
+            $_SESSION['name'] = $selectOption;
+            $_SESSION['sellerkey'] = $sellerkey;
+			
+            success("You have changed Applications!");
+			echo "<meta http-equiv='Refresh' Content='2;'>";
         }
-    }
-    else
-    {
-        mysqli_close($link);
-        error("You dont own application!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-        return;
-    }
-    $_SESSION['secret'] = $secret;
-    $_SESSION['app'] = $secret;
-    $_SESSION['name'] = $selectOption;
-    $_SESSION['sellerkey'] = $sellerkey;
-
-    success("You have changed Applications!");
-    echo "<meta http-equiv='Refresh' Content='2;'>";
-}
-?>
+   ?>
    </div>
    
             <!-- ============================================================== -->
@@ -451,7 +383,7 @@ if (isset($_POST['change']))
                     <div class="col-12">
 					<?php heador($role, $link); ?>
 							<br>
-							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=uJ0Umy_C6Fg" target="tutorial">https://youtube.com/watch?v=uJ0Umy_C6Fg</a> You may also join Discord and ask for help!
+							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
                                         </div>
 										
 										<div id="rename-app" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
@@ -530,23 +462,22 @@ $(document).ready(function(){
                                         </thead>
                                         <tbody>
 <?php
-if ($_SESSION['app'])
-{
-    ($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
-    if (mysqli_num_rows($result) > 0)
-    {
-        while ($row = mysqli_fetch_array($result))
-        {
+		if($_SESSION['app']) {
+        ($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+        if (mysqli_num_rows($result) > 0)
+            {
+                while ($row = mysqli_fetch_array($result))
+                {
 
-            echo "<tr>";
+                                                    echo "<tr>";
 
-            echo "  <td>" . $row["username"] . "</td>";
+                                                    echo "  <td>". $row["username"]. "</td>";
 
-            echo "  <td>" . $row["hwid"] . "</td>";
+                                                    echo "  <td>". $row["hwid"]. "</td>";
+													
+                                                    echo "  <td>". $row["ip"]. "</td>";
 
-            echo "  <td>" . $row["ip"] . "</td>";
-
-            echo '<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    echo'<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
                                             </button>
                                             <div class="dropdown-menu">
@@ -557,13 +488,13 @@ if ($_SESSION['app'])
                                                 <div class="dropdown-divider"></div>
 												<button class="dropdown-item" name="edituser" value="' . $row['username'] . '">Edit</button></div></td></tr></form>';
 
-        }
+                                                }
 
-    }
+                                            }
+                                            
+		}
 
-}
-
-?>
+                                        ?>
                                         </tbody>
                                         <tfoot>
                                             <tr>
@@ -598,108 +529,108 @@ if ($_SESSION['app'])
                 <!-- Footer callback -->
                 
                 <?php
-if (isset($_POST['deleteuser']))
-{
-    $username = sanitize($_POST['deleteuser']);
-    mysqli_query($link, "DELETE FROM `users` WHERE `app` = '" . $_SESSION['app'] . "' AND `username` = '$username'");
-    if (mysqli_affected_rows($link) != 0)
-    {
-        success("User Successfully Deleted!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-    }
-    else
-    {
-        mysqli_close($link);
-        error("Failed To Delete User!");
-    }
-}
-if (isset($_POST['resetuser']))
-{
-    $un = sanitize($_POST['resetuser']);
-    mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '" . $_SESSION['app'] . "' AND `username` = '$un'");
-    if (mysqli_affected_rows($link) != 0)
-    {
-        success("User Successfully Reset");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-    }
-    else
-    {
-        mysqli_close($link);
-        error("Failed To Reset User");
-    }
-}
-if (isset($_POST['banuser']))
-{
-    $un = sanitize($_POST['un']);
-
-    $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '" . $_SESSION['app'] . "' AND `username` = '$un'");
-    if (mysqli_num_rows($result) == 0)
-    {
-        mysqli_close($link);
-        error("User not Found!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-        return;
-    }
-
-    $row = mysqli_fetch_array($result);
-    $hwid = $row["hwid"];
-    $ip = $row["ip"];
-    $reason = sanitize($_POST['reason']);
-
-    mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `app` = '" . $_SESSION['app'] . "' AND `username` = '$un'");
-
-    if ($hwid != NULL)
-    {
-        mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','" . $_SESSION['app'] . "')");
-    }
-    if ($ip != NULL)
-    {
-        mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','" . $_SESSION['app'] . "')");
-    }
-    success("User Successfully Banned!");
-    echo "<meta http-equiv='Refresh' Content='2'>";
-}
-
-if (isset($_POST['unbanuser']))
-{
-    $un = sanitize($_POST['unbanuser']);
-
-    $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '" . $_SESSION['app'] . "' AND `username` = '$un'");
-    if (mysqli_num_rows($result) == 0)
-    {
-        mysqli_close($link);
-        error("User not Found!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-        return;
-    }
-
-    $row = mysqli_fetch_array($result);
-    $hwid = $row["hwid"];
-    $ip = $row["ip"];
-
-    mysqli_query($link, "UPDATE `users` SET `banned` = NULL WHERE `app` = '" . $_SESSION['app'] . "' AND `username` = '$un'");
-    mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '" . $_SESSION['app'] . "'");
-
-    success("User Successfully Unbanned!");
-    echo "<meta http-equiv='Refresh' Content='2'>";
-}
-
-if (isset($_POST['edituser']))
-{
-    $un = sanitize($_POST['edituser']);
-
-    $result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) == 0)
-    {
-        mysqli_close($link);
-        error("User not Found!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-        return;
-    }
-
-    $row = mysqli_fetch_array($result);
-
-    echo '<div id="edit-user" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
+				if(isset($_POST['deleteuser']))
+				{
+					$username = sanitize($_POST['deleteuser']);
+					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$username'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("User Successfully Deleted!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Delete User!");
+					}
+				}
+								if(isset($_POST['resetuser']))
+				{
+					$un = sanitize($_POST['resetuser']);
+					mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("User Successfully Reset");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Reset User");
+					}
+				}
+				if(isset($_POST['banuser']))
+				{
+					$un = sanitize($_POST['un']);
+					
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un'");
+					if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("User not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					
+					$row = mysqli_fetch_array($result);
+					$hwid = $row["hwid"];
+					$ip = $row["ip"];
+					$reason = sanitize($_POST['reason']);
+					
+					mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un'");
+					
+					if($hwid != NULL)
+					{
+					mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','".$_SESSION['app']."')");
+					}
+					if($ip != NULL)
+					{
+					mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','".$_SESSION['app']."')");
+					}
+					success("User Successfully Banned!");
+					echo "<meta http-equiv='Refresh' Content='2'>";
+				}
+				
+				if(isset($_POST['unbanuser']))
+				{
+					$un = sanitize($_POST['unbanuser']);
+					
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un'");
+					if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("User not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					
+					$row = mysqli_fetch_array($result);
+					$hwid = $row["hwid"];
+					$ip = $row["ip"];
+					
+					mysqli_query($link, "UPDATE `users` SET `banned` = NULL WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un'");
+					mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '".$_SESSION['app']."'");
+					
+					success("User Successfully Unbanned!");
+					echo "<meta http-equiv='Refresh' Content='2'>";
+				}
+				
+				if(isset($_POST['edituser']))
+				{
+					$un = sanitize($_POST['edituser']);
+					
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
+                    if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("User not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					
+                    $row = mysqli_fetch_array($result);
+					
+					echo'<div id="edit-user" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -729,29 +660,29 @@ if (isset($_POST['edituser']))
                                         </div>
                                     </div>
 									</div>';
-}
+				}
+				
+				if(isset($_POST['saveuser']))
+				{
+					$un = sanitize($_POST['saveuser']);
+					
+					$hwid = sanitize($_POST['hwid']);
+					
+					if(isset($hwid) && trim($hwid) != '')
+					{
+						$result = mysqli_query($link, "SELECT `hwid` FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");                           
+						$row = mysqli_fetch_array($result);                      
+						$hwidd = $row["hwid"];
 
-if (isset($_POST['saveuser']))
-{
-    $un = sanitize($_POST['saveuser']);
+						$hwidd = $hwidd .= $hwid;
 
-    $hwid = sanitize($_POST['hwid']);
-
-    if (isset($hwid) && trim($hwid) != '')
-    {
-        $result = mysqli_query($link, "SELECT `hwid` FROM `users` WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
-        $row = mysqli_fetch_array($result);
-        $hwidd = $row["hwid"];
-
-        $hwidd = $hwidd .= $hwid;
-
-        mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
-    }
-
-    success("Successfully Updated User");
-    echo "<meta http-equiv='Refresh' Content='2'>";
-}
-?>
+						mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
+					}
+		
+					success("Successfully Updated User");
+					echo "<meta http-equiv='Refresh' Content='2'>";
+				}
+					?>
                 
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->
