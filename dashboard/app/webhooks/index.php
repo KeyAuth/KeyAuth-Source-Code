@@ -1,41 +1,38 @@
 <?php
-
 ob_start();
 
 include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
 
-if (!isset($_SESSION['username'])) {
-         header("Location: ../../../login/");
-        exit();
+if (!isset($_SESSION['username']))
+{
+    header("Location: ../../../login/");
+    exit();
 }
 
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+$row = mysqli_fetch_array($result);
 
-	        $username = $_SESSION['username'];
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-            $row = mysqli_fetch_array($result);
-            
-            $isbanned = $row['isbanned'];
-            if($isbanned == "1")
-            {
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>"; 
-				session_destroy();
-				exit();
-            }
-        
-            $role = $row['role'];
-            $_SESSION['role'] = $role;
-			
-			    if($role == "Reseller")
+$isbanned = $row['isbanned'];
+if ($isbanned == "1")
+{
+    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+    session_destroy();
+    exit();
+}
+
+$role = $row['role'];
+$_SESSION['role'] = $role;
+
+if ($role == "Reseller")
 {
     die('Resellers Not Allowed Here');
 }
-			
-			$darkmode = $row['darkmode'];
 
-			
-                            
+$darkmode = $row['darkmode'];
+
 ?>
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -72,16 +69,17 @@ if (!isset($_SESSION['username'])) {
 <![endif]-->
 <?php
 
-
 if (!$_SESSION['app']) // no app selected yet
+
 {
-    
 
     $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "'"); // select all apps where owner is current user
     if (mysqli_num_rows($result) > 0) // if the user already owns an app, proceed to change app or load only app
+    
     {
 
         if (mysqli_num_rows($result) == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
+        
         {
             $row = mysqli_fetch_array($result);
             $_SESSION['name'] = $row["name"];
@@ -98,7 +96,9 @@ if (!$_SESSION['app']) // no app selected yet
                 </script>
                 ';
         }
-        else // otherwise if the user has more than one app, choose which app to load
+        else
+        // otherwise if the user has more than one app, choose which app to load
+        
         {
             echo '
                 <script type=\'text/javascript\'>
@@ -111,7 +111,8 @@ if (!$_SESSION['app']) // no app selected yet
                 ';
         }
     }
-    else // if user doesnt have any apps created, take them to the screen to create an app
+    else
+    // if user doesnt have any apps created, take them to the screen to create an app
     
     {
         echo '
@@ -126,7 +127,8 @@ if (!$_SESSION['app']) // no app selected yet
     }
 
 }
-else // app already selected, load page like normal
+else
+// app already selected, load page like normal
 
 {
     echo '
@@ -143,7 +145,14 @@ else // app already selected, load page like normal
 
 ?>
 </head>
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php if ($darkmode == 0)
+{
+    echo "dark";
+}
+else
+{
+    echo "light";
+} ?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -253,44 +262,42 @@ else // app already selected, load page like normal
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
                         <?php
-						sidebar($role);
-						
-						if(isset($_POST['genwebhook']))
-                            {
+sidebar($role);
 
-                                if($role == "tester")
-                                {
-                                						mysqli_close($link);
-							error("Free users cannot use Webhooks!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-                                }
+if (isset($_POST['genwebhook']))
+{
 
-                                $base = sanitize($_POST['baselink']);
-								$discord = "https://discord.com/api/webhooks/";
-								if(strpos($base,$discord) !== false) // don't allow blind people to add discord webhook links here
-								{
-								mysqli_close($link);
-								error("This is not meant for Discord Webhooks! This is for sending requests securely to API without API link getting leaked. Please go to app settings if you want to use Discord webhook.");
-								echo "<meta http-equiv='Refresh' Content='2'>";
-								return;
-								}
-						
-                                $ua = sanitize($_POST['useragent']);
+    if ($role == "tester")
+    {
+        mysqli_close($link);
+        error("Free users cannot use Webhooks!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
 
-								if($ua == '') // default user agent KeyAuth. pretty sure I set this in DB too, so may want to remove this code
-								{
-									$ua = 'KeyAuth';
-								}
-								
-                                $webid = generateRandomString();
-                                mysqli_query($link, "INSERT INTO `webhooks` (`webid`, `baselink`, `useragent`, `app`, `owner`) VALUES ('$webid','$base', '$ua', '".$_SESSION['app']."','".$_SESSION['username']."')");
+    $base = sanitize($_POST['baselink']);
+    if (strpos($base, "https://discord.com/api/webhooks/") !== false || strpos($base, "https://discord.com/api/webhooks/") !== false || strpos($base, "https://discordapp.com/api/webhooks/") !== false || strpos($base, "https://ptb.discordapp.com/api/webhooks/") !== false || strpos($base, "https://canary.discordapp.com/api/webhooks/") !== false)
+    {
+        error("This is not meant for Discord Webhooks! This is for sending requests securely to API without API link getting leaked. Please go to app settings if you want to use Discord webhook.");
+    }
+    else
+    {
 
-                                echo "<meta http-equiv='Refresh' Content='2;'>"; 
-                                success("Created Webhook!");
-                                
-                            }
-						?>
+        $ua = sanitize($_POST['useragent']);
+
+        if ($ua == NULL)
+        {
+            $ua = 'KeyAuth';
+        }
+
+        $webid = generateRandomString();
+        mysqli_query($link, "INSERT INTO `webhooks` (`webid`, `baselink`, `useragent`, `app`, `owner`) VALUES ('$webid','$base', '$ua', '" . $_SESSION['app'] . "','" . $_SESSION['username'] . "')");
+
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        success("Created Webhook!");
+    }
+}
+?>
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -343,17 +350,17 @@ else // app already selected, load page like normal
                     <form class="text-left" method="POST" action="">
 <select class="form-control" name="taskOption">
         <?php
-        $username = $_SESSION['username'];
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    echo "  <option>". $row["name"]. "</option>";
-                }
-            }
-        
-        ?>
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
+if (mysqli_num_rows($result) > 0)
+{
+    while ($row = mysqli_fetch_array($result))
+    {
+        echo "  <option>" . $row["name"] . "</option>";
+    }
+}
+
+?>
 </select>    
     <!-- Do SQL query and print them out -->
 
@@ -378,34 +385,34 @@ $(document).ready(function(){
 
 </script>
    <?php
-           if (isset($_POST['change']))
+if (isset($_POST['change']))
+{
+    $selectOption = sanitize($_POST['taskOption']);
+    ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
+    if (mysqli_num_rows($result) > 0)
+    {
+        while ($row = mysqli_fetch_array($result))
         {
-            $selectOption = sanitize($_POST['taskOption']);
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    $secret = $row["secret"];
-                    $sellerkey = $row["sellerkey"];
-                }
-            }
-            else
-            {
-							mysqli_close($link);
-							error("You dont own application!");
-							echo "<meta http-equiv='Refresh' Content='2'>";
-							return;
-            }
-            $_SESSION['secret'] = $secret;
-            $_SESSION['app'] = $secret;
-            $_SESSION['name'] = $selectOption;
-            $_SESSION['sellerkey'] = $sellerkey;
-			
-            success("You have changed Applications!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
+            $secret = $row["secret"];
+            $sellerkey = $row["sellerkey"];
         }
-   ?>
+    }
+    else
+    {
+        mysqli_close($link);
+        error("You dont own application!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
+    $_SESSION['secret'] = $secret;
+    $_SESSION['app'] = $secret;
+    $_SESSION['name'] = $selectOption;
+    $_SESSION['sellerkey'] = $sellerkey;
+
+    success("You have changed Applications!");
+    echo "<meta http-equiv='Refresh' Content='2;'>";
+}
+?>
    </div>
    
             <!-- ============================================================== -->
@@ -427,7 +434,7 @@ $(document).ready(function(){
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Add Webhooks</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">Ã—</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
@@ -454,7 +461,7 @@ $(document).ready(function(){
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Rename Application</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">Ã—</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
@@ -503,37 +510,37 @@ $(document).ready(function(){
                                         </thead>
                                         <tbody>
 <?php
-		if($_SESSION['app']) {
-        ($result = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
+if ($_SESSION['app'])
+{
+    ($result = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
+    if (mysqli_num_rows($result) > 0)
+    {
+        while ($row = mysqli_fetch_array($result))
+        {
 
-                                                    echo "<tr>";
+            echo "<tr>";
 
-                                                    echo "  <td>". $row["webid"]. "</td>";
+            echo "  <td>" . $row["webid"] . "</td>";
 
-                                                    echo "  <td>". $row["baselink"]. "</td>";
-													
-                                                    echo "  <td>". $row["useragent"]. "</td>";
-                                                    
-                                                    // echo "  <td>". $row["status"]. "</td>";
+            echo "  <td>" . $row["baselink"] . "</td>";
 
-                                                    echo'<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            echo "  <td>" . $row["useragent"] . "</td>";
+
+            // echo "  <td>". $row["status"]. "</td>";
+            echo '<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
                                             </button>
                                             <div class="dropdown-menu"><form method="post">
                                                 <button class="dropdown-item" name="deletewebhook" value="' . $row['webid'] . '">Delete</button>
 												<button class="dropdown-item" name="editwebhook" value="' . $row['webid'] . '">Edit</button></div></td></tr></form>';
 
-                                                }
+        }
 
-                                            }
-                                            
-		}
+    }
 
-                                        ?>
+}
+
+?>
                                         </tbody>
                                         <tfoot>
                                             <tr>
@@ -568,48 +575,46 @@ $(document).ready(function(){
                 <!-- Footer callback -->
                 
                 <?php
-				if(isset($_POST['deletewebhook']))
-				{
-					$webhook = sanitize($_POST['deletewebhook']);
-					mysqli_query($link, "DELETE FROM `webhooks` WHERE `app` = '".$_SESSION['app']."' AND `webid` = '$webhook'");
-					if(mysqli_affected_rows($link) != 0)
-					{
-						success("Webhook Successfully Deleted!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-					}
-					else
-					{
-						mysqli_close($link);
-						error("Failed To Delete Webhook!");
-					}	
-				}	
-			
-			
-				
-				if(isset($_POST['editwebhook']))
-				{
-					$webhook = sanitize($_POST['editwebhook']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `webid` = '$webhook' AND `app` = '".$_SESSION['app']."'");
-                    if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Webhook not Found!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$row = mysqli_fetch_array($result);
-					
-					$baselink = $row["baselink"];
-					$useragent = $row["useragent"];
-					
-					echo'<div id="edit-webhook" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
+if (isset($_POST['deletewebhook']))
+{
+    $webhook = sanitize($_POST['deletewebhook']);
+    mysqli_query($link, "DELETE FROM `webhooks` WHERE `app` = '" . $_SESSION['app'] . "' AND `webid` = '$webhook'");
+    if (mysqli_affected_rows($link) != 0)
+    {
+        success("Webhook Successfully Deleted!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+    }
+    else
+    {
+        mysqli_close($link);
+        error("Failed To Delete Webhook!");
+    }
+}
+
+if (isset($_POST['editwebhook']))
+{
+    $webhook = sanitize($_POST['editwebhook']);
+
+    $result = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `webid` = '$webhook' AND `app` = '" . $_SESSION['app'] . "'");
+    if (mysqli_num_rows($result) == 0)
+    {
+        mysqli_close($link);
+        error("Webhook not Found!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
+
+    $row = mysqli_fetch_array($result);
+
+    $baselink = $row["baselink"];
+    $useragent = $row["useragent"];
+
+    echo '<div id="edit-webhook" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Edit Webhook</h4>
-                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">Ã—</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post"> 
@@ -631,21 +636,21 @@ $(document).ready(function(){
                                         </div>
                                     </div>
 									</div>';
-				}
-				
-				if(isset($_POST['savewebhook']))
-				{
-					$webhook = sanitize($_POST['webhook']);
-					
-					$baselink = sanitize($_POST['baselink']);
-					$useragent = sanitize($_POST['useragent']);
+}
 
-					mysqli_query($link, "UPDATE `webhooks` SET `baselink` = '$baselink',`useragent` = '$useragent' WHERE `webid` = '$webhook' AND `app` = '".$_SESSION['app']."'");
-		
-					success("Successfully Updated Settings!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-					?>
+if (isset($_POST['savewebhook']))
+{
+    $webhook = sanitize($_POST['webhook']);
+
+    $baselink = sanitize($_POST['baselink']);
+    $useragent = sanitize($_POST['useragent']);
+
+    mysqli_query($link, "UPDATE `webhooks` SET `baselink` = '$baselink',`useragent` = '$useragent' WHERE `webid` = '$webhook' AND `app` = '" . $_SESSION['app'] . "'");
+
+    success("Successfully Updated Settings!");
+    echo "<meta http-equiv='Refresh' Content='2'>";
+}
+?>
                 
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->
