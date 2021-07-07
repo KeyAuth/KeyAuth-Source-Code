@@ -1,6 +1,4 @@
 <?php
-
- 
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);
 	error_reporting(E_ALL);
@@ -17,19 +15,22 @@
     {
         return strip_tags($data);
     }
-
-    $link = $_SERVER['REQUEST_URI'];
-    /*	if(substr_count($link, '/') == 4)
+    
+    function htmlEncode($s) 
     {
-        die("invalid link");
-    }	*/
+       return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+    }
+    
+    // Administrator/Not Discord says don't use 'link' var it's already been defined in connection.php, use something like 'requrl'
+    
+    $requrl = $_SERVER['REQUEST_URI'];
     
     $uri = trim($_SERVER['REQUEST_URI'], '/');
     $pieces = explode('/', $uri);
-    $owner = $pieces[1];    $username = $pieces[2];
+    $owner = $pieces[1];
+    $username = $pieces[2];
     
-    $username = xss_clean(mysqli_real_escape_string($link, $username));
-    if(!$username)
+    if(!xss_clean(htmlEncode($requrl)) || substr_count($requrl, '/') != 3)
     {
         Die("Invalid Link, link should look something like https://keyauth.com/panel/mak/CSGI, where mak is the owner of the app, and CSGI is the app name.");
     }
@@ -38,19 +39,23 @@
 
     if (mysqli_num_rows($result) < 1)
     {
-        Die("Panel does not exist");
-    }		while ($row = mysqli_fetch_array($result))    {		$secret = $row['secret'];	}	
-
+        die("Panel does not exist.");
+    }
+    
+    while ($row = mysqli_fetch_array($result))
+    {
+        $secret = $row['secret'];
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-		<?php
-	echo'
-	<title>KeyAuth - Login to '.$username.' Panel</title>
-	<meta name="og:image" content="https://keyauth.com/assets/img/favicon.png">
-    <meta name="description" content="Login to Reset your key or download '.$username.'">
-    ';
+	<?php
+	    echo'
+	    <title>KeyAuth - Login to '.$username.' Panel</title>
+	    <meta name="og:image" content="https://keyauth.com/assets/img/favicon.png">
+        <meta name="description" content="Login to Reset your key or download '.$username.'">
+        ';
     ?>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
