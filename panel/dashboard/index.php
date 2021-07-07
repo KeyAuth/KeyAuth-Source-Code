@@ -254,7 +254,7 @@ if (!isset($_SESSION['un'])) {
 
                             {
 
-                                echo '<div style="color:red;">You cant reset key again until <script>document.write(convertTimestamp('.$cooldown.'));</script></div>';
+                                echo '<div style="color:red;">You can\'t reset key again until <script>document.write(convertTimestamp('.$cooldown.'));</script></div>';
                                 // echo '<div style="color:red;">You cant reset key again until '. date('jS F Y h:i:s A (T)', $cooldown) .'</div>';
 
                             }

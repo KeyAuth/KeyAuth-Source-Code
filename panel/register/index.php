@@ -88,8 +88,6 @@
 
         if (isset($_POST['register']))
         {
-                
-            // para cuando supere el captcha
 
                 $username = xss_clean(mysqli_real_escape_string($link, $_POST['username']));
                 
@@ -276,7 +274,8 @@
                 }
 
                 $today = time();				
-                if ($expires < $today)
+                $expiry = $expires + time();				
+                if ($expiry < $today)
                 {
                     $login_status = "banned";
                     echo '
