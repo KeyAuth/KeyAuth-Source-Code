@@ -340,7 +340,8 @@
                             $_SESSION['img'] = $img;
 							
 							
-							mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('".$_POST['keyauthusername']."','".time()."','".$_SERVER["HTTP_CF_CONNECTING_IP"]."','".$_SERVER['HTTP_USER_AGENT']."')");
+							$ua = xss_clean(mysqli_real_escape_string($link, $_SERVER['HTTP_USER_AGENT']));
+							mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('$username','".time()."','".$_SERVER["HTTP_X_FORWARDED_FOR"]."','$ua')");
 							
 							// webhook start
 								$timestamp = date("c", strtotime("now"));
