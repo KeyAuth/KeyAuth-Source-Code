@@ -382,16 +382,66 @@ $(document).ready(function(){
                 <div class="row">
                     <div class="col-12">
 					<?php heador($role, $link); ?>
+					<form method="POST">
+					<button data-toggle="modal" type="button" data-target="#create-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create User</button>  <button name="delusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Users</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all users?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Users</button>
+                            </form>
 							<br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
                                         </div>
-										
+<div id="create-user" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex align-items-center">
+												<h4 class="modal-title">Add User</h4>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="post">
+                                                    <div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Username:</label>
+                                                        <input type="text" class="form-control" name="username" placeholder="Username for user" required>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Password:</label>
+                                                        <input type="password" class="form-control" name="password" placeholder="Password for user" required>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Subscription:</label>
+                                                        <select name="sub" class="form-control">
+														<?php
+														($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+														if (mysqli_num_rows($result) > 0)
+															{
+																while ($row = mysqli_fetch_array($result))
+																{
+																	echo "  <option>". $row["name"]. "</option>";
+																}
+															}
+														
+														?>
+														</select>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Subscription Expiry:</label>
+                                                        <?php
+														echo '<input class="form-control" type="datetime-local" name="expiry" value="' . date("Y-m-d\TH:i", time()) . '" required>';
+														?>
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="adduser">Add</button>
+												</form>
+                                            </div>
+                                        </div>
+                                    </div>
+									</div>
 										<div id="rename-app" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Rename Application</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">Ã—</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
@@ -532,6 +582,7 @@ $(document).ready(function(){
 				if(isset($_POST['deleteuser']))
 				{
 					$username = sanitize($_POST['deleteuser']);
+					mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$username'");
 					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$username'");
 					if(mysqli_affected_rows($link) != 0)
 					{
@@ -681,6 +732,74 @@ $(document).ready(function(){
 		
 					success("Successfully Updated User");
 					echo "<meta http-equiv='Refresh' Content='2'>";
+				}
+				
+				if(isset($_POST['adduser']))
+				{
+					$un = sanitize($_POST['username']);
+					$pw = password_hash(sanitize($_POST['password']),PASSWORD_BCRYPT);
+					$sub = sanitize($_POST['sub']);
+					$expiry = strtotime(sanitize($_POST['expiry']));
+					
+					$result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `name` = '$sub' AND `app` = '".$_SESSION['app']."'");
+					if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("Subscription not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					else if($expiry < time())
+					{
+						mysqli_close($link);
+						error("Please choose an expiry in the future!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;						
+					}
+					
+					mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$un','$sub', '$expiry', '".$_SESSION['app']."')");
+					mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`) VALUES ('$un','$pw', '', '".$_SESSION['app']."')");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("User Successfully Created!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Create User!");
+					}
+					
+				}
+				
+				if(isset($_POST['delusers']))
+				{
+					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("Users Successfully Deleted!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Delete Users!");
+					}
+				}
+				
+				if(isset($_POST['resetall']))
+				{
+					mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("Users Successfully Reset!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Reset Users!");
+					}
 				}
 					?>
                 
