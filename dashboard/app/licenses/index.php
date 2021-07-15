@@ -404,7 +404,7 @@ $(document).ready(function(){
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Key Mask:</label>
-                                                        <input type="text" class="form-control" value="<?php echo $format; ?>" value="XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX" placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required>
+                                                        <input type="text" class="form-control" value="<?php if(!is_null($format)){ echo $format; }else{ echo "XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX"; }?>" placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Level:</label>
