@@ -596,7 +596,7 @@ $(document).ready(function(){
                                 {
                                 $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `genby` = '".$_SESSION['username']."'");
 								$currkeys = mysqli_num_rows($result);
-								if($currkeys == 0 && $amount > 25)
+								if($currkeys == 0 && $amount > 50)
 								{
 								mysqli_close($link);
                                 error("Tester Plan Only Allows For One Key, please upgrade!");
@@ -609,7 +609,7 @@ $(document).ready(function(){
 								}
 								
 								
-                                if($currkeys + $amount > 25)
+                                if($currkeys + $amount > 50)
                                 {
 								mysqli_close($link);
                                 error("Tester Plan Only Allows For One Key, please upgrade!");

@@ -512,7 +512,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 			</div>
 			<div class="card-body pt-5">
 				<ul class="list-group simple-list">
-					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Users<span class="font-weight-bolder"> 25</span></li>
+					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Users<span class="font-weight-bolder"> 50</span></li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-times"></i></span>Upload Files</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-times"></i></span>Create Webhooks</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Variables</li>
@@ -533,7 +533,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 			<div class="card-header border-light py-5 px-4">
 				<!-- Price -->
 				<div class="d-flex mb-3 text-primary"><span class="h5 mb-0">$</span> <span class="price display-2 text-primary mb-0" data-annual="199" data-monthly="99">9.99</span> <span class="h6 font-weight-normal align-self-end">/year</span></div>
-				<h4 class="mb-3 text-black">Standard</h4>
+				<h4 class="mb-3 text-black">Developer Subscription</h4>
 				<p class="font-weight-normal mb-0">Ample limits plus full access to reseller system. Most folks start here.</p>
 			</div>
 			<div class="card-body pt-5">
@@ -571,8 +571,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Logs</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Hardware Blacklist</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Reseller & Manager Accounts</li>
-					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-times"></i></span>SellerAPI Access</li>
-					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-times"></i></span>Discord Bot</li>
+					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>SellerAPI Access</li>
+					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Discord Bot</li>
 				</ul>
 			</div>
 			<div class="card-footer px-4 pb-4">
