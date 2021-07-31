@@ -1,42 +1,39 @@
-﻿<?php
-
+<?php
 ob_start();
 
 include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
 
-if (!isset($_SESSION['username'])) {
-         header("Location: ../../../login/");
-        exit();
+if (!isset($_SESSION['username']))
+{
+    header("Location: ../../../login/");
+    exit();
 }
 
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+$row = mysqli_fetch_array($result);
 
-	        $username = $_SESSION['username'];
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-            $row = mysqli_fetch_array($result);
-            
-            $isbanned = $row['isbanned'];
-            if($isbanned == "1")
-            {
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>"; 
-				session_destroy();
-				exit();
-            }
-        
-            $role = $row['role'];
-            $_SESSION['role'] = $role;
-			
-			    if($role == "Reseller")
+$isbanned = $row['isbanned'];
+if ($isbanned == "1")
+{
+    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+    session_destroy();
+    exit();
+}
+
+$role = $row['role'];
+$_SESSION['role'] = $role;
+
+if ($role == "Reseller")
 {
     die('Resellers Not Allowed Here');
 }
-			
-			$darkmode = $row['darkmode'];
-			$format = $row['format'];
 
-			
-                            
+$darkmode = $row['darkmode'];
+$format = $row['format'];
+
 ?>
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -73,16 +70,17 @@ if (!isset($_SESSION['username'])) {
 <![endif]-->
 <?php
 
-
 if (!$_SESSION['app']) // no app selected yet
+
 {
-    
 
     $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "'"); // select all apps where owner is current user
     if (mysqli_num_rows($result) > 0) // if the user already owns an app, proceed to change app or load only app
+    
     {
 
         if (mysqli_num_rows($result) == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
+        
         {
             $row = mysqli_fetch_array($result);
             $_SESSION['name'] = $row["name"];
@@ -99,7 +97,9 @@ if (!$_SESSION['app']) // no app selected yet
                 </script>
                 ';
         }
-        else // otherwise if the user has more than one app, choose which app to load
+        else
+        // otherwise if the user has more than one app, choose which app to load
+        
         {
             echo '
                 <script type=\'text/javascript\'>
@@ -112,7 +112,8 @@ if (!$_SESSION['app']) // no app selected yet
                 ';
         }
     }
-    else // if user doesnt have any apps created, take them to the screen to create an app
+    else
+    // if user doesnt have any apps created, take them to the screen to create an app
     
     {
         echo '
@@ -127,7 +128,8 @@ if (!$_SESSION['app']) // no app selected yet
     }
 
 }
-else // app already selected, load page like normal
+else
+// app already selected, load page like normal
 
 {
     echo '
@@ -144,7 +146,14 @@ else // app already selected, load page like normal
 
 ?>
 </head>
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php if ($darkmode == 0)
+{
+    echo "dark";
+}
+else
+{
+    echo "light";
+} ?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -254,8 +263,8 @@ else // app already selected, load page like normal
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
                         <?php
-						sidebar($role);
-						?>
+sidebar($role);
+?>
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -309,17 +318,17 @@ else // app already selected, load page like normal
                     <form class="text-left" method="POST" action="">
 <select class="form-control" name="taskOption">
         <?php
-        $username = $_SESSION['username'];
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    echo "  <option>". $row["name"]. "</option>";
-                }
-            }
-        
-        ?>
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
+if (mysqli_num_rows($result) > 0)
+{
+    while ($row = mysqli_fetch_array($result))
+    {
+        echo "  <option>" . $row["name"] . "</option>";
+    }
+}
+
+?>
 </select>    
     <!-- Do SQL query and print them out -->
 
@@ -344,34 +353,34 @@ $(document).ready(function(){
 
 </script>
    <?php
-           if (isset($_POST['change']))
+if (isset($_POST['change']))
+{
+    $selectOption = sanitize($_POST['taskOption']);
+    ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
+    if (mysqli_num_rows($result) > 0)
+    {
+        while ($row = mysqli_fetch_array($result))
         {
-            $selectOption = sanitize($_POST['taskOption']);
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    $secret = $row["secret"];
-                    $sellerkey = $row["sellerkey"];
-                }
-            }
-            else
-            {
-							mysqli_close($link);
-							error("You don\'t own application!");
-                            echo "<meta http-equiv='Refresh' Content='2'>";
-							return;
-            }
-            $_SESSION['secret'] = $secret;
-            $_SESSION['app'] = $secret;
-            $_SESSION['name'] = $selectOption;
-            $_SESSION['sellerkey'] = $sellerkey;
-			
-            success("You have changed Applications!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
+            $secret = $row["secret"];
+            $sellerkey = $row["sellerkey"];
         }
-   ?>
+    }
+    else
+    {
+        mysqli_close($link);
+        error("You don\'t own application!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
+    $_SESSION['secret'] = $secret;
+    $_SESSION['app'] = $secret;
+    $_SESSION['name'] = $selectOption;
+    $_SESSION['sellerkey'] = $sellerkey;
+
+    success("You have changed Applications!");
+    echo "<meta http-equiv='Refresh' Content='2;'>";
+}
+?>
    </div>
    
             <!-- ============================================================== -->
@@ -384,7 +393,7 @@ $(document).ready(function(){
                     <div class="col-12">
 					<?php heador($role, $link); ?>
 					<form method="POST">
-					<button data-toggle="modal" type="button" data-target="#create-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create keys</button>  <button data-toggle="modal" type="button" data-target="#import-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import keys</button>  <button data-toggle="modal" type="button" data-target="#comp-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Compensate</button><br><br><button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-download fa-sm text-white-50"></i> Download All keys</button>  <button name="delkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All keys</button>  <button name="delexpkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all expired keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Expired keys</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all keys?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Keys</button>  <button name="deleteallunused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all unused keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Unused Keys</button>  
+					<button data-toggle="modal" type="button" data-target="#create-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create keys</button>  <button data-toggle="modal" type="button" data-target="#import-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import keys</button>  <button data-toggle="modal" type="button" data-target="#comp-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Compensate</button><br><br><button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-download fa-sm text-white-50"></i> Download All keys</button>  <button name="delkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All keys</button>  <button name="delexpkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all expired keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Expired keys</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all keys?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Keys</button>  <button name="deleteallunused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all unused keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Unused Keys</button>  <button name="deleteallused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all used keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Used Keys</button>
                             </form>
 							<br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
@@ -404,7 +413,14 @@ $(document).ready(function(){
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Key Mask:</label>
-                                                        <input type="text" class="form-control" value="<?php if(!is_null($format)){ echo $format; }else{ echo "XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX"; }?>" placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required>
+                                                        <input type="text" class="form-control" value="<?php if (!is_null($format))
+{
+    echo $format;
+}
+else
+{
+    echo "XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX";
+} ?>" placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Level:</label>
@@ -416,7 +432,7 @@ $(document).ready(function(){
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Expiry Unit:</label>
-                                                        <select name="unit" class="form-control"><option>Days</option><option>Minutes</option><option>Hours</option><option>Seconds</option><option>Weeks</option><option>Months</option><option>Years</option></select>
+                                                        <select name="unit" class="form-control"><option>Days</option><option>Minutes</option><option>Hours</option><option>Seconds</option><option>Weeks</option><option>Months</option><option>Years</option><option>Lifetime</option></select>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Expiry Duration:</label>
@@ -505,210 +521,211 @@ $(document).ready(function(){
                                     </div>
 									</div>
                     <?php
-					
-					
-							function license_masking($mask)
-			{
-				$mask_arr = str_split($mask);
-                $size_of_mask = count($mask_arr);
-                for($i = 0; $i < $size_of_mask; $i++)
-				{
-                    if($mask_arr[$i] === 'X')
-					{
-                        $mask_arr[$i] = random_string_upper(1);
-					}
-					else if($mask_arr[$i] === 'x')
-					{
-                        $mask_arr[$i] = random_string_lower(1);
-					}
-				}
-				return implode('', $mask_arr);
-			}
 
-			function license($amount,$mask,$expiry,$level,$link)
-			{
-				
-			$licenses = array();
-			
-			for ($i = 0; $i < $amount; $i++) {
-	
-			$license = license_masking($mask);
-			mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license','', '$expiry', '','','Not Used','$level','".$_SESSION['username']."', '".time()."', '".$_SESSION['app']."')");
-			// echo $key;
-			$licenses[] = $license;
-			}
+function license_masking($mask)
+{
+    $mask_arr = str_split($mask);
+    $size_of_mask = count($mask_arr);
+    for ($i = 0;$i < $size_of_mask;$i++)
+    {
+        if ($mask_arr[$i] === 'X')
+        {
+            $mask_arr[$i] = random_string_upper(1);
+        }
+        else if ($mask_arr[$i] === 'x')
+        {
+            $mask_arr[$i] = random_string_lower(1);
+        }
+    }
+    return implode('', $mask_arr);
+}
 
-			return $licenses;
-			}
-                                        
-                            if(isset($_POST['genkeys']))
-                            {
-                                
-                                $amount = sanitize($_POST['amount']);
-                                if($amount > 100)
-                                {
-								mysqli_close($link);
-								error("Generating Keys has been limited to 100 per time to reduce accidental spam. Please try again.");
-								echo "<meta http-equiv='Refresh' Content='2;'>";
-								return;
-                                }
-                                $abc = time();
-                                
-                                $level = sanitize($_POST['level']);
-                                $note = sanitize($_POST['note']);
-                                
-                                if(!isset($amount) || trim($amount) == '')
-                                {
-                                $amount = 1;
-                                }
+function license($amount, $mask, $expiry, $level, $link)
+{
 
-                                if(!isset($note) || trim($note) == '')
-                                {
-                                $note == "default note";
-                                }
-                                
-                                if(!isset($level) || trim($level) == '')
-                                {
-                                $level = 1;
-                                }
-                                $expiry = sanitize($_POST['expiry']);
-                                
-                                 if(!isset($expiry) || trim($expiry) == '')
-                                {
-								mysqli_close($link);
-                                error("No Expiry Set!");
-								echo "<meta http-equiv='Refresh' Content='2;'>";
-								return;
-                                }
-                                else
-                                {
-                                
-                                if (!is_numeric($expiry))
-                                {
-								mysqli_close($link);
-								error("Only Numbers Allowed For Expiry!");
-								echo "<meta http-equiv='Refresh' Content='2;'>";
-								return;
-                                }
-                                else
-                                {
-                                if($role == "tester")
-                                {
-                                $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `genby` = '".$_SESSION['username']."'");
-								$currkeys = mysqli_num_rows($result);
-								if($currkeys == 0 && $amount > 50)
-								{
-								mysqli_close($link);
-                                error("Tester Plan Only Allows For One Key, please upgrade!");
-								echo "<meta http-equiv='Refresh' Content='2;'>";
-								return;	
-								}
-								else if($currkeys == 0)
-								{
-									goto a;
-								}
-								
-								
-                                if($currkeys + $amount > 50)
-                                {
-								mysqli_close($link);
-                                error("Tester Plan Only Allows For One Key, please upgrade!");
-								echo "<meta http-equiv='Refresh' Content='2;'>";
-								return;
-                                }
-								a:
-                                }
-								
-								$unit = sanitize($_POST['unit']);
-								if($unit == "Days")
-								{
-									$multiplier = 86400;
-								}
-								else if($unit == "Minutes")
-								{
-									$multiplier = 60;
-								}
-								else if($unit == "Hours")
-								{
-									$multiplier = 3600;
-								}
-								else if($unit == "Seconds")
-								{
-									$multiplier = 1;
-								}
-								else if($unit == "Weeks")
-								{
-									$multiplier = 604800;
-								}
-								else if($unit == "Months")
-								{
-									$multiplier = 2.628e+6;
-								}
-								else if($unit == "Years")
-								{
-									$multiplier = 31535965.4396976;
-								}
-								
-                                    
-                                $expiry = $expiry * $multiplier;  
-                                $mask = sanitize($_POST['mask']);
-								
-								
-								// mask instead of format
-								// check if amount is over one and mask does not contain any Xs
-                                if($amount > 1 && strpos($mask, 'X') === false && strpos($mask, 'x') === false)
-                                {
-								mysqli_close($link);
-                                error("Can\'t do custom key with amount greater than one");
-                                echo "<meta http-equiv='Refresh' Content='4;'>";
-								return;
-                                }
-								
-								$time = time();
-								
-								
-                                $key = license($amount,$mask,$expiry,$level,$link);
-                                
-                                if($result) // change to affected rows
-                                {
-								
-								// webhook start
-								$timestamp = date("c", strtotime("now"));
+    $licenses = array();
 
-								$json_data = json_encode([
-									// Message
-									"content" => "".$_SESSION['username']." has created {$amount} keys",
-									
-									// Username
-									"username" => "KeyAuth Logs",
-								
-								], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-								
-								
-								$ch = curl_init("webhooklinkhere");
-								curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-type: application/json'));
-								curl_setopt($ch,CURLOPT_POST,1);
-								curl_setopt($ch,CURLOPT_POSTFIELDS,$json_data);
-								curl_setopt($ch,CURLOPT_FOLLOWLOCATION,1);
-								curl_setopt($ch,CURLOPT_HEADER,0);
-								
-								curl_exec($ch);
-								curl_close($ch);
-								// webhook end
-								
-								mysqli_query($link, "UPDATE `accounts` SET `format` = '$mask' WHERE `username` = '".$_SESSION['username']."'");
-                                
-                                if($amount > 1)
-                                {
-                                echo "<meta http-equiv='Refresh' Content='0; url=downloadbulk.php?time=". $time ."'>";
-								}
-								else
-								{
-echo "<script>
-navigator.clipboard.writeText('".array_values($key)[0]."');
+    for ($i = 0;$i < $amount;$i++)
+    {
+
+        $license = license_masking($mask);
+        mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license','', '$expiry', '','','Not Used','$level','" . $_SESSION['username'] . "', '" . time() . "', '" . $_SESSION['app'] . "')");
+        // echo $key;
+        $licenses[] = $license;
+    }
+
+    return $licenses;
+}
+
+if (isset($_POST['genkeys']))
+{
+
+    $amount = sanitize($_POST['amount']);
+    if ($amount > 100)
+    {
+        mysqli_close($link);
+        error("Generating Keys has been limited to 100 per time to reduce accidental spam. Please try again.");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        return;
+    }
+    $abc = time();
+
+    $level = sanitize($_POST['level']);
+    $note = sanitize($_POST['note']);
+
+    if (!isset($amount) || trim($amount) == '')
+    {
+        $amount = 1;
+    }
+
+    if (!isset($note) || trim($note) == '')
+    {
+        $note == "default note";
+    }
+
+    if (!isset($level) || trim($level) == '')
+    {
+        $level = 1;
+    }
+    $expiry = sanitize($_POST['expiry']);
+
+    if (!isset($expiry) || trim($expiry) == '')
+    {
+        mysqli_close($link);
+        error("No Expiry Set!");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        return;
+    }
+    else
+    {
+
+        if (!is_numeric($expiry))
+        {
+            mysqli_close($link);
+            error("Only Numbers Allowed For Expiry!");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+            return;
+        }
+        else
+        {
+            if ($role == "tester")
+            {
+                $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `genby` = '" . $_SESSION['username'] . "'");
+                $currkeys = mysqli_num_rows($result);
+                if ($currkeys == 0 && $amount > 50)
+                {
+                    mysqli_close($link);
+                    error("Tester Plan Only Allows For One Key, please upgrade!");
+                    echo "<meta http-equiv='Refresh' Content='2;'>";
+                    return;
+                }
+                else if ($currkeys == 0)
+                {
+                    gotoa;
+                }
+
+                if ($currkeys + $amount > 50)
+                {
+                    mysqli_close($link);
+                    error("Tester Plan Only Allows For One Key, please upgrade!");
+                    echo "<meta http-equiv='Refresh' Content='2;'>";
+                    return;
+                }
+                a:
+                }
+
+                $unit = sanitize($_POST['unit']);
+                if ($unit == "Days")
+                {
+                    $multiplier = 86400;
+                }
+                else if ($unit == "Minutes")
+                {
+                    $multiplier = 60;
+                }
+                else if ($unit == "Hours")
+                {
+                    $multiplier = 3600;
+                }
+                else if ($unit == "Seconds")
+                {
+                    $multiplier = 1;
+                }
+                else if ($unit == "Weeks")
+                {
+                    $multiplier = 604800;
+                }
+                else if ($unit == "Months")
+                {
+                    $multiplier = 2.628e+6;
+                }
+                else if ($unit == "Years")
+                {
+                    $multiplier = 31535965.4396976;
+                }
+                else if ($unit == "Lifetime")
+                {
+                    $multiplier = 315360000;
+                }
+
+                $expiry = $expiry * $multiplier;
+                $mask = sanitize($_POST['mask']);
+
+                // mask instead of format
+                // check if amount is over one and mask does not contain any Xs
+                if ($amount > 1 && strpos($mask, 'X') === false && strpos($mask, 'x') === false)
+                {
+                    mysqli_close($link);
+                    error("Can\'t do custom key with amount greater than one");
+                    echo "<meta http-equiv='Refresh' Content='4;'>";
+                    return;
+                }
+
+                $time = time();
+
+                $key = license($amount, $mask, $expiry, $level, $link);
+
+                if ($result) // change to affected rows
+                
+                {
+
+                    // webhook start
+                    $timestamp = date("c", strtotime("now"));
+
+                    $json_data = json_encode([
+                    // Message
+                    "content" => "" . $_SESSION['username'] . " has created {$amount} keys",
+
+                    // Username
+                    "username" => "KeyAuth Logs",
+
+                    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+                    $ch = curl_init("webhooklinkhere");
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Content-type: application/json'
+                    ));
+                    curl_setopt($ch, CURLOPT_POST, 1);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                    curl_setopt($ch, CURLOPT_HEADER, 0);
+
+                    curl_exec($ch);
+                    curl_close($ch);
+                    // webhook end
+                    mysqli_query($link, "UPDATE `accounts` SET `format` = '$mask' WHERE `username` = '" . $_SESSION['username'] . "'");
+
+                    if ($amount > 1)
+                    {
+                        echo "<meta http-equiv='Refresh' Content='0; url=downloadbulk.php?time=" . $time . "'>";
+                    }
+                    else
+                    {
+                        echo "<script>
+navigator.clipboard.writeText('" . array_values($key) [0] . "');
 </script>";
-echo "<meta http-equiv='Refresh' Content='4;'>"; 
-echo '
+                        echo "<meta http-equiv='Refresh' Content='4;'>";
+                        echo '
             <script type=\'text/javascript\'>
                 
             const notyf = new Notyf();
@@ -721,18 +738,18 @@ echo '
                 
         </script>
         ';
-								}
-                                }
-                                }
-                                }
-                            }
-							
-							if(isset($_POST['importkeys']))
+                    }
+                }
+            }
+        }
+    }
+
+    if (isset($_POST['importkeys']))
     {
-     if($role == "tester")
-     {
-	 mysqli_close($link);
-     echo '
+        if ($role == "tester")
+        {
+            mysqli_close($link);
+            echo '
                             <script type=\'text/javascript\'>
                             
                             const notyf = new Notyf();
@@ -745,28 +762,26 @@ echo '
                             
                             </script>
                             ';
-                            echo "<meta http-equiv='Refresh' Content='2;'>"; 
-                            return;
-     }
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+            return;
+        }
 
+        $keys = sanitize($_POST['keys']);
+        // die($keys);
+        $text = explode("|", $keys);
 
-    $keys = sanitize($_POST['keys']);
-    // die($keys);
-    $text = explode ("|", $keys);
+        str_replace('"', "", $text);
+        str_replace("'", "", $text);
 
-    str_replace('"', "", $text);
-    str_replace("'", "", $text);
+        foreach ($text as $line)
+        {
 
-
-
-    foreach ($text as $line) {
-       
-       $array = explode(',', $line);
-       $first = $array [0];
-	   if(!isset($first) || $first == '')
-	   {
-		   mysqli_close($link);
-		   echo '
+            $array = explode(',', $line);
+            $first = $array[0];
+            if (!isset($first) || $first == '')
+            {
+                mysqli_close($link);
+                echo '
                             <script type=\'text/javascript\'>
                             
                             const notyf = new Notyf();
@@ -779,14 +794,14 @@ echo '
                             
                             </script>
                             ';
-                            echo "<meta http-equiv='Refresh' Content='2;'>"; 
-                            return;
-	   }
-       $second = $array [1];
-	   if(!isset($second) || $second == '')
-	   {
-		   mysqli_close($link);
-		   echo '
+                echo "<meta http-equiv='Refresh' Content='2;'>";
+                return;
+            }
+            $second = $array[1];
+            if (!isset($second) || $second == '')
+            {
+                mysqli_close($link);
+                echo '
                             <script type=\'text/javascript\'>
                             
                             const notyf = new Notyf();
@@ -799,14 +814,14 @@ echo '
                             
                             </script>
                             ';
-                            echo "<meta http-equiv='Refresh' Content='2;'>"; 
-                            return;
-	   }
-       $third = $array [2];
-	   if(!isset($third) || $third == '')
-	   {
-		   mysqli_close($link);
-		   echo '
+                echo "<meta http-equiv='Refresh' Content='2;'>";
+                return;
+            }
+            $third = $array[2];
+            if (!isset($third) || $third == '')
+            {
+                mysqli_close($link);
+                echo '
                             <script type=\'text/javascript\'>
                             
                             const notyf = new Notyf();
@@ -819,24 +834,23 @@ echo '
                             
                             </script>
                             ';
-                            echo "<meta http-equiv='Refresh' Content='2;'>"; 
-                            return;
-	   }
-       $expiry = $third * 86400;  
-       mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$first','$expiry', '','','Not Used','$second','".$_SESSION['username']."','".time()."','".$_SESSION['app']."')");
+                echo "<meta http-equiv='Refresh' Content='2;'>";
+                return;
+            }
+            $expiry = $third * 86400;
+            mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$first','$expiry', '','','Not Used','$second','" . $_SESSION['username'] . "','" . time() . "','" . $_SESSION['app'] . "')");
+        }
     }
-    }
-	
-	if(isset($_POST['compp']))
+
+    if (isset($_POST['compp']))
     {
 
+        $time = sanitize($_POST['time']);
 
-    $time = sanitize($_POST['time']);
-
-    if(!is_numeric($time))
-    {
-		   mysqli_close($link);
-           echo '
+        if (!is_numeric($time))
+        {
+            mysqli_close($link);
+            echo '
                             <script type=\'text/javascript\'>
                             
                             const notyf = new Notyf();
@@ -849,167 +863,176 @@ echo '
                             
                             </script>
                             ';
-                            echo "<meta http-equiv='Refresh' Content='2;'>";
-                            return;
-    }
-	
-	$unit = sanitize($_POST['unit']);
-								if($unit == "Days")
-								{
-									$multiplier = 86400;
-								}
-								else if($unit == "Minutes")
-								{
-									$multiplier = 60;
-								}
-								else if($unit == "Hours")
-								{
-									$multiplier = 3600;
-								}
-								else if($unit == "Seconds")
-								{
-									$multiplier = 1;
-								}
-								else if($unit == "Weeks")
-								{
-									$multiplier = 604800;
-								}
-								else if($unit == "Months")
-								{
-									$multiplier = 2.628e+6;
-								}
-								else if($unit == "Years")
-								{
-									$multiplier = 31535965.4396976;
-								}
-								
-                                    
-                                $time = $time * $multiplier;
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+            return;
+        }
 
-    mysqli_query($link, "UPDATE `keys` SET `expires` = `expires`+$time WHERE `app` = '".$_SESSION['app']."' AND `status` = 'Used'");
-	
-	
-	if(mysqli_affected_rows($link) != 0)
-			{
-				mysqli_close($link);
-				success("Compensated All Used Licenses!");
-				echo "<meta http-equiv='Refresh' Content='2;'>";
-			}
-			else
-			{
-				mysqli_close($link);
-				error("Didn\'t find any used Licenses To Compenate!");
-				echo "<meta http-equiv='Refresh' Content='2;'>"; 
-                            return;
-			}
+        $unit = sanitize($_POST['unit']);
+        if ($unit == "Days")
+        {
+            $multiplier = 86400;
+        }
+        else if ($unit == "Minutes")
+        {
+            $multiplier = 60;
+        }
+        else if ($unit == "Hours")
+        {
+            $multiplier = 3600;
+        }
+        else if ($unit == "Seconds")
+        {
+            $multiplier = 1;
+        }
+        else if ($unit == "Weeks")
+        {
+            $multiplier = 604800;
+        }
+        else if ($unit == "Months")
+        {
+            $multiplier = 2.628e+6;
+        }
+        else if ($unit == "Years")
+        {
+            $multiplier = 31535965.4396976;
+        }
+
+        $time = $time * $multiplier;
+
+        mysqli_query($link, "UPDATE `keys` SET `expires` = `expires`+$time WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Used'");
+
+        if (mysqli_affected_rows($link) != 0)
+        {
+            mysqli_close($link);
+            success("Compensated All Used Licenses!");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Didn\'t find any used Licenses To Compenate!");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+            return;
+        }
     }
-				
-		if (isset($_POST['refreshapp']))
+
+    if (isset($_POST['refreshapp']))
+    {
+        $gen = generateRandomString();
+        $new_secret = hash('sha256', $gen);
+
+        if ($role == "Manager")
         {
-			$gen = generateRandomString();
-            $new_secret = hash('sha256', $gen);
-			
-			if($role == "Manager")
-			{
-			error("Manager Accounts Aren\'t Allowed To Refresh Applications");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
-			return;
-			}
-			
-            mysqli_query($link, "UPDATE `apps` SET `secret` = '$new_secret' WHERE `secret` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'");
-            mysqli_query($link, "UPDATE `bans` SET `app` = '$new_secret' WHERE `app` = '".$_SESSION['app']."'");
-            mysqli_query($link, "UPDATE `files` SET `app` = '$new_secret' WHERE `app` = '".$_SESSION['app']."'");
-            mysqli_query($link, "UPDATE `keys` SET `app` = '$new_secret' WHERE `app` = '".$_SESSION['app']."'");
-            mysqli_query($link, "UPDATE `logs` SET `logapp` = '$new_secret' WHERE `logapp` = '".$_SESSION['app']."'");
-            mysqli_query($link, "UPDATE `subs` SET `app` = '$new_secret' WHERE `app` = '".$_SESSION['app']."'");
-            mysqli_query($link, "UPDATE `subscriptions` SET `app` = '$new_secret' WHERE `app` = '".$_SESSION['app']."'");
-            mysqli_query($link, "UPDATE `users` SET `app` = '$new_secret' WHERE `app` = '".$_SESSION['app']."'");
-            mysqli_query($link, "UPDATE `vars` SET `app` = '$new_secret' WHERE `app` = '".$_SESSION['app']."'");
-            mysqli_query($link, "UPDATE `webhooks` SET `app` = '$new_secret' WHERE `app` = '".$_SESSION['app']."'");
-            
-			$_SESSION['app'] = $new_secret;
-			$_SESSION['secret'] = $new_secret;
-			
-			if(mysqli_affected_rows($link) != 0)
-			{
-			success("Successfully Refreshed App!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";         
-			}
-			else
-			{
-			error("Application Refresh Failed!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
-			}
-		}
-        
-        
-        if (isset($_POST['dlkeys']))
+            error("Manager Accounts Aren\'t Allowed To Refresh Applications");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+            return;
+        }
+
+        mysqli_query($link, "UPDATE `apps` SET `secret` = '$new_secret' WHERE `secret` = '" . $_SESSION['app'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
+        mysqli_query($link, "UPDATE `bans` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `files` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `keys` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `logs` SET `logapp` = '$new_secret' WHERE `logapp` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `subs` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `subscriptions` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `users` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `vars` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `webhooks` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+
+        $_SESSION['app'] = $new_secret;
+        $_SESSION['secret'] = $new_secret;
+
+        if (mysqli_affected_rows($link) != 0)
         {
-        
+            success("Successfully Refreshed App!");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+        }
+        else
+        {
+            error("Application Refresh Failed!");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+        }
+    }
+
+    if (isset($_POST['dlkeys']))
+    {
+
         echo "<meta http-equiv='Refresh' Content='0; url=download.php'>";
         // get all rows, put in text file, download text file, delete text file.
-        }
         
-                if (isset($_POST['delkeys']))
+    }
+
+    if (isset($_POST['delkeys']))
+    {
+        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "'");
+        if (mysqli_affected_rows($link) != 0)
         {
-            mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '".$_SESSION['app']."'");
-            if(mysqli_affected_rows($link) != 0)
-			{
-				success("Deleted All Keys!");
-			}
-			else
-			{
-				mysqli_close($link);
-				error("Didn\'t find any keys!");
-			}
+            success("Deleted All Keys!");
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Didn\'t find any keys!");
+        }
+    }
+
+    if (isset($_POST['delexpkeys']))
+    {
+        $result = mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` != 'Not Used' AND `expires` < " . time() . "");
+        if (mysqli_affected_rows($link) != 0)
+        {
+            success("Deleted All Expired Keys!");
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Didn\'t find any expired keys!");
         }
 
+    }
 
-                if (isset($_POST['delexpkeys']))
+    if (isset($_POST['deleteallunused']))
+    {
+        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Not Used'");
+        if (mysqli_affected_rows($link) != 0)
         {
-            $result = mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `status` != 'Not Used' AND `expires` < ".time()."");
-			if(mysqli_affected_rows($link) != 0)
-			{
-				success("Deleted All Expired Keys!");
-			}
-			else
-			{
-				mysqli_close($link);
-				error("Didn\'t find any expired keys!");
-			}
-							
-							
-            
+            success("Deleted All Unused Keys!");
         }
-		
-		                if (isset($_POST['deleteallunused']))
+        else
         {
-            mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `status` = 'Not Used'");
-			if(mysqli_affected_rows($link) != 0)
-			{
-				success("Deleted All Unused Keys!");
-			}
-			else
-			{
-				mysqli_close($link);
-				error("Didn\'t find any used keys!");
-			}
+            mysqli_close($link);
+            error("Didn\'t find any used keys!");
         }
-		
-		                if (isset($_POST['resetall']))
+    }
+
+    if (isset($_POST['deleteallused']))
+    {
+        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Used'");
+        if (mysqli_affected_rows($link) != 0)
         {
-            mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `status` != 'Not Used'");
-			if(mysqli_affected_rows($link) != 0)
-			{
-				success("Reset HWID for all Keys!");
-			}
-			else
-			{
-				mysqli_close($link);
-				error("Didn\'t find any used keys!");
-			}
+            success("Deleted All Unused Keys!");
         }
-                    ?>
+        else
+        {
+            mysqli_close($link);
+            error("Didn\'t find any used keys!");
+        }
+    }
+
+    if (isset($_POST['resetall']))
+    {
+        mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '" . $_SESSION['app'] . "' AND `status` != 'Not Used'");
+        if (mysqli_affected_rows($link) != 0)
+        {
+            success("Reset HWID for all Keys!");
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Didn\'t find any used keys!");
+        }
+    }
+?>
 
 <script type="text/javascript">
 
@@ -1067,63 +1090,63 @@ $(document).ready(function(){
                                         </thead>
                                         <tbody>
 <?php
-		if($_SESSION['app']) {
-        ($result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+    if ($_SESSION['app'])
+    {
+        ($result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
         if (mysqli_num_rows($result) > 0)
+        {
+            while ($row = mysqli_fetch_array($result))
             {
-                while ($row = mysqli_fetch_array($result))
+
+                echo "<tr>";
+
+                echo "  <td>" . $row["key"] . "</td>";
+
+                echo "<td><script>document.write(convertTimestamp(" . $row["gendate"] . "));</script></td>";
+
+                echo "  <td>" . $row["genby"] . "</td>";
+
+                if ($row["status"] == "Used")
                 {
-
-                                                    echo "<tr>";
-
-                                                    echo "  <td>". $row["key"]. "</td>";
-													
-													echo "<td><script>document.write(convertTimestamp(". $row["gendate"] ."));</script></td>";
-
-                                                    echo "  <td>". $row["genby"]. "</td>";
-                                                    
-                                                    if($row["status"] == "Used")
-                                                    {
-                                                    echo "
-                                                        <td>". ($row["expires"]/86400) ." Day(s)</td>
-                                                        <td><script>document.write(convertTimestamp(". $row["lastlogin"] ."));</script></td>
+                    echo "
+                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
+                                                        <td><script>document.write(convertTimestamp(" . $row["lastlogin"] . "));</script></td>
                                                         <td><label class=\"badge badge-danger\">Used</label></td>
                                                         ";
-                                                    }
-                                                    else if($row["status"] == "Banned")
-                                                    {
-                                                    echo"
-                                                        <td>". ($row["expires"]/86400) ." Day(s)</td>
-                                                        <td><script>document.write(convertTimestamp(". $row["lastlogin"] ."));</script></td>
+                }
+                else if ($row["status"] == "Banned")
+                {
+                    echo "
+                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
+                                                        <td><script>document.write(convertTimestamp(" . $row["lastlogin"] . "));</script></td>
                                                         <td><label class=\"badge badge-danger\">Banned</label></td>";
-                                                    }
-                                                    else if($row["status"] == "Expired")
-                                                    {
-                                                    echo "
-                                                        <td>". ($row["expires"]/86400) ." Day(s)</td>
-                                                        <td><script>document.write(convertTimestamp(". $row["lastlogin"] ."));</script></td>
+                }
+                else if ($row["status"] == "Expired")
+                {
+                    echo "
+                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
+                                                        <td><script>document.write(convertTimestamp(" . $row["lastlogin"] . "));</script></td>
                                                         <td><label class=\"badge badge-danger\">Expired</label></td>
                                                         ";
-                                                    }
-						    else if($row["status"] == "Paused")
-                                                    {
-                                                    echo "
-                                                        <td>". ($row["expires"]/86400) ." Day(s)</td>
-                                                        <td><script>document.write(convertTimestamp(". $row["lastlogin"] ."));</script></td>
+                }
+                else if ($row["status"] == "Paused")
+                {
+                    echo "
+                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
+                                                        <td><script>document.write(convertTimestamp(" . $row["lastlogin"] . "));</script></td>
                                                         <td><label class=\"badge badge-warning\">Paused</label></td>
                                                         ";
-                                                    }
-						    else
-						    {
-							echo"
-                                                        <td>". ($row["expires"]/86400) ." Day(s)</td>
+                }
+                else
+                {
+                    echo "
+                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
                                                         <td>N/A</td>
                                                         <td><label class=\"badge badge-success\">Not Used</label></td>";
-					 	    }
-                                                    
-                                                    // echo "  <td>". $row["status"]. "</td>";
+                }
 
-                                                    echo'<form method="POST"><td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                // echo "  <td>". $row["status"]. "</td>";
+                echo '<form method="POST"><td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
                                             </button>
                                             <div class="dropdown-menu">
@@ -1136,13 +1159,13 @@ $(document).ready(function(){
                                                 <div class="dropdown-divider"></div>
 												<button class="dropdown-item" name="editkey" value="' . $row['key'] . '">Edit</button></div></td></tr></form>';
 
-                                                }
+            }
 
-                                            }
-                                            
-		}
+        }
 
-                                        ?>
+    }
+
+?>
                                         </tbody>
                                         <tfoot>
                                             <tr>
@@ -1180,151 +1203,151 @@ $(document).ready(function(){
                 <!-- Footer callback -->
                 
                 <?php
-				if(isset($_POST['deletekey']))
-				{
-					$key = sanitize($_POST['deletekey']);
-					mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					if(mysqli_affected_rows($link) != 0)
-					{
-						success("Key Successfully Deleted!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-					}
-					else
-					{
-						mysqli_close($link);
-						error("Failed To Delete Key!");
-					}
-				}
-				if(isset($_POST['resetkey']))
-				{
-					$key = sanitize($_POST['resetkey']);
-					mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					if(mysqli_affected_rows($link) != 0)
-					{
-						success("Key Successfully Reset!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-					}
-					else
-					{
-						mysqli_close($link);
-						error("Failed To Reset Key!");
-					}
-				}
-				if(isset($_POST['bankey']))
-				{
-					$key = sanitize($_POST['key']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key not Found!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$row = mysqli_fetch_array($result);
-					$hwid = $row["hwid"];
-					$ip = $row["ip"];
-					$reason = sanitize($_POST['reason']);
-					
-					mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					
-					if($hwid != NULL)
-					{
-					mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','".$_SESSION['app']."')");
-					}
-					if($ip != NULL)
-					{
-					mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','".$_SESSION['app']."')");
-					}
-					success("Key Successfully Banned!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-				
-				if(isset($_POST['unbankey']))
-				{
-					$key = sanitize($_POST['unbankey']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key not Found!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$row = mysqli_fetch_array($result);
-					$hwid = $row["hwid"];
-					$ip = $row["ip"];
-					
-					mysqli_query($link, "UPDATE `keys` SET `banned` = NULL, `status` = 'Used' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '".$_SESSION['app']."'");
-					
-					success("Key Successfully Unbanned!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-				
-				if(isset($_POST['pausekey']))
-				{
-					$key = sanitize($_POST['pausekey']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `status` = 'Used'");
-					if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key isn\'t used!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$exp = mysqli_fetch_array($result)["expires"] - time();
-					mysqli_query($link, "UPDATE `keys` SET `status` = 'Paused', `expires` = '$exp' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					
-					success("Key Successfully Paused!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-				
-				if(isset($_POST['unpausekey']))
-				{
-					$key = sanitize($_POST['unpausekey']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `status` = 'Paused'");
-					if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key isn\'t paused!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$exp = mysqli_fetch_array($result)["expires"] + time();
-					mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `expires` = '$exp' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					
-					success("Key Successfully Unpaused!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-				
-				if(isset($_POST['editkey']))
-				{
-					$key = sanitize($_POST['editkey']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$key' AND `app` = '".$_SESSION['app']."'");
-                    if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key not Found!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-                    $row = mysqli_fetch_array($result);
-					
-					$expiry = date("Y-m-d\TH:i", $row["expires"]);
-					$currtime = date("Y-m-d\TH:i", time());
-					
-					echo'<div id="ban-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
+    if (isset($_POST['deletekey']))
+    {
+        $key = sanitize($_POST['deletekey']);
+        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+        if (mysqli_affected_rows($link) != 0)
+        {
+            success("Key Successfully Deleted!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Failed To Delete Key!");
+        }
+    }
+    if (isset($_POST['resetkey']))
+    {
+        $key = sanitize($_POST['resetkey']);
+        mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+        if (mysqli_affected_rows($link) != 0)
+        {
+            success("Key Successfully Reset!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Failed To Reset Key!");
+        }
+    }
+    if (isset($_POST['bankey']))
+    {
+        $key = sanitize($_POST['key']);
+
+        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+        if (mysqli_num_rows($result) == 0)
+        {
+            mysqli_close($link);
+            error("Key not Found!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+            return;
+        }
+
+        $row = mysqli_fetch_array($result);
+        $hwid = $row["hwid"];
+        $ip = $row["ip"];
+        $reason = sanitize($_POST['reason']);
+
+        mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+
+        if ($hwid != NULL)
+        {
+            mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','" . $_SESSION['app'] . "')");
+        }
+        if ($ip != NULL)
+        {
+            mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','" . $_SESSION['app'] . "')");
+        }
+        success("Key Successfully Banned!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+    }
+
+    if (isset($_POST['unbankey']))
+    {
+        $key = sanitize($_POST['unbankey']);
+
+        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+        if (mysqli_num_rows($result) == 0)
+        {
+            mysqli_close($link);
+            error("Key not Found!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+            return;
+        }
+
+        $row = mysqli_fetch_array($result);
+        $hwid = $row["hwid"];
+        $ip = $row["ip"];
+
+        mysqli_query($link, "UPDATE `keys` SET `banned` = NULL, `status` = 'Used' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+        mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '" . $_SESSION['app'] . "'");
+
+        success("Key Successfully Unbanned!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+    }
+
+    if (isset($_POST['pausekey']))
+    {
+        $key = sanitize($_POST['pausekey']);
+
+        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key' AND `status` = 'Used'");
+        if (mysqli_num_rows($result) == 0)
+        {
+            mysqli_close($link);
+            error("Key isn\'t used!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+            return;
+        }
+
+        $exp = mysqli_fetch_array($result) ["expires"] - time();
+        mysqli_query($link, "UPDATE `keys` SET `status` = 'Paused', `expires` = '$exp' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+
+        success("Key Successfully Paused!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+    }
+
+    if (isset($_POST['unpausekey']))
+    {
+        $key = sanitize($_POST['unpausekey']);
+
+        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key' AND `status` = 'Paused'");
+        if (mysqli_num_rows($result) == 0)
+        {
+            mysqli_close($link);
+            error("Key isn\'t paused!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+            return;
+        }
+
+        $exp = mysqli_fetch_array($result) ["expires"] + time();
+        mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `expires` = '$exp' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+
+        success("Key Successfully Unpaused!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+    }
+
+    if (isset($_POST['editkey']))
+    {
+        $key = sanitize($_POST['editkey']);
+
+        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+        if (mysqli_num_rows($result) == 0)
+        {
+            mysqli_close($link);
+            error("Key not Found!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+            return;
+        }
+
+        $row = mysqli_fetch_array($result);
+
+        $expiry = date("Y-m-d\TH:i", $row["expires"]);
+        $currtime = date("Y-m-d\TH:i", time());
+
+        echo '<div id="ban-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -1363,33 +1386,33 @@ $(document).ready(function(){
                                         </div>
                                     </div>
 									</div>';
-				}
-				
-				if(isset($_POST['savekey']))
-				{
-					$key = sanitize($_POST['key']);
-					
-					$expiry = sanitize($_POST['expiry']);
-					$level = sanitize($_POST['level']);
-					$hwid = sanitize($_POST['hwid']);
-					
-					$expiry = strtotime($expiry);
-					
-					if(isset($hwid) && trim($hwid) != '')
-					{
-						$result = mysqli_query($link, "SELECT `hwid` FROM `keys` WHERE `key` = '$key' AND `app` = '".$_SESSION['app']."'");                           
+    }
 
-						$hwid = mysqli_fetch_array($result)["hwid"] .= $hwid;
+    if (isset($_POST['savekey']))
+    {
+        $key = sanitize($_POST['key']);
 
-						mysqli_query($link, "UPDATE `keys` SET `hwid` = '$hwid' WHERE `key` = '$key' AND `app` = '".$_SESSION['app']."'");
-					}
+        $expiry = sanitize($_POST['expiry']);
+        $level = sanitize($_POST['level']);
+        $hwid = sanitize($_POST['hwid']);
 
-					mysqli_query($link, "UPDATE `keys` SET `expires` = '$expiry',`level` = '$level' WHERE `key` = '$key' AND `app` = '".$_SESSION['app']."'");
-		
-					success("Successfully Updated Settings!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-					?>
+        $expiry = strtotime($expiry);
+
+        if (isset($hwid) && trim($hwid) != '')
+        {
+            $result = mysqli_query($link, "SELECT `hwid` FROM `keys` WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+
+            $hwid = mysqli_fetch_array($result) ["hwid"] .= $hwid;
+
+            mysqli_query($link, "UPDATE `keys` SET `hwid` = '$hwid' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+        }
+
+        mysqli_query($link, "UPDATE `keys` SET `expires` = '$expiry',`level` = '$level' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+
+        success("Successfully Updated Settings!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+    }
+?>
                 
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->
