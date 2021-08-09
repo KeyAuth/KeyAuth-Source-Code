@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version OVH
+-- version 4.9.7
 -- https://www.phpmyadmin.net/
 --
--- Host: omitted
--- Generation Time: Jun 23, 2021 at 11:06 PM
--- Server version: 5.6.50-log
--- PHP Version: 7.3.27
+-- Host: ommited
+-- Generation Time: Aug 09, 2021 at 11:36 PM
+-- Server version: 5.7.34-cll-lve
+-- PHP Version: 7.3.28
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -18,6 +18,8 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `acclogs`
 --
@@ -28,6 +30,8 @@ CREATE TABLE `acclogs` (
   `ip` varchar(45) NOT NULL,
   `useragent` varchar(199) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `accounts`
@@ -57,8 +61,14 @@ CREATE TABLE `accounts` (
   `twofactor` int(1) NOT NULL DEFAULT '0',
   `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `darkmode` int(1) NOT NULL DEFAULT '0',
-  `format` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL
+  `format` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `amount` int(3) DEFAULT NULL,
+  `lvl` int(3) DEFAULT NULL,
+  `note` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `duration` int(3) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `apps`
@@ -72,6 +82,7 @@ CREATE TABLE `apps` (
   `enabled` int(1) NOT NULL,
   `paused` int(11) NOT NULL DEFAULT '0',
   `hwidcheck` int(1) NOT NULL,
+  `vpnblock` int(1) NOT NULL DEFAULT '0',
   `sellerkey` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `ver` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT '1.0',
   `download` varchar(120) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
@@ -89,12 +100,14 @@ CREATE TABLE `apps` (
   `hwidblacked` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'You''ve been blacklisted from our application',
   `keypaused` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Your Key is paused and cannot be used at the moment.',
   `keyexpired` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Key has expired.',
-  `sellixsecret` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
+  `sellixsecret` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
   `dayproduct` varchar(13) COLLATE utf8_unicode_ci NOT NULL,
   `weekproduct` varchar(13) COLLATE utf8_unicode_ci NOT NULL,
   `monthproduct` varchar(13) COLLATE utf8_unicode_ci NOT NULL,
   `lifetimeproduct` varchar(13) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `bans`
@@ -106,6 +119,8 @@ CREATE TABLE `bans` (
   `type` varchar(5) NOT NULL,
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `files`
@@ -119,6 +134,8 @@ CREATE TABLE `files` (
   `uploader` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `keys`
@@ -134,11 +151,15 @@ CREATE TABLE `keys` (
   `level` varchar(12) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `genby` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `gendate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
+  `usedon` int(10) DEFAULT NULL,
+  `usedby` varchar(70) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
   `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `cooldown` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `banned` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `ip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `logs`
@@ -151,6 +172,8 @@ CREATE TABLE `logs` (
   `logowner` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `logapp` varchar(64) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `sessions`
@@ -165,6 +188,8 @@ CREATE TABLE `sessions` (
   `validated` varchar(5) NOT NULL DEFAULT 'false'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `subs`
 --
@@ -173,8 +198,11 @@ CREATE TABLE `subs` (
   `user` varchar(49) NOT NULL,
   `subscription` varchar(49) NOT NULL,
   `expiry` varchar(49) NOT NULL,
-  `app` varchar(64) NOT NULL
+  `app` varchar(64) NOT NULL,
+  `key` varchar(49) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `subscriptions`
@@ -186,6 +214,8 @@ CREATE TABLE `subscriptions` (
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `users`
 --
@@ -194,11 +224,13 @@ CREATE TABLE `users` (
   `username` varchar(70) NOT NULL,
   `password` varchar(70) NOT NULL,
   `expires` varchar(70) NOT NULL DEFAULT '',
-  `hwid` varchar(70) NOT NULL,
+  `hwid` varchar(70) NOT NULL DEFAULT 'N/A',
   `app` varchar(64) NOT NULL,
   `banned` varchar(99) DEFAULT NULL,
   `ip` varchar(49) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `vars`
@@ -210,6 +242,8 @@ CREATE TABLE `vars` (
   `app` varchar(64) NOT NULL,
   `author` varchar(49) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `webhooks`
