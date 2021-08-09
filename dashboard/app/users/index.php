@@ -33,8 +33,6 @@ if (!isset($_SESSION['username'])) {
 }
 			
 			$darkmode = $row['darkmode'];
-
-			
                             
 ?>
 <!DOCTYPE html>
@@ -61,7 +59,7 @@ if (!isset($_SESSION['username'])) {
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-
+	<script src="../../files/unixtolocal.js"></script>
 
 	                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -72,23 +70,24 @@ if (!isset($_SESSION['username'])) {
 <![endif]-->
 <?php
 
-
 if (!$_SESSION['app']) // no app selected yet
+
 {
-    
 
     $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "'"); // select all apps where owner is current user
     if (mysqli_num_rows($result) > 0) // if the user already owns an app, proceed to change app or load only app
+    
     {
 
         if (mysqli_num_rows($result) == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
+        
         {
             $row = mysqli_fetch_array($result);
             $_SESSION['name'] = $row["name"];
             $_SESSION['app'] = $row["secret"];
             $_SESSION['secret'] = $row["secret"];
-            echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#content").fadeIn(1900);
@@ -96,41 +95,45 @@ if (!$_SESSION['app']) // no app selected yet
         });             
                 
                 </script>
-                ';
+                <?php
         }
-        else // otherwise if the user has more than one app, choose which app to load
+        else
+        // otherwise if the user has more than one app, choose which app to load
+        
         {
-            echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#changeapp").fadeIn(1900);
         });             
                 
                 </script>
-                ';
+                <?php
         }
     }
-    else // if user doesnt have any apps created, take them to the screen to create an app
+    else
+    // if user doesnt have any apps created, take them to the screen to create an app
     
     {
-        echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#createapp").fadeIn(1900);
         });             
                 
                 </script>
-                ';
+                <?php
     }
 
 }
-else // app already selected, load page like normal
+else
+// app already selected, load page like normal
 
 {
-    echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#content").fadeIn(1900);
@@ -138,12 +141,12 @@ else // app already selected, load page like normal
         });             
                 
                 </script>
-                ';
+                <?php
 }
 
 ?>
 </head>
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php echo (($darkmode ? 1 : 0) ? 'light' : 'dark'); ?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -383,7 +386,7 @@ $(document).ready(function(){
                     <div class="col-12">
 					<?php heador($role, $link); ?>
 					<form method="POST">
-					<button data-toggle="modal" type="button" data-target="#create-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create User</button>  <button name="delusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Users</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all users?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Users</button>
+					<button data-toggle="modal" type="button" data-target="#create-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create User</button>  <button data-toggle="modal" type="button" data-target="#extend-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Extend User</button>  <button name="delusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Users</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all users?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Users</button>
                             </form>
 							<br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
@@ -436,12 +439,68 @@ $(document).ready(function(){
                                         </div>
                                     </div>
 									</div>
+									<div id="extend-user" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex align-items-center">
+												<h4 class="modal-title">Extend User</h4>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="post">
+                                                    <div class="form-group">
+                                                        <label for="recipient-name" class="control-label">User:</label>
+                                                        <select name="user" class="form-control">
+														<?php
+														($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+														if (mysqli_num_rows($result) > 0)
+															{
+																while ($row = mysqli_fetch_array($result))
+																{
+																	echo "  <option>". $row["username"]. "</option>";
+																}
+															}
+														
+														?>
+														</select>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Subscription:</label>
+                                                        <select name="sub" class="form-control">
+														<?php
+														($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+														if (mysqli_num_rows($result) > 0)
+															{
+																while ($row = mysqli_fetch_array($result))
+																{
+																	echo "  <option>". $row["name"]. "</option>";
+																}
+															}
+														
+														?>
+														</select>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Subscription Expiry:</label>
+                                                        <?php
+														echo '<input class="form-control" type="datetime-local" name="expiry" value="' . date("Y-m-d\TH:i", time()) . '" required>';
+														?>
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="extenduser">Add</button>
+												</form>
+                                            </div>
+                                        </div>
+                                    </div>
+									</div>
 										<div id="rename-app" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Rename Application</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">Ã—</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
@@ -514,31 +573,38 @@ $(document).ready(function(){
 <?php
 		if($_SESSION['app']) {
         ($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result))
+        {
+            $rows[] = $r;
+        }
 
-                                                    echo "<tr>";
+        foreach ($rows as $row)
+        {
 
-                                                    echo "  <td>". $row["username"]. "</td>";
+        $user = $row['username'];
+		?>
 
-                                                    echo "  <td>". $row["hwid"]. "</td>";
+                                                    <tr>
+
+                                                    <td><?php echo $row["username"]; ?></td>
+
+                                                    <td><?php echo $row["hwid"]; ?></td>
 													
-                                                    echo "  <td>". $row["ip"]. "</td>";
+                                                    <td><?php echo $row["ip"] ?? "N/A"; ?></td>
 
-                                                    echo'<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
                                             </button>
                                             <div class="dropdown-menu">
-                                                <form method="post"><button class="dropdown-item" name="deleteuser" value="' . $row['username'] . '">Delete</button>
-												<button class="dropdown-item" name="resetuser" value="' . $row['username'] . '">Reset HWID</button>
-                                                <a class="dropdown-item" data-toggle="modal" data-target="#ban-user" onclick="banuser(\'' . $row['username'] . '\')">Ban</a>
-                                                <button class="dropdown-item" name="unbanuser" value="' . $row['username'] . '">Unban</button>
+                                                <form method="post"><button class="dropdown-item" name="deleteuser" value="<?php echo $user; ?>">Delete</button>
+												<button class="dropdown-item" name="resetuser" value="<?php echo $user; ?>">Reset HWID</button>
+                                                <a class="dropdown-item" data-toggle="modal" data-target="#ban-user" onclick="banuser('<?php echo $user; ?>')">Ban</a>
+                                                <button class="dropdown-item" name="unbanuser" value="<?php echo $user; ?>">Unban</button>
                                                 <div class="dropdown-divider"></div>
-												<button class="dropdown-item" name="edituser" value="' . $row['username'] . '">Edit</button></div></td></tr></form>';
-
-                                                }
+												<button class="dropdown-item" name="edituser" value="<?php echo $user; ?>">Edit</button></div></td></tr></form>
+<?php
+                                                
 
                                             }
                                             
@@ -680,8 +746,8 @@ $(document).ready(function(){
 					}
 					
                     $row = mysqli_fetch_array($result);
-					
-					echo'<div id="edit-user" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
+					?>
+					<div id="edit-user" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -689,28 +755,57 @@ $(document).ready(function(){
                                                 <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
                                             </div>
                                             <div class="modal-body">
-                                                <form method="post"> 
+                                                <form method="post">
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Password:</label>
+                                                        <input type="password" class="form-control" name="pass" placeholder="Set new password, we cannot read old password because it's hashed with BCrypt">
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Active Subscriptions:</label>
+                                                        <select class="form-control" name="sub">
+														<?php
+														$result = mysqli_query($link, "SELECT * FROM `subs` WHERE `user` = '$un' AND `app` = '".$_SESSION['app']."' AND `expiry` > '".time()."'");
+														
+														$rows = array();
+														while ($r = mysqli_fetch_assoc($result))
+														{
+															$rows[] = $r;
+														}
+														
+														foreach ($rows as $subrow)
+														{
+														
+														$value = "[" . $subrow['subscription'] . "]" . " - Expires: <script>document.write(convertTimestamp(" . $subrow["expiry"] . "));</script>";
+														?>
+														<option><?php echo $value; ?></option>
+														<?php
+														}
+														?>
+														</select>
+                                                    </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Additional HWID:</label>
                                                         <input type="text" class="form-control" name="hwid" placeholder="Enter HWID if you want this key to support multiple computers">
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">HWID:</label>
-                                                        <p>' . $row['hwid'] . '</p>
+                                                        <p><?php echo $row['hwid']; ?></p>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">IP:</label>
-                                                        <p>' . $row['ip'] . '</p>
+                                                        <p><?php echo $row['ip']; ?></p>
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" value="' . $un . '" name="saveuser">Save</button>
+                                                <button class="btn btn-warning waves-effect waves-light" value="<?php echo $un; ?>" name="deletesub">Delete Subscription</button>
+                                                <button class="btn btn-danger waves-effect waves-light" value="<?php echo $un; ?>" name="saveuser">Save</button>
 												</form>
                                             </div>
                                         </div>
                                     </div>
-									</div>';
+									</div>
+									<?php
 				}
 				
 				if(isset($_POST['saveuser']))
@@ -718,6 +813,8 @@ $(document).ready(function(){
 					$un = sanitize($_POST['saveuser']);
 					
 					$hwid = sanitize($_POST['hwid']);
+					
+					$pass = sanitize($_POST['pass']);
 					
 					if(isset($hwid) && trim($hwid) != '')
 					{
@@ -729,9 +826,90 @@ $(document).ready(function(){
 
 						mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
 					}
+					
+					if(isset($pass) && trim($pass) != '')
+					{
+						mysqli_query($link, "UPDATE `users` SET `password` = '".password_hash($pass, PASSWORD_BCRYPT)."' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
+					}
 		
 					success("Successfully Updated User");
 					echo "<meta http-equiv='Refresh' Content='2'>";
+				}
+				
+				if(isset($_POST['deletesub']))
+				{
+					$un = sanitize($_POST['deletesub']);
+					
+					$sub = sanitize($_POST['sub']);
+					
+					function get_string_between($string, $start, $end){
+						$string = ' ' . $string;
+						$ini = strpos($string, $start);
+						if ($ini == 0) return '';
+						$ini += strlen($start);
+						$len = strpos($string, $end, $ini) - $ini;
+						return substr($string, $ini, $len);
+					}
+					
+					$sub = get_string_between($sub, '[', ']');
+					
+					mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$un' AND `subscription` = '$sub'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+					success("Successfully Deleted User\'s Subscription");
+					echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Delete User\'s Subscription!");
+					}
+					
+				}
+				
+				if(isset($_POST['extenduser']))
+				{
+					$un = sanitize($_POST['user']);
+					$sub = sanitize($_POST['sub']);
+					$expiry = strtotime(sanitize($_POST['expiry']));
+					
+					$result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `name` = '$sub' AND `app` = '".$_SESSION['app']."'");
+					if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("Subscription not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					else if($expiry < time())
+					{
+						mysqli_close($link);
+						error("Please choose an expiry in the future!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;						
+					}
+					
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
+					if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("User doesn\'t exist!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					
+					mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$un','$sub', '$expiry', '".$_SESSION['app']."')");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("User Successfully Extended!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Extend User!");
+					}
+					
 				}
 				
 				if(isset($_POST['adduser']))

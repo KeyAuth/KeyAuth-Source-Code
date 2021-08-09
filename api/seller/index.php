@@ -205,6 +205,7 @@ switch ($type)
             {
                 $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `gendate` >= '$time' AND `app` = '$secret'");
                 while ($row = mysqli_fetch_array($result)) echo $row['key'] . "\n";
+				break;
             }
             else
             {
@@ -426,6 +427,106 @@ switch ($type)
                 "message" => "Subscription Addition Successful"
             )));
         }
+	case 'activate':
+        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(404);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Seller Key Not Found");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Seller Key Not Found"
+                )));
+            }
+        }
+
+        while ($row = mysqli_fetch_array($result))
+        {
+            $secret = $row['secret'];
+            $owner = $row['owner'];
+        }
+
+        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
+        $row = mysqli_fetch_array($seller_check);
+
+        $role = $row["role"];
+
+        if ($role !== "seller")
+        {
+            http_response_code(403);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Not authorized to use SellerAPI, please upgrade.");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Not authorized to use SellerAPI, please upgrade."
+                )));
+            }
+        }
+		
+		include '../../includes/api/1.0/index.php'; // v1.0 api funcs
+
+		$pass = strip_tags(trim(mysqli_real_escape_string($link, $_GET['pass'])));
+		$hwid = strip_tags(trim(mysqli_real_escape_string($link, $_GET['hwid'])));
+
+		$resp = register($user, $key, $pass, $hwid, $secret);
+        switch ($resp)
+        {
+            case 'username_taken':
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Username Already Exists."
+                )));
+            case 'key_not_found':
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Key Not Found."
+                )));
+            case 'key_already_used':
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Key Already Used."
+                )));
+            case 'key_banned':
+                global $banned;
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Your license is banned."
+                )));
+            case 'hwid_blacked':
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "HWID is blacklisted"
+                )));
+            case 'no_subs_for_level':
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "No active subscriptions found."
+                )));
+            default:
+                die(json_encode(array(
+                    "success" => true,
+                    "message" => "Logged in!",
+                    "info" => array(
+                        "username" => "$user",
+                        "subscriptions" => $resp,
+                        "ip" => $_SERVER["HTTP_X_FORWARDED_FOR"]
+                    )
+                )));
+        }
     case 'editvar':
         $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
 
@@ -623,6 +724,149 @@ switch ($type)
         mysqli_query($link, "UPDATE `keys` SET `hwid` = '$hwidd' WHERE `key` = '$key' AND `app` = '$secret'");
 
         die("Added HWID");
+    case 'addhwiduser':
+        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(404);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Seller Key Not Found");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Seller Key Not Found"
+                )));
+            }
+        }
+
+        while ($row = mysqli_fetch_array($result))
+        {
+            $secret = $row['secret'];
+        }
+        $hwid = strip_tags(trim(mysqli_real_escape_string($link, $_GET['hwid'])));
+        $result = mysqli_query($link, "SELECT `hwid` FROM `users` WHERE `username` = '$user' AND `app` = '$secret'");
+        $row = mysqli_fetch_array($result);
+        $hwidd = $row["hwid"];
+
+        $hwidd = $hwidd .= $hwid;
+
+        mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$user' AND `app` = '$secret'");
+
+        die("Added HWID");
+    case 'extend':
+        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(404);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Seller Key Not Found");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Seller Key Not Found"
+                )));
+            }
+        }
+
+        while ($row = mysqli_fetch_array($result))
+        {
+            $secret = $row['secret'];
+            $owner = $row['owner'];
+        }
+
+        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
+        $row = mysqli_fetch_array($seller_check);
+
+        $role = $row["role"];
+
+        if ($role !== "seller")
+        {
+            http_response_code(403);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Not authorized to use SellerAPI, please upgrade.");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Not authorized to use SellerAPI, please upgrade."
+                )));
+            }
+        }
+		$name = strip_tags(trim(mysqli_real_escape_string($link, $_GET['name'])));
+        $subquery = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '$secret' AND `name` = '$name'");
+
+        $subcount = mysqli_num_rows($subquery);
+
+        if ($subcount == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("No Subscriptions With That Name");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "No Subscriptions With That Name"
+                )));
+            }
+        }
+        
+		$expiry = strip_tags(trim(mysqli_real_escape_string($link, $_GET['expiry'])));
+		$expiry = ($expiry * 86400) + time();
+		
+		mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$user','$name', '$expiry', '$secret')");
+		if (mysqli_affected_rows($link) != 0)
+		{
+			mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Successfully Extended User");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => true,
+                    "message" => "Successfully Extended User"
+                )));
+            }
+		}
+		else
+		{
+			http_response_code(500);
+			mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Failed To Extend User");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Failed To Extend User"
+                )));
+            }
+		}
+		
     case 'verify':
         $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
 
@@ -919,6 +1163,91 @@ switch ($type)
             die(json_encode(array(
                 "success" => false,
                 "message" => "Successfully Deleted Expired Licenses"
+            )));
+        }
+	case 'deluser':
+
+        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(404);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Seller Key Not Found");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Seller Key Not Found"
+                )));
+            }
+        }
+
+        while ($row = mysqli_fetch_array($result))
+        {
+            $secret = $row['secret'];
+            $owner = $row['owner'];
+        }
+
+        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
+        $row = mysqli_fetch_array($seller_check);
+
+        $role = $row["role"];
+
+        if ($role !== "seller")
+        {
+            http_response_code(403);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Not authorized to use SellerAPI, please upgrade.");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Not authorized to use SellerAPI, please upgrade."
+                )));
+            }
+        }
+
+        $usrquery = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret' AND `username` = '$user'");
+
+        $usrcount = mysqli_num_rows($usrquery);
+
+        if ($usrcount == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("User Not Found");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "User Not Found"
+                )));
+            }
+        }
+
+        $result = mysqli_query($link, "DELETE FROM `users` WHERE `app` = '$secret' AND `username` = '$user'");
+        mysqli_close($link);
+        if ($format == "text")
+        {
+            die("Successfully Deleted User");
+        }
+        else
+        {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Successfully Deleted User"
             )));
         }
     case 'delalllicenses':
@@ -1456,6 +1785,7 @@ switch ($type)
             }
             $remove = substr($stringData, 0, -2);
             echo $remove;
+			break;
         }
         else
         {
@@ -1469,6 +1799,90 @@ switch ($type)
                 "success" => true,
                 "message" => "Successfully Retrieved Licenses",
                 "keys" => $rows
+            )));
+        }
+    case 'fetchallusers':
+
+        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(404);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "Seller Key Not Found"
+            )));
+        }
+
+        while ($row = mysqli_fetch_array($result))
+        {
+            $secret = $row['secret'];
+            $owner = $row['owner'];
+        }
+
+        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
+        $row = mysqli_fetch_array($seller_check);
+
+        $role = $row["role"];
+
+        if ($role !== "seller")
+        {
+            http_response_code(403);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Not authorized to use SellerAPI, please upgrade.");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Not authorized to use SellerAPI, please upgrade."
+                )));
+            }
+        }
+
+        $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "No Users Found"
+            )));
+        }
+
+        if ($format == "text")
+        {
+            $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret'");
+
+            while ($row = mysqli_fetch_array($result))
+            {
+                $stringData .= "" . $row['username'] . "\n";
+            }
+            $remove = substr($stringData, 0, -2);
+            echo $remove;
+			break;
+        }
+        else
+        {
+            $rows = array();
+            while ($r = mysqli_fetch_assoc($result))
+            {
+                $rows[] = $r;
+            }
+            mysqli_close($link);
+            die(json_encode(array(
+                "success" => true,
+                "message" => "Successfully Retrieved Users",
+                "users" => $rows
             )));
         }
     case 'setseller':
@@ -1756,6 +2170,7 @@ switch ($type)
             echo $weekproduct . "\n";
             echo $monthproduct . "\n";
             echo $lifetimeproduct;
+			break;
         }
         else
         {

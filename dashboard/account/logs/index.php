@@ -51,7 +51,7 @@ if (!isset($_SESSION['username'])) {
     <!-- Custom CSS -->
     <link href="../../files/dist/css/style.min.css" rel="stylesheet">
 	
-
+	<script src="../../files/unixtolocal.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
 
@@ -228,24 +228,27 @@ if (!isset($_SESSION['username'])) {
                                         <tbody>
 <?php
         ($result = mysqli_query($link, "SELECT * FROM `acclogs` WHERE `username` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result))
+        {
+            $rows[] = $r;
+        }
 
-                                                    echo "<tr>";
+        foreach ($rows as $row)
+        {
+			?>
 
-                                                    echo "  <td>". date('jS F Y h:i:s A (T)', $row["date"]) . "</td>";
+                                                    <tr>
 													
-                                                    echo "  <td>". $row["ip"]. "</td>";
+													<td><script>document.write(convertTimestamp(<?php echo $row["date"]; ?>));</script></td>
+													
+                                                    <td><?php echo $row["ip"]; ?></td>
                                                     
-                                                    echo "  <td>". $row["useragent"]. "</td>";
-                                                    
-                                                    // echo "  <td>". $row["status"]. "</td>";
+                                                    <td><?php echo $row["useragent"]; ?></td>
 
-                                                    echo'</tr>';
+                                                    </tr>
 
-                                                }
+                                                <?php
 
                                             }
                                             

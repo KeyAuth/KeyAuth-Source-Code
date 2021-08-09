@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 
 include 'includes/connection.php';
 
+// database stats
 $result = mysqli_query($link,"select count(1) FROM `accounts`");
 $row = mysqli_fetch_array($result);
 
@@ -23,6 +24,60 @@ $keys = number_format($row[0]);
 
 mysqli_close($link);
 
+// request stats
+
+if(file_exists('flux.json'))
+{
+$json_object = file_get_contents('flux.json');
+$data = json_decode($json_object, true);
+
+$url = "https://rest.fluxcdn.com/log/stats/v2/5633/1d";
+
+$curl = curl_init($url);
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+$headers = array(
+   "session: " . $data['session'],
+);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+$response = curl_exec($curl);
+$httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+curl_close($curl);
+if($httpcode !== 200)
+{
+	$ch = curl_init( "https://rest.fluxcdn.com/users/login" );
+	$payload = json_encode( array( "email"=> $data['email'], "password"=> $data['pass'] ) );
+	curl_setopt( $ch, CURLOPT_POSTFIELDS, $payload );
+	curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+	$result = curl_exec($ch);
+	curl_close($ch);
+	$json = json_decode($result);
+	$data['session'] = $json->token;
+	$json_object = json_encode($data);
+	file_put_contents('flux.json', $json_object);
+	$num = "N/A";
+}
+else
+{
+	$user = json_decode($response);
+	$num = 0;
+	foreach($user->statistics as $mydata)
+	
+		{
+				$num += $mydata->successful;
+		}
+	$num = number_format($num);
+}
+
+}
+else
+{
+$num = "N/A";	
+}
 ?>
 <!--
 
@@ -88,19 +143,19 @@ mysqli_close($link);
 <link rel="icon" type="image/png" href="https://keyauth.com/front/assets/img/favicon.png">
 
 <!-- Fontawesome -->
-<link type="text/css" href="./vendor/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link type="text/css" href="https://keyauth.com/vendor/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
 
 <!-- Nucleo icons -->
-<link rel="stylesheet" href="./dashboard/assets/vendor/nucleo/css/nucleo.css" type="text/css">
+<link rel="stylesheet" href="https://keyauth.com/assets/css/nucleo.css" type="text/css">
 
 <!-- Prism -->
-<link type="text/css" href="./vendor/prismjs/themes/prism.css" rel="stylesheet">
+<link type="text/css" href="https://keyauth.com/vendor/prismjs/themes/prism.css" rel="stylesheet">
 
 <!-- Front CSS -->
-<link type="text/css" href="./front/css/front.css" rel="stylesheet">
+<link type="text/css" href="https://keyauth.com/front/css/front.css" rel="stylesheet">
 
 <!-- swiper for reviews -->
-<link rel="stylesheet" href="./front/css/swiper.min.css">
+<link rel="stylesheet" href="https://keyauth.com/front/css/swiper.min.css">
 
 <!-- Anti-flicker snippet (recommended)
 <style>.async-hide { opacity: 0 !important} </style>
@@ -204,9 +259,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <div class="container">
                 <div class="row justify-content-center mb-5">
                     <div class="col-12 col-sm-8 col-md-7 col-lg-6 text-center">
-                        <h1 class="display-4 text-muted mb-5 font-weight-normal">KeyAuth is an Open-source authentication system with cloud-hosted subscriptions available aswell.</h1>
+                        <h1 class="display-4 text-muted mb-5 font-weight-normal">KeyAuth is an Open-source authentication system with cloud-hosted subscriptions available as well.</h1>
                         <div class="d-flex align-items-center justify-content-center mb-5">
-                            <a href="https://keyauth.com/register" target="_blank" class="btn btn-secondary mb-3 mt-2 mr-3 animate-up-2"><span class="fas fa-user-plus mr-2"></span> Register</a>
+                            <a href="https://keyauth.com/register" class="btn btn-secondary mb-3 mt-2 mr-3 animate-up-2"><span class="fas fa-user-plus mr-2"></span> Register</a>
                             <div class="mt-1">
                                 <!-- Place this tag where you want the button to render. -->
                                 <a class="github-button" href="https://github.com/KeyAuth/KeyAuth-Source-Code" data-color-scheme="no-preference: dark; light: light; dark: light;" data-icon="octicon-star" data-size="large" data-show-count="true">Star</a>                            
@@ -221,7 +276,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <div class="container mt-n10 mt-lg-n12 z-2">
                 <div class="row justify-content-center">
                     <div class="col-12">
-                        <img src="./front/assets/img/presentation-mockup.png" alt="illustration">
+                        <img src="https://keyauth.com/front/assets/img/presentation-mockup.png" alt="illustration">
                     </div>
                 </div>
             </div>
@@ -242,7 +297,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         </div>
                     </div>
                     <div class="col-lg-6 order-lg-1">
-                        <img src="./front/assets/img/presentation-mockup-2.png" alt="Front pages overview">
+                        <img src="https://keyauth.com/front/assets/img/presentation-mockup-2.png" alt="Front pages overview">
                     </div>
                 </div>
                 <div class="row justify-content-center mb-5 mb-lg-7">
@@ -269,10 +324,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     </div>
                     <div class="col-6 col-md-3 text-center">
                         <div class="icon icon-shape icon-lg bg-white shadow-lg border-light rounded-circle icon-secondary mb-4">
-                            <i class="fas fa-book"></i>
+                            <i class="fas fa-chart-line"></i>
                         </div>
-                        <h3 class="font-weight-bolder">Full</h3>
-                        <p class="text-gray">Documentation</p>
+                        <h3 class="font-weight-bolder"><?php echo $num; ?></h3>
+                        <p class="text-gray">Requests in the last 24h</p>
                     </div>
                 </div>
                 <div class="row justify-content-between align-items-center mb-5 mb-lg-7">
@@ -598,7 +653,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <h6></h6>
                 <ul class="links-vertical">
                     <li><a target="_blank" href="https://keyauth.com/discord">Support</a></li>
-                    <li><a target="_blank" href="https://github.com/KeyAuth/KeyAuth-Source-Code/LICENSE.md">License</a>
+                    <li><a target="_blank" href="https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/LICENSE.txt">License</a>
                     </li>
                 </ul>
             </div>
@@ -613,26 +668,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </main>
 
     <!-- Core -->
-<script src="./vendor/jquery/dist/jquery.min.js"></script>
-<script src="./vendor/popper.js/dist/umd/popper.min.js"></script>
-<script src="./vendor/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="./vendor/headroom.js/dist/headroom.min.js"></script>
+<script src="https://keyauth.com/vendor/jquery/dist/jquery.min.js"></script>
+<script src="https://keyauth.com/vendor/popper.js/dist/umd/popper.min.js"></script>
+<script src="https://keyauth.com/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="https://keyauth.com/vendor/headroom.js/dist/headroom.min.js"></script>
 
 <!-- swiper for reviews -->
-<script src="./vendor/swiper/swiper.min.js"></script>
-<script src="./vendor/swiper/wb.swiper-init.js"></script>
+<script src="https://keyauth.com/vendor/swiper/swiper.min.js"></script>
+<script src="https://keyauth.com/vendor/swiper/wb.swiper-init.js"></script>
 
 <!-- Vendor JS -->
-<script src="./vendor/onscreen/dist/on-screen.umd.min.js"></script>
-<script src="./vendor/waypoints/lib/jquery.waypoints.min.js"></script>
-<script src="./vendor/jarallax/dist/jarallax.min.js"></script>
-<script src="./vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
+<script src="https://keyauth.com/vendor/onscreen/dist/on-screen.umd.min.js"></script>
+<script src="https://keyauth.com/vendor/waypoints/lib/jquery.waypoints.min.js"></script>
+<script src="https://keyauth.com/vendor/jarallax/dist/jarallax.min.js"></script>
+<script src="https://keyauth.com/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
 
 <!-- Place this tag in your head or just before your close body tag. -->
 <script async defer src="https://buttons.github.io/buttons.js"></script>
 
 <!-- Impact JS -->
-<script src="./front/assets/js/front.js"></script>
+<script src="https://keyauth.com/front/assets/js/front.js"></script>
 
     
 </body>

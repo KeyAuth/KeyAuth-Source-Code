@@ -1,6 +1,4 @@
-<?php
-ob_start();
-
+﻿<?php
 include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
@@ -32,7 +30,12 @@ if ($role == "Reseller")
 }
 
 $darkmode = $row['darkmode'];
+
 $format = $row['format'];
+$amt = $row['amount'];
+$lvl = $row['lvl'];
+$note = $row['note'];
+$dur = $row['duration'];
 
 ?>
 <!DOCTYPE html>
@@ -86,8 +89,8 @@ if (!$_SESSION['app']) // no app selected yet
             $_SESSION['name'] = $row["name"];
             $_SESSION['app'] = $row["secret"];
             $_SESSION['secret'] = $row["secret"];
-            echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#content").fadeIn(1900);
@@ -95,36 +98,36 @@ if (!$_SESSION['app']) // no app selected yet
         });             
                 
                 </script>
-                ';
+                <?php
         }
         else
         // otherwise if the user has more than one app, choose which app to load
         
         {
-            echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#changeapp").fadeIn(1900);
         });             
                 
                 </script>
-                ';
+                <?php
         }
     }
     else
     // if user doesnt have any apps created, take them to the screen to create an app
     
     {
-        echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#createapp").fadeIn(1900);
         });             
                 
                 </script>
-                ';
+                <?php
     }
 
 }
@@ -132,8 +135,8 @@ else
 // app already selected, load page like normal
 
 {
-    echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#content").fadeIn(1900);
@@ -141,19 +144,12 @@ else
         });             
                 
                 </script>
-                ';
+                <?php
 }
 
 ?>
 </head>
-<body data-theme="<?php if ($darkmode == 0)
-{
-    echo "dark";
-}
-else
-{
-    echo "light";
-} ?>">
+<body data-theme="<?php echo (($darkmode ? 1 : 0) ? 'light' : 'dark'); ?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -318,20 +314,24 @@ sidebar($role);
                     <form class="text-left" method="POST" action="">
 <select class="form-control" name="taskOption">
         <?php
-$username = $_SESSION['username'];
-($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
-if (mysqli_num_rows($result) > 0)
+$result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'");
+
+$rows = array();
+while ($r = mysqli_fetch_assoc($result))
 {
-    while ($row = mysqli_fetch_array($result))
-    {
-        echo "  <option>" . $row["name"] . "</option>";
-    }
+    $rows[] = $r;
 }
 
-?>
-</select>    
-    <!-- Do SQL query and print them out -->
+foreach ($rows as $row)
+{
 
+    $appname = $row['name'];
+?>
+        <option><?php echo $appname; ?></option>
+        <?php
+}
+?>
+</select>
   <br>
   <br>
    <button type="submit" name="change" class="btn btn-primary" style="color:white;">Submit</button><a style="padding-left:5px;color:#4e73df;" id="createe">Create Application</a>
@@ -409,7 +409,10 @@ if (isset($_POST['change']))
                                                 <form method="post">
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Amount:</label>
-                                                        <input type="number" class="form-control" name="amount" placeholder="Default 1">
+                                                        <input type="number" class="form-control" name="amount" placeholder="Default 1" value="<?php if (!is_null($amt))
+{
+    echo $amt;
+} ?>">
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Key Mask:</label>
@@ -420,15 +423,21 @@ if (isset($_POST['change']))
 else
 {
     echo "XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX";
-} ?>" placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required>
+} ?>" placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required maxlength="49">
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Level:</label>
-                                                        <input type="text" class="form-control" name="level" placeholder="Default 1">
+                                                        <input type="text" class="form-control" name="level" placeholder="Default 1" value="<?php if (!is_null($lvl))
+{
+    echo $lvl;
+} ?>" >
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Note:</label>
-                                                        <input type="text" class="form-control" name="note" placeholder="Optional, e.g. this license was for Joe">
+                                                        <input type="text" class="form-control" name="note" placeholder="Optional, e.g. this license was for Joe" value="<?php if (!is_null($note))
+{
+    echo $note;
+} ?>">
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Expiry Unit:</label>
@@ -436,7 +445,10 @@ else
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Expiry Duration:</label>
-                                                        <input name="expiry" type="number" class="form-control" placeholder="Multiplied by selected Expiry unit" required>
+                                                        <input name="expiry" type="number" class="form-control" placeholder="Multiplied by selected Expiry unit" value="<?php if (!is_null($dur))
+{
+    echo $dur;
+} ?>" required>
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
@@ -540,7 +552,7 @@ function license_masking($mask)
     return implode('', $mask_arr);
 }
 
-function license($amount, $mask, $expiry, $level, $link)
+function license($amount, $mask, $expiry, $level, $link, $note)
 {
 
     $licenses = array();
@@ -549,8 +561,7 @@ function license($amount, $mask, $expiry, $level, $link)
     {
 
         $license = license_masking($mask);
-        mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license','', '$expiry', '','','Not Used','$level','" . $_SESSION['username'] . "', '" . time() . "', '" . $_SESSION['app'] . "')");
-        // echo $key;
+        mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license','$note', '$expiry', '','','Not Used','$level','" . $_SESSION['username'] . "', '" . time() . "', '" . $_SESSION['app'] . "')");
         $licenses[] = $license;
     }
 
@@ -621,7 +632,7 @@ if (isset($_POST['genkeys']))
                 }
                 else if ($currkeys == 0)
                 {
-                    gotoa;
+                    goto a;
                 }
 
                 if ($currkeys + $amount > 50)
@@ -663,9 +674,9 @@ if (isset($_POST['genkeys']))
                 {
                     $multiplier = 31535965.4396976;
                 }
-                else if ($unit == "Lifetime")
-                {
-                    $multiplier = 315360000;
+				else if ($unit == "Lifetime")	
+                {	
+                    $multiplier = 315360000;	
                 }
 
                 $expiry = $expiry * $multiplier;
@@ -683,7 +694,7 @@ if (isset($_POST['genkeys']))
 
                 $time = time();
 
-                $key = license($amount, $mask, $expiry, $level, $link);
+                $key = license($amount, $mask, $expiry, $level, $link, $note);
 
                 if ($result) // change to affected rows
                 
@@ -713,7 +724,7 @@ if (isset($_POST['genkeys']))
                     curl_exec($ch);
                     curl_close($ch);
                     // webhook end
-                    mysqli_query($link, "UPDATE `accounts` SET `format` = '$mask' WHERE `username` = '" . $_SESSION['username'] . "'");
+                    mysqli_query($link, "UPDATE `accounts` SET `format` = '$mask',`amount` = '$amount',`lvl` = '$level',`note` = '$note',`duration` = '".sanitize($_POST['expiry'])."' WHERE `username` = '" . $_SESSION['username'] . "'");
 
                     if ($amount > 1)
                     {
@@ -1004,19 +1015,19 @@ navigator.clipboard.writeText('" . array_values($key) [0] . "');
             error("Didn\'t find any used keys!");
         }
     }
-
-    if (isset($_POST['deleteallused']))
-    {
-        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Used'");
-        if (mysqli_affected_rows($link) != 0)
-        {
-            success("Deleted All Unused Keys!");
-        }
-        else
-        {
-            mysqli_close($link);
-            error("Didn\'t find any used keys!");
-        }
+	
+	if (isset($_POST['deleteallused']))	
+    {	
+        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Used'");	
+        if (mysqli_affected_rows($link) != 0)	
+        {	
+            success("Deleted All Unused Keys!");	
+        }	
+        else	
+        {	
+            mysqli_close($link);	
+            error("Didn\'t find any used keys!");	
+        }	
     }
 
     if (isset($_POST['resetall']))
@@ -1082,87 +1093,64 @@ $(document).ready(function(){
 <th>Key</th>
 <th>Creation Date</th>
 <th>Generated By</th>
-<th>Expires</th>
+<th>Duration</th>
 <th>Last Login</th>
+<th>Used On</th>
+<th>Used By</th>
 <th>Status</th>
 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
+
 <?php
     if ($_SESSION['app'])
     {
         ($result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
+
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result))
         {
-            while ($row = mysqli_fetch_array($result))
-            {
+            $rows[] = $r;
+        }
 
-                echo "<tr>";
+        foreach ($rows as $row)
+        {
 
-                echo "  <td>" . $row["key"] . "</td>";
+        $key = $row['key'];
+		$badge = $row['status'] == "Not Used" ? 'badge badge-success' : 'badge badge-danger';
+?>
 
-                echo "<td><script>document.write(convertTimestamp(" . $row["gendate"] . "));</script></td>";
+													<tr>
 
-                echo "  <td>" . $row["genby"] . "</td>";
+                                                    <td><?php echo $key; ?></td>
+													
+													<td><script>document.write(convertTimestamp(<?php echo $row["gendate"]; ?>));</script></td>
 
-                if ($row["status"] == "Used")
-                {
-                    echo "
-                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
-                                                        <td><script>document.write(convertTimestamp(" . $row["lastlogin"] . "));</script></td>
-                                                        <td><label class=\"badge badge-danger\">Used</label></td>
-                                                        ";
-                }
-                else if ($row["status"] == "Banned")
-                {
-                    echo "
-                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
-                                                        <td><script>document.write(convertTimestamp(" . $row["lastlogin"] . "));</script></td>
-                                                        <td><label class=\"badge badge-danger\">Banned</label></td>";
-                }
-                else if ($row["status"] == "Expired")
-                {
-                    echo "
-                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
-                                                        <td><script>document.write(convertTimestamp(" . $row["lastlogin"] . "));</script></td>
-                                                        <td><label class=\"badge badge-danger\">Expired</label></td>
-                                                        ";
-                }
-                else if ($row["status"] == "Paused")
-                {
-                    echo "
-                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
-                                                        <td><script>document.write(convertTimestamp(" . $row["lastlogin"] . "));</script></td>
-                                                        <td><label class=\"badge badge-warning\">Paused</label></td>
-                                                        ";
-                }
-                else
-                {
-                    echo "
-                                                        <td>" . ($row["expires"] / 86400) . " Day(s)</td>
-                                                        <td>N/A</td>
-                                                        <td><label class=\"badge badge-success\">Not Used</label></td>";
-                }
+                                                    <td><?php echo $row["genby"]; ?></td>
+                                                    
+                                                    <td><?php echo $row["expires"] / 86400 ?> Day(s)</td>
+                                                    <td><script>document.write(convertTimestamp(<?php echo $row["lastlogin"]; ?>));</script></td>
+													
+													<td><script>document.write(convertTimestamp(<?php echo $row["usedon"]; ?>));</script></td>
+													<td><?php echo $row["usedby"]; ?></td>
+                                                    <td><label class="<?php echo $badge; ?>"><?php echo $row['status']; ?></label></td>
 
-                // echo "  <td>". $row["status"]. "</td>";
-                echo '<form method="POST"><td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <form method="POST"><td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
                                             </button>
                                             <div class="dropdown-menu">
-                                                <button class="dropdown-item" name="deletekey" value="' . $row['key'] . '">Delete</button>
-                                                <button class="dropdown-item" name="resetkey" value="' . $row['key'] . '">Reset HWID</button>
-                                                <a class="dropdown-item" data-toggle="modal" data-target="#ban-key" onclick="bankey(\'' . $row['key'] . '\')">Ban</a>
-                                                <button class="dropdown-item" name="unbankey" value="' . $row['key'] . '">Unban</button>
-                                                <button class="dropdown-item" name="pausekey" value="' . $row['key'] . '">Pause</button>
-                                                <button class="dropdown-item" name="unpausekey" value="' . $row['key'] . '">Unpause</button>
+                                                <button class="dropdown-item" name="deletekey" value="<?php echo $key; ?>">Delete</button>
+                                                <button class="dropdown-item" name="resetkey" value="<?php echo $key; ?>">Reset HWID</button>
+                                                <a class="dropdown-item" data-toggle="modal" data-target="#ban-key" onclick="bankey('<?php echo $key; ?>')">Ban</a>
+                                                <button class="dropdown-item" name="unbankey" value="<?php echo $key; ?>">Unban</button>
+                                                <button class="dropdown-item" name="pausekey" value="<?php echo $key; ?>">Pause</button>
+                                                <button class="dropdown-item" name="unpausekey" value="<?php echo $key; ?>">Unpause</button>
                                                 <div class="dropdown-divider"></div>
-												<button class="dropdown-item" name="editkey" value="' . $row['key'] . '">Edit</button></div></td></tr></form>';
-
-            }
+												<button class="dropdown-item" name="editkey" value="<?php echo $key; ?>">Edit</button></div></td></tr></form>
+<?php
 
         }
-
     }
 
 ?>
@@ -1172,8 +1160,10 @@ $(document).ready(function(){
 <th>Key</th>
 <th>Creation Date</th>
 <th>Generated By</th>
-<th>Expires</th>
+<th>Duration</th>
 <th>Last Login</th>
+<th>Used On</th>
+<th>Used By</th>
 <th>Status</th>
 <th>Action</th>
                                             </tr>
@@ -1206,8 +1196,9 @@ $(document).ready(function(){
     if (isset($_POST['deletekey']))
     {
         $key = sanitize($_POST['deletekey']);
-        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
-        if (mysqli_affected_rows($link) != 0)
+		mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // delete any subscriptions created with key
+        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // delete key
+        if (mysqli_affected_rows($link) != 0) // check query impacted something, else show error
         {
             success("Key Successfully Deleted!");
             echo "<meta http-equiv='Refresh' Content='2'>";
@@ -1221,8 +1212,8 @@ $(document).ready(function(){
     if (isset($_POST['resetkey']))
     {
         $key = sanitize($_POST['resetkey']);
-        mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
-        if (mysqli_affected_rows($link) != 0)
+        mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // set HWID to blank
+        if (mysqli_affected_rows($link) != 0) // check query impacted something, else show error
         {
             success("Key Successfully Reset!");
             echo "<meta http-equiv='Refresh' Content='2'>";
@@ -1238,7 +1229,7 @@ $(document).ready(function(){
         $key = sanitize($_POST['key']);
 
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
-        if (mysqli_num_rows($result) == 0)
+        if (mysqli_num_rows($result) == 0) // check if key exists
         {
             mysqli_close($link);
             error("Key not Found!");
@@ -1251,13 +1242,13 @@ $(document).ready(function(){
         $ip = $row["ip"];
         $reason = sanitize($_POST['reason']);
 
-        mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+        mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // set key to banned
 
-        if ($hwid != NULL)
+        if ($hwid != NULL) // if hwid paramater not blank, blacklist it
         {
             mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','" . $_SESSION['app'] . "')");
         }
-        if ($ip != NULL)
+        if ($ip != NULL) // if ip paramater not blank, blacklist it
         {
             mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','" . $_SESSION['app'] . "')");
         }
@@ -1270,7 +1261,7 @@ $(document).ready(function(){
         $key = sanitize($_POST['unbankey']);
 
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
-        if (mysqli_num_rows($result) == 0)
+        if (mysqli_num_rows($result) == 0) // check if key exists
         {
             mysqli_close($link);
             error("Key not Found!");
@@ -1282,8 +1273,8 @@ $(document).ready(function(){
         $hwid = $row["hwid"];
         $ip = $row["ip"];
 
-        mysqli_query($link, "UPDATE `keys` SET `banned` = NULL, `status` = 'Used' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
-        mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `keys` SET `banned` = NULL, `status` = 'Used' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // update key from banned to used
+        mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '" . $_SESSION['app'] . "'"); // remove any possible blacklists
 
         success("Key Successfully Unbanned!");
         echo "<meta http-equiv='Refresh' Content='2'>";
@@ -1294,7 +1285,7 @@ $(document).ready(function(){
         $key = sanitize($_POST['pausekey']);
 
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key' AND `status` = 'Used'");
-        if (mysqli_num_rows($result) == 0)
+        if (mysqli_num_rows($result) == 0) // check if key exists
         {
             mysqli_close($link);
             error("Key isn\'t used!");
@@ -1303,7 +1294,7 @@ $(document).ready(function(){
         }
 
         $exp = mysqli_fetch_array($result) ["expires"] - time();
-        mysqli_query($link, "UPDATE `keys` SET `status` = 'Paused', `expires` = '$exp' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
+        mysqli_query($link, "UPDATE `keys` SET `status` = 'Paused', `expires` = '$exp' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); 
 
         success("Key Successfully Paused!");
         echo "<meta http-equiv='Refresh' Content='2'>";
@@ -1346,8 +1337,8 @@ $(document).ready(function(){
 
         $expiry = date("Y-m-d\TH:i", $row["expires"]);
         $currtime = date("Y-m-d\TH:i", time());
-
-        echo '<div id="ban-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
+		?>
+        <div id="edit-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -1358,12 +1349,12 @@ $(document).ready(function(){
                                                 <form method="post"> 
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Key Level:</label>
-                                                        <input type="text" class="form-control" name="level" value="' . $row['level'] . '" required>
-														<input type="hidden" name="key" value="' . $key . '">
+                                                        <input type="text" class="form-control" name="level" value="<?php echo $row['level']; ?>" required>
+														<input type="hidden" name="key" value="<?php echo $key; ?>">
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Key Expiry:</label>
-                                                        <input class="form-control" type="datetime-local" name="expiry" value="' . date("Y-m-d\TH:i", $row["expires"]) . '" required>
+                                                        <input class="form-control" type="datetime-local" name="expiry" value="<?php echo $expiry; ?>" required>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Additional HWID:</label>
@@ -1371,11 +1362,11 @@ $(document).ready(function(){
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">HWID:</label>
-                                                        <p>' . $row['hwid'] . '</p>
+                                                        <p><?php echo $row['hwid']; ?></p>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">IP:</label>
-                                                        <p>' . $row['ip'] . '</p>
+                                                        <p><?php echo $row['ip']; ?></p>
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
@@ -1385,7 +1376,8 @@ $(document).ready(function(){
                                             </div>
                                         </div>
                                     </div>
-									</div>';
+									</div>
+									<?php
     }
 
     if (isset($_POST['savekey']))

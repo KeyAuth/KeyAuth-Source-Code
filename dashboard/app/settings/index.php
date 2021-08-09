@@ -448,6 +448,14 @@ $(document).ready(function(){
                     {
                     $hwidcheck = "Disabled";    
                     }
+					
+					if ($row['vpnblock'] == "1"){
+                    $vpnblock = "Enabled";
+                    }
+                    else
+                    {
+                    $vpnblock = "Disabled";    
+                    }
 
                     $verr = $row['ver'];
                     $dll = $row['download'];
@@ -505,6 +513,23 @@ $(document).ready(function(){
 											<select class="form-control" name="hwidinput"><option><?php echo $hwidcheck; 
                                                     
                                                     if($hwidcheck == "Enabled")
+                                                    {
+                                                        echo"<option>Disabled</option>";
+                                                    }
+                                                    else
+                                                    {
+                                                        echo"<option>Enabled</option>";
+                                                    }
+                                                    
+                                                    ?></option></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="example-text-input" class="col-2 col-form-label">VPN Block</label>
+                                        <div class="col-10">
+											<select class="form-control" name="vpninput"><option><?php echo $vpnblock; 
+                                                    
+                                                    if($vpnblock == "Enabled")
                                                     {
                                                         echo"<option>Disabled</option>";
                                                     }
@@ -684,6 +709,7 @@ if(isset($_POST['updatesettings']))
 {
     $status = sanitize($_POST['statusinput']);
     $hwid = sanitize($_POST['hwidinput']);
+    $vpn = sanitize($_POST['vpninput']);
     $ver = sanitize($_POST['version']);
     $dl = sanitize($_POST['download']);
     $webhooker = sanitize($_POST['webhook']);
@@ -715,11 +741,23 @@ if(isset($_POST['updatesettings']))
         $hwid == $row['hwidcheck'];
     }
 
+	if($vpn == "Enabled")
+    {
+        $vpn = 1;
+    }
+    else if($vpn == "Disabled")
+    {
+        $vpn = 0;
+    }
+    else
+    {
+        $vpn == $row['vpnblock'];
+    }
     //$status = 1;
     //$hwid = 1;
     
  
-    ($result = mysqli_query($link, "UPDATE `apps` SET `enabled` = '$status', `hwidcheck` = '$hwid', `ver` = '$ver', `download` = '$dl', `webhook` = '$webhooker', `resellerstore` = '$resellerstorelink' WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+    ($result = mysqli_query($link, "UPDATE `apps` SET `enabled` = '$status', `hwidcheck` = '$hwid',`vpnblock` = '$vpn', `ver` = '$ver', `download` = '$dl', `webhook` = '$webhooker', `resellerstore` = '$resellerstorelink' WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
 	
 	
 	$appdisabledpost = sanitize($_POST['appdisabled']);

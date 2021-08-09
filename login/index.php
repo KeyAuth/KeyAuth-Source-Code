@@ -1,17 +1,12 @@
 <?php
 
-
     include '../includes/connection.php';
+    include '../includes/functions.php';
     session_start();
 
     if (isset($_SESSION['username'])) {
         header("Location: ../dashboard/");
         exit();
-    }
-    
-    function xss_clean($data)
-    {
-        return strip_tags($data);
     }
 
 ?>
@@ -21,29 +16,10 @@
 	<title>KeyAuth - Login</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-<!--===============================================================================================-->	
-    <link rel="shortcut icon" href="https://keyauth.com/assets/img/favicon.png" type="image/x-icon">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="shortcut icon" href="../assets/img/favicon.png" type="image/x-icon">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/util.css">
-	<link rel="stylesheet" type="text/css" href="css/main.css">
-<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="../auth/css/util.css">
+	<link rel="stylesheet" type="text/css" href="../auth/css/main.css">
 </head>
 <body>
 	<div class="limiter">
@@ -55,14 +31,14 @@
 					</span>
 
 					
-					<div class="wrap-input100 validate-input m-b-16" data-validate = "Username is required">
-						<input class="input100" type="text" name="keyauthusername" placeholder="Username">
+					<div class="wrap-input100 validate-input m-b-16">
+						<input class="input100" type="text" name="keyauthusername" placeholder="Username" required>
 						<span class="focus-input100"></span>
 					</div>
 					
 					
-					<div class="wrap-input100 validate-input m-b-16" data-validate = "Password is required">
-						<input class="input100" type="password" name="keyauthpassword" placeholder="Password">
+					<div class="wrap-input100 validate-input m-b-16">
+						<input class="input100" type="password" name="keyauthpassword" placeholder="Password" required>
 						<span class="focus-input100"></span>
 					</div>
 
@@ -101,67 +77,23 @@
     <?php
         if (isset($_POST['login']))
         {
+			
             if (empty($_POST['keyauthusername']) || empty($_POST['keyauthpassword']))
             {
-                
-                echo '
-                <script type=\'text/javascript\'>
-                
-                const notyf = new Notyf();
-                notyf
-                  .error({
-                    message: \'You must fill in all the fields!\',
-                    duration: 3500,
-                    dismissible: true
-                  });                
-                
-                </script>
-                ';
-                
-
-                
-
-                  return;
+                error("You must fill in all the fields!");
+                return;
             }
 
-
-            $status_login = "";
-
-
-            
-
-            
-            $username = xss_clean(mysqli_real_escape_string($link, $_POST['keyauthusername']));
-            $password = xss_clean(mysqli_real_escape_string($link, $_POST['keyauthpassword']));
-            $resp['submitted_data'] = $_POST;
-            $login_status = "invalid";
+            $username = sanitize($_POST['keyauthusername']);
+            $password = sanitize($_POST['keyauthpassword']);
 
             ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 
-            if (mysqli_num_rows($result) < 1)
+            if (mysqli_num_rows($result) == 0)
             {
-                $login_status = "invalid";
-                
-                echo '
-                <script type=\'text/javascript\'>
-                
-                const notyf = new Notyf();
-                notyf
-                  .error({
-                    message: \'Your login details are incorrect!\',
-                    duration: 3500,
-                    dismissible: true
-                  });                
-                
-                </script>
-                ';                
-
-                
-
-                  return;
+				error("Account doesn\'t exist!");
+                return;
             }
-            else if (mysqli_num_rows($result) > 0)
-            {
                 while ($row = mysqli_fetch_array($result))
                 {
                     $user = $row['username'];
@@ -175,131 +107,45 @@
                     
                     $owner = $row['owner'];
                     $twofactor_optional = $row['twofactor'];
+					$acclogs = $row['acclogs'];
+					$google_Code = $row['googleAuthCode'];
                 }
 
-                if ($isbanned == "1")
+                if ($isbanned)
                 {
-                    $login_status = "banned";
-                    echo '
-                            <script type=\'text/javascript\'>
-                            
-                            const notyf = new Notyf();
-                            notyf
-                              .error({
-                                message: \'Your account has been banned!\',
-                                duration: 3500,
-                                dismissible: true
-                              });                
-                            
-                            </script>
-                            ';
-							
+                    error("Your account has been banned!");
+					return;
                 }
-                
-
-                if ($login_status !== "banned" || $login_status !== "invalid")
-                {
-                    if (strtolower($username) == strtolower($user) && password_verify($password, $pass) && $isbanned == "0")
+				
+                    if (!password_verify($password, $pass))
                     {
-                        $login_status = "success";
+                        error("Password is invalid!");
+						return;
                     }
-
-                    $resp['login_status'] = $login_status;
-
-                    if ($login_status == "success")
-                    {
                             
-                        if ($twofactor_optional == "1")
+                        if ($twofactor_optional)
                         {
                            // keyauthtwofactor
-                           $twofactor = xss_clean(mysqli_real_escape_string($link, $_POST['keyauthtwofactor']));
+                           $twofactor = sanitize($_POST['keyauthtwofactor']);
                            if (empty($twofactor))
                            {
-                                           echo '
-                <script type=\'text/javascript\'>
-                
-                const notyf = new Notyf();
-                notyf
-                  .error({
-                    message: \'Two facor field needed for this acccount!\',
-                    duration: 3500,
-                    dismissible: true
-                  });                
-                
-                </script>
-                ';
-                
-
-                
-
+				  error("Two factor field needed for this acccount!");
                   return;
                            }
 
-                require_once 'GoogleAuthenticator.php';
-    $gauth = new GoogleAuthenticator();
-
-            $user_result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'") or die(mysqli_error($link));
-            
-            while ($row = mysqli_fetch_array($user_result))
-            {
-                $google_Code = $row['googleAuthCode'];
-            }
-            
+            require_once '../auth/GoogleAuthenticator.php';
+			$gauth = new GoogleAuthenticator();
             $checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
             
-            if ($checkResult)
+            if (!$checkResult)
             {
-                            $_SESSION['username'] = $_POST['keyauthusername'];
-                            $_SESSION['email'] = $email;
-                            $_SESSION['ownerid'] = $id;
-                            $_SESSION['owner'] = $owner;
-                            $_SESSION['role'] = $role;
-                            
-                            if($role == "Reseller" || $role == "Manager")
-                            {
-                                $_SESSION['app'] = $app;
-                            }
-                            
-                            $_SESSION['img'] = $img;
-                
-                echo '
-                <script type=\'text/javascript\'>
-                
-                const notyf = new Notyf();
-                notyf
-                  .success({
-                    message: \'You have successfully logged in!\',
-                    duration: 3500,
-                    dismissible: true
-                  });                
-                
-                </script>
-                ';
-
-                  echo "<meta http-equiv='Refresh' Content='2; url=../dashboard'>"; 
-            }
-            else
-            {
-                echo '
-                <script type=\'text/javascript\'>
-                
-                const notyf = new Notyf();
-                notyf
-                  .error({
-                    message: \'The code entered is incorrect\',
-                    duration: 3500,
-                    dismissible: true
-                  });                
-                
-                </script>
-                ';
-                
-            return;
-            }
+				error("2FA code Invalid!");
+				return;
+			}
                         }
 
                         
-                            $_SESSION['username'] = $_POST['keyauthusername'];
+                            $_SESSION['username'] = $username;
                             $_SESSION['email'] = $email;
                             $_SESSION['ownerid'] = $id;
                             $_SESSION['owner'] = $owner;
@@ -310,24 +156,7 @@
 								($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `name` = '$app' AND `owner` = '$owner'")) or die(mysqli_error($link));
 								if (mysqli_num_rows($result) < 1)
 								{
-									$login_status = "invalid";
-									
-									echo '
-									<script type=\'text/javascript\'>
-									
-									const notyf = new Notyf();
-									notyf
-									.error({
-										message: \'Application you\'re assigned to no longer exists!\',
-										duration: 3500,
-										dismissible: true
-									});                
-									
-									</script>
-									';                
-								
-									
-								
+									error("Application you\'re assigned to no longer exists!");
 									return;
 								}
 								while ($row = mysqli_fetch_array($result))
@@ -339,16 +168,19 @@
                             
                             $_SESSION['img'] = $img;
 							
-							
-							$ua = xss_clean(mysqli_real_escape_string($link, $_SERVER['HTTP_USER_AGENT']));
-							mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('$username','".time()."','".$_SERVER["HTTP_X_FORWARDED_FOR"]."','$ua')");
+							if($acclogs) // check if account logs enabled
+							{
+							mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('".$_POST['keyauthusername']."','".time()."','$ip','".$_SERVER['HTTP_USER_AGENT']."')"); // insert ip log
+							$ts = time() - 604800;
+							mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '" . $_POST['keyauthusername'] . "' AND `date` < '$ts'"); // delete any account logs more than a week old
+							}
 							
 							// webhook start
 								$timestamp = date("c", strtotime("now"));
 
 								$json_data = json_encode([
 									// Message
-									"content" => "".$_SESSION['username']." has logged into KeyAuth with IP {$_SERVER['HTTP_CF_CONNECTING_IP']}",
+									"content" => "".$_SESSION['username']." has logged into KeyAuth with IP {$ip}",
 									
 									// Username
 									"username" => "KeyAuth Logs",
@@ -366,68 +198,11 @@
 								curl_exec($ch);
 								curl_close($ch);
 								// webhook end
-							
-                            echo '
-                            <script type=\'text/javascript\'>
-                            
-                            const notyf = new Notyf();
-                            notyf
-                              .success({
-                                message: \'You have successfully logged in!\',
-                                duration: 3500,
-                                dismissible: true
-                              });                
-                            
-                            </script>
-                            ';                                            
-                            
-                      
-                            
-             
-                            echo "<meta http-equiv='Refresh' Content='2; url=../dashboard/'>";                             
-                        
-
-
-                    }
-                    else
-                    {
-                            echo '
-                            <script type=\'text/javascript\'>
-                            
-                            const notyf = new Notyf();
-                            notyf
-                              .error({
-                                message: \'Your login details are incorrect!\',
-                                duration: 3500,
-                                dismissible: true
-                              });                
-                            
-                            </script>
-                            ';                
-        
-                          return;
-}}}}
+								
+								mysqli_query($link, "UPDATE `accounts` SET `lastip` = '$ip' WHERE `username` = '$username'");
+							                                     
+							header("location: ../dashboard/");                           
+}
     ?>
-	
-
-	<div id="dropDownSelect1"></div>
-	
-<!--===============================================================================================-->
-	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/animsition/js/animsition.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/bootstrap/js/popper.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/select2/select2.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/daterangepicker/moment.min.js"></script>
-	<script src="vendor/daterangepicker/daterangepicker.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/countdowntime/countdowntime.js"></script>
-<!--===============================================================================================-->
-	<script src="js/main.js"></script>
-
 </body>
 </html>

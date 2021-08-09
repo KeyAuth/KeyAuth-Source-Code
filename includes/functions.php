@@ -3,11 +3,40 @@ include 'connection.php'; // start MySQL connection
 session_start();
 
 $role = $_SESSION['role']; // user role
+$ip = fetchip(); // ip address
+function vpn_check($ipaddr)
+{
+    $url = "http://check.getipintel.net/check.php?ip=" . $ipaddr . "&contact=william@nelsoncybersecurity.com&format=json";
+
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+    //for debug only!
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+
+    $resp = curl_exec($curl);
+    $json = json_decode($resp);
+
+    if ($json->result > 0.995)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 function sanitize($input)
 {
     global $link; // needed to refrence active MySQL connection
     return mysqli_real_escape_string($link, strip_tags(trim($input))); // return string with quotes escaped to prevent SQL injection, script tags stripped to prevent XSS attach, and trimmed to remove whitespace
     
+}
+
+function fetchip()
+{
+    return $_SERVER['HTTP_CLIENT_IP'] ? $_SERVER['HTTP_CLIENT_IP'] : ($_SERVER['HTTP_X_FORWARDED_FOR'] ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR']);
 }
 
 function heador()
@@ -191,66 +220,66 @@ function heador()
                 echo "<meta http-equiv='Refresh' Content='2;'>";
             }
         }
-		
-		if (isset($_POST['appname']))
+
+        if (isset($_POST['appname']))
         {
             $appname = sanitize($_POST['appname']);
-            $result = mysqli_query($link, "SELECT * FROM apps WHERE name='$appname' AND owner='".$_SESSION['username']."'");
+            $result = mysqli_query($link, "SELECT * FROM apps WHERE name='$appname' AND owner='" . $_SESSION['username'] . "'");
             if (mysqli_num_rows($result) > 0)
             {
-				mysqli_close($link);
-				error("You already own application with this name!");
+                mysqli_close($link);
+                error("You already own application with this name!");
                 echo "<meta http-equiv='Refresh' Content='2;'>";
                 return;
             }
-            
+
             $owner = $_SESSION['username'];
-			
-			if($role == "tester")
-            {
-			$result = mysqli_query($link, "SELECT * FROM apps WHERE owner='$owner'");
 
-            if (mysqli_num_rows($result) > 0)
+            if ($role == "tester")
             {
-				mysqli_close($link);
-				error("Tester plan only supports one application!");
+                $result = mysqli_query($link, "SELECT * FROM apps WHERE owner='$owner'");
+
+                if (mysqli_num_rows($result) > 0)
+                {
+                    mysqli_close($link);
+                    error("Tester plan only supports one application!");
+                    echo "<meta http-equiv='Refresh' Content='2;'>";
+
+                    return;
+                }
+
+            }
+
+            if ($role == "Manager")
+            {
+                mysqli_close($link);
+                error("Manager Accounts Are Not Allowed To Create Applications");
                 echo "<meta http-equiv='Refresh' Content='2;'>";
-
                 return;
             }
-			
-			}
-			
-			if($role == "Manager")
-            {
-				mysqli_close($link);
-				error("Manager Accounts Are Not Allowed To Create Applications");
-                echo "<meta http-equiv='Refresh' Content='2;'>";
-                return;
-			}
-			
+
             $ownerid = $_SESSION['ownerid'];
             $clientsecret = hash('sha256', generateRandomString());
-			$algos = array(
-				'ripemd128',
-				'md5',
-				'md4',
-				'tiger128,4',
-				'haval128,3',
-				'haval128,4',
-				'haval128,5'
-			);
-			$sellerkey = hash($algos[array_rand($algos) ], generateRandomString());
-            $result = mysqli_query($link, "INSERT INTO `apps`(`owner`, `name`, `secret`, `ownerid`, `enabled`, `hwidcheck`, `sellerkey`) VALUES ('".$owner."','".$appname."','".$clientsecret."','$ownerid', '1','1','$sellerkey')");
+            $algos = array(
+                'ripemd128',
+                'md5',
+                'md4',
+                'tiger128,4',
+                'haval128,3',
+                'haval128,4',
+                'haval128,5'
+            );
+            $sellerkey = hash($algos[array_rand($algos) ], generateRandomString());
+            $result = mysqli_query($link, "INSERT INTO `apps`(`owner`, `name`, `secret`, `ownerid`, `enabled`, `hwidcheck`, `sellerkey`) VALUES ('" . $owner . "','" . $appname . "','" . $clientsecret . "','$ownerid', '1','1','$sellerkey')");
             mysqli_query($link, "INSERT INTO `subscriptions` (`name`, `level`, `app`) VALUES ('default', '1', '$clientsecret')");
-			if (mysqli_affected_rows($link) != 0)
+            if (mysqli_affected_rows($link) != 0)
             {
                 $_SESSION['secret'] = $clientsecret;
-				success("Successfully Created App!");
+                success("Successfully Created App!");
                 $_SESSION['app'] = $clientsecret;
                 $_SESSION['name'] = $appname;
                 $_SESSION['sellerkey'] = $sellerkey;
-                echo "<meta http-equiv='Refresh' Content='2;'>";     
+                echo "<meta http-equiv='Refresh' Content='2;'>";
             }
             else
             {
