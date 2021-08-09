@@ -427,6 +427,78 @@ switch ($type)
                 "message" => "Subscription Addition Successful"
             )));
         }
+	case 'black':
+        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(404);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Seller Key Not Found");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Seller Key Not Found"
+                )));
+            }
+        }
+
+        while ($row = mysqli_fetch_array($result))
+        {
+            $secret = $row['secret'];
+            $owner = $row['owner'];
+        }
+
+        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
+        $row = mysqli_fetch_array($seller_check);
+
+        $role = $row["role"];
+
+        if ($role !== "seller")
+        {
+            http_response_code(403);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Not authorized to use SellerAPI, please upgrade.");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Not authorized to use SellerAPI, please upgrade."
+                )));
+            }
+        }
+		$ipaddr = $_GET['ip'] ?? $ip;
+		$ipaddr = sanitize($ipaddr);
+		
+		$hwid = sanitize($_GET['hwid']);
+        if (!empty($hwid))
+        {
+            mysqli_query($link, "INSERT INTO `bans` (`hwid`, `type`, `app`) VALUES ('$hwid','hwid', '$secret')");
+        }
+
+        mysqli_query($link, "INSERT INTO `bans` (`ip`, `type`, `app`) VALUES ('$ipaddr','ip', '$secret')");
+		
+        mysqli_close($link);
+        if ($format == "text")
+        {
+            die("Blacklist Addition Successful");
+        }
+        else
+        {
+            die(json_encode(array(
+                "success" => true,
+                "message" => "Blacklist Addition Successful"
+            )));
+        }
 	case 'activate':
         $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
 
