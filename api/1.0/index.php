@@ -521,16 +521,7 @@ switch (hex2bin($_POST['type']))
             }
         }
 
-        $credential = $session["credential"];
-        $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
-        // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
-        if (!$validated)
-        {
-            die(Encrypt(json_encode(array(
-                "success" => false,
-                "message" => "Session is not validated."
-            )) , $enckey));
-        }
+        $credential = $session["credential"] ?? "N/A";
 
         $currtime = time();
 
