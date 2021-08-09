@@ -73,7 +73,7 @@ function register($un,$key,$pw,$hwid,$secret)
 					
 			}
 			
-			$hwidcheck = mysqli_query($link, "SELECT * FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '" . $_SERVER["HTTP_CF_CONNECTING_IP"] . "') AND `app` = '$secret'");
+			$hwidcheck = mysqli_query($link, "SELECT * FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '" . $_SERVER["HTTP_X_FORWARDED_FOR"] . "') AND `app` = '$secret'");
             if (mysqli_num_rows($hwidcheck) > 0)
 
             {
@@ -104,7 +104,7 @@ function register($un,$key,$pw,$hwid,$secret)
             {
 				// add each subscription that user's key applies to
                 $subname = $row['name'];
-                mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$un','$subname', '$expiry', '$secret')");
+                mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`, `key`) VALUES ('$un','$subname', '$expiry', '$secret','$key')");
 
             }
 			$password = password_hash($pw, PASSWORD_BCRYPT);
@@ -202,7 +202,7 @@ function login($un,$pw,$hwid,$secret,$hwidenabled)
 				}
 
             }
-			mysqli_query($link, "UPDATE `users` SET `ip` = '".$_SERVER['HTTP_CF_CONNECTING_IP']."' WHERE `username` = '$un'");
+			mysqli_query($link, "UPDATE `users` SET `ip` = '".$_SERVER['HTTP_X_FORWARDED_FOR']."' WHERE `username` = '$un'");
             $result = mysqli_query($link, "SELECT `subscription`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
 
             $num = mysqli_num_rows($result);
