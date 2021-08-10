@@ -98,7 +98,7 @@ function register($un,$key,$pw,$hwid,$secret)
             }
 			
 			// update key to used
-            mysqli_query($link, "UPDATE `keys` SET `status` = 'Used' WHERE `key` = '$key'");
+            mysqli_query($link, "UPDATE `keys` SET `status` = 'Used',`usedon` = '".time()."',`usedby` = '$un' WHERE `key` = '$key'");
 
             while ($row = mysqli_fetch_array($result))
             {
