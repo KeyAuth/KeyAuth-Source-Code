@@ -271,6 +271,10 @@ if (mysqli_num_rows($result) > 0)
                                                         <label for="recipient-name" class="control-label">Account Password:</label>
                                                         <input type="password" class="form-control" placeholder="Password for account you manage" name="pw">
                                                     </div>
+                                                    <div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Allowed License Levels:</label>
+                                                        <input type="text" class="form-control" placeholder="Enter Levels In Format: 1|2|3, Leave It Blank For All Levels" name="keylevels">
+                                                    </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
@@ -290,6 +294,8 @@ if (isset($_POST['createacc']))
     $username = sanitize($_POST['username']);
     $email = sanitize($_POST['email']);
     $password = sanitize($_POST['pw']);
+    $keylevels = sanitize($_POST['keylevels']) ?? "N/A";
+
 
     $pass_encrypted = password_hash($password, PASSWORD_BCRYPT);
     $owner = $_SESSION['username'];
@@ -324,7 +330,7 @@ if (isset($_POST['createacc']))
         return;
     }
 
-    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `isbanned`, `img`, `balance`) VALUES ('$username','$email','$pass_encrypted','','$role','$app','$owner',0,'https://i.imgur.com/TrwYFBa.png', '0|0|0|0|0|0')") or die(mysqli_error($link));
+    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `isbanned`, `img`, `balance`, `keylevels`) VALUES ('$username','$email','$pass_encrypted','','$role','$app','$owner',0,'https://i.imgur.com/TrwYFBa.png', '0|0|0|0|0|0', '$keylevels')") or die(mysqli_error($link));
     echo '
                         <script type=\'text/javascript\'>
                         
@@ -385,6 +391,7 @@ $(document).ready(function(){
 <th>Role</th>
 <th>Application</th>
 <th>Balance</th>
+<th>Allowed Levels</th>
 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -412,7 +419,8 @@ if (mysqli_num_rows($result) > 0)
         {
             echo "  <td>" . $row["balance"] . "</td>";
         }
-        // echo "  <td>". $row["status"]. "</td>";
+        echo " <td>" . $row["keylevels"] . "</td>";
+                // echo "  <td>". $row["status"]. "</td>";
         echo '<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
                                             </button>
@@ -432,6 +440,7 @@ if (mysqli_num_rows($result) > 0)
 <th>Role</th>
 <th>Application</th>
 <th>Balance</th>
+<th>Allowed Levels</th>
 <th>Action</th>
                                             </tr>
                                         </tfoot>
@@ -491,6 +500,8 @@ if (isset($_POST['editacc']))
 
     $row = mysqli_fetch_array($result);
 
+    $keylevels = $row['keylevels'];
+
     $balance = $row["balance"];
 
     $balance = explode("|", $balance);
@@ -507,12 +518,14 @@ if (isset($_POST['editacc']))
 
     $life = $balance[5];
 
-    echo '<div id="edit-account" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
+    
+
+    echo '<div id="edit-account" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Edit Account</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">ï¿½</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post"> 
@@ -541,10 +554,14 @@ if (isset($_POST['editacc']))
                                                         <label for="recipient-name" class="control-label">Lifetime Balance:</label>
                                                         <input type="text" class="form-control" name="lifebalance" value="' . $life . '" required>
                                                     </div>
+                                                    <div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Allowed License Levels:</label>
+                                                        <input type="text" class="form-control" name="keylevels" placeholder="Enter Levels In Format: 1|2|3, Leave It Blank For All Levels" value="' . $keylevels . '">
+                                                    </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="saveacc">Save</button>
+                                            <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                            <button class="btn btn-danger waves-effect waves-light" name="saveacc">Save</button>
 												</form>
                                             </div>
                                         </div>
@@ -562,10 +579,11 @@ if (isset($_POST['saveacc']))
     $threemonth = sanitize($_POST['threemonthbalance']);
     $sixmonth = sanitize($_POST['sixmonthbalance']);
     $lifetime = sanitize($_POST['lifebalance']);
+    $keylevels = sanitize($_POST['keylevels']) ?? "N/A";
 
     $balance = $day . '|' . $week . '|' . $month . '|' . $threemonth . '|' . $sixmonth . '|' . $lifetime;
 
-    mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
+    mysqli_query($link, "UPDATE `accounts` SET balance = '$balance', keylevels = '$keylevels' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
 
     success("Successfully Updated Settings!");
     echo "<meta http-equiv='Refresh' Content='2'>";

@@ -29,6 +29,11 @@ function vpn_check($ipaddr)
 
 function sanitize($input)
 {
+	if(empty($input) & !is_numeric($input))
+	{
+		return NULL;
+	}
+	
     global $link; // needed to refrence active MySQL connection
     return mysqli_real_escape_string($link, strip_tags(trim($input))); // return string with quotes escaped to prevent SQL injection, script tags stripped to prevent XSS attach, and trimmed to remove whitespace
     

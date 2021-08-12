@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.7
+-- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
--- Host: ommited
--- Generation Time: Aug 09, 2021 at 11:36 PM
--- Server version: 5.7.34-cll-lve
--- PHP Version: 7.3.28
+-- Host: 127.0.0.1
+-- Generation Time: Aug 12, 2021 at 10:13 PM
+-- Server version: 10.4.20-MariaDB
+-- PHP Version: 8.0.9
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -17,6 +16,10 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `keyauth`
+--
 
 -- --------------------------------------------------------
 
@@ -55,12 +58,14 @@ CREATE TABLE `accounts` (
   `sixmonthrate` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `liferate` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `balance` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `keylevels` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
   `expires` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `registrationip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `lastip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `twofactor` int(1) NOT NULL DEFAULT '0',
+  `twofactor` int(1) NOT NULL DEFAULT 0,
   `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `darkmode` int(1) NOT NULL DEFAULT '0',
+  `darkmode` int(1) NOT NULL DEFAULT 0,
+  `acclogs` int(1) NOT NULL DEFAULT 1,
   `format` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
   `amount` int(3) DEFAULT NULL,
   `lvl` int(3) DEFAULT NULL,
@@ -80,9 +85,9 @@ CREATE TABLE `apps` (
   `secret` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `ownerid` varchar(39) COLLATE utf8_unicode_ci NOT NULL,
   `enabled` int(1) NOT NULL,
-  `paused` int(11) NOT NULL DEFAULT '0',
+  `paused` int(11) NOT NULL DEFAULT 0,
   `hwidcheck` int(1) NOT NULL,
-  `vpnblock` int(1) NOT NULL DEFAULT '0',
+  `vpnblock` int(1) NOT NULL DEFAULT 0,
   `sellerkey` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `ver` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT '1.0',
   `download` varchar(120) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
