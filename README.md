@@ -30,3 +30,7 @@ How to get SSL key?
 
 c#: https://www.mediafire.com/file/2089zh0kd5s8urn/GetSSChsarp.exe/file - watch this video: https://a.pomf.cat/ontnkt.mp4
 c++: https://www.ssllabs.com/ - watch this video: https://a.pomf.cat/cglexh.mp4
+
+## Updates ##
+
+- (08/12/2021) Suggestion added (Limit resellers to only be able to generate a certain key level) by SoniC#1337

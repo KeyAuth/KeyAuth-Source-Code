@@ -29,43 +29,46 @@ if (!isset($_SESSION['username'])) {
 			
 			$darkmode = $row['darkmode'];
 
+            $keylevels = $row['keylevels'];
+
 			
                             
 ?>
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="keywords" content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 4 admin, bootstrap 4, css3 dashboard, bootstrap 4 dashboard, xtreme admin bootstrap 4 dashboard, frontend, responsive bootstrap 4 admin template, material design, material dashboard bootstrap 4 dashboard template">
-    <meta name="description" content="Xtreme is powerful and clean admin dashboard template, inpired from Google's Material Design">
+    <meta name="keywords"
+        content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 4 admin, bootstrap 4, css3 dashboard, bootstrap 4 dashboard, xtreme admin bootstrap 4 dashboard, frontend, responsive bootstrap 4 admin template, material design, material dashboard bootstrap 4 dashboard template">
+    <meta name="description"
+        content="Xtreme is powerful and clean admin dashboard template, inpired from Google's Material Design">
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Reseller Licenses</title>
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-	<script src="../../files/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="../../files/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="../../files/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="../../files/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
     <link href="../../files/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
     <link href="../../files/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../../files/dist/css/style.min.css" rel="stylesheet">
-	
-
-	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
 
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-	                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
-<?php
+    <?php
 
 
 // $_SESSION['app'] = "appname";
@@ -119,6 +122,7 @@ else // if sesssion var 'app' exists, display tables using app in query etc
 
 ?>
 </head>
+
 <body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
@@ -127,7 +131,8 @@ else // if sesssion var 'app' exists, display tables using app in query etc
     <!-- ============================================================== -->
     <!-- Main wrapper - style you can find in pages.scss -->
     <!-- ============================================================== -->
-    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin1" data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed" data-boxed-layout="full">
+    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin1" data-sidebartype="full"
+        data-sidebar-position="fixed" data-header-position="fixed" data-boxed-layout="full">
         <!-- ============================================================== -->
         <!-- Topbar header - style you can find in pages.scss -->
         <!-- ============================================================== -->
@@ -135,7 +140,8 @@ else // if sesssion var 'app' exists, display tables using app in query etc
             <nav class="navbar top-navbar navbar-expand-md navbar-dark">
                 <div class="navbar-header" data-logobg="skin5">
                     <!-- This is for the sidebar toggle which is visible on mobile only -->
-                    <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)"><i class="ti-menu ti-close"></i></a>
+                    <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)"><i
+                            class="ti-menu ti-close"></i></a>
                     <!-- ============================================================== -->
                     <!-- Logo -->
                     <!-- ============================================================== -->
@@ -146,15 +152,17 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                             <!-- Dark Logo icon -->
                             <img src="../../files/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="../../files/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="../../files/assets/images/logo-light-icon.png" alt="homepage"
+                                class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
-                             <!-- dark Logo text -->
-                             <img src="../../files/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
-                             <!-- Light Logo text -->    
-                             <img src="../../files/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                            <!-- dark Logo text -->
+                            <img src="../../files/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                            <!-- Light Logo text -->
+                            <img src="../../files/assets/images/logo-light-text.png" class="light-logo"
+                                alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -163,7 +171,10 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                     <!-- ============================================================== -->
                     <!-- Toggle which is visible on mobile only -->
                     <!-- ============================================================== -->
-                    <a class="topbartoggler d-block d-md-none waves-effect waves-light" href="javascript:void(0)" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><i class="ti-more"></i></a>
+                    <a class="topbartoggler d-block d-md-none waves-effect waves-light" href="javascript:void(0)"
+                        data-toggle="collapse" data-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><i
+                            class="ti-more"></i></a>
                 </div>
                 <!-- ============================================================== -->
                 <!-- End Logo -->
@@ -173,7 +184,9 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                     <!-- toggle and nav items -->
                     <!-- ============================================================== -->
                     <ul class="navbar-nav mr-auto">
-                        <li class="nav-item d-none d-md-block"><a class="nav-link sidebartoggler waves-effect waves-light" href="javascript:void(0)" data-sidebartype="mini-sidebar"><i class="mdi mdi-menu font-24"></i></a></li>
+                        <li class="nav-item d-none d-md-block"><a
+                                class="nav-link sidebartoggler waves-effect waves-light" href="javascript:void(0)"
+                                data-sidebartype="mini-sidebar"><i class="mdi mdi-menu font-24"></i></a></li>
                     </ul>
                     <!-- ============================================================== -->
                     <!-- Right side toggle and nav items -->
@@ -183,30 +196,40 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                         <!-- create new -->
                         <!-- ============================================================== -->
                         <li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
-						</a>
-						</li>
-						<li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
-						</a>
-						</li>
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark"
+                                href="https://keyauth.com/discord/" target="discord"> <i
+                                    class="mdi mdi-discord font-24"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth"
+                                target="telegram"> <i class="mdi mdi-telegram font-24"></i>
+                            </a>
+                        </li>
                         <!-- ============================================================== -->
                         <!-- User profile and search -->
                         <!-- ============================================================== -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark pro-pic" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="<?php echo $_SESSION['img']; ?>" alt="user" class="rounded-circle" width="31"></a>
+                            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark pro-pic" href=""
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img
+                                    src="<?php echo $_SESSION['img']; ?>" alt="user" class="rounded-circle"
+                                    width="31"></a>
                             <div class="dropdown-menu dropdown-menu-right user-dd animated flipInY">
                                 <span class="with-arrow"><span class="bg-primary"></span></span>
                                 <div class="d-flex no-block align-items-center p-15 bg-primary text-white mb-2">
-                                    <div class=""><img src="<?php echo $_SESSION['img']; ?>" alt="user" class="img-circle" width="60"></div>
+                                    <div class=""><img src="<?php echo $_SESSION['img']; ?>" alt="user"
+                                            class="img-circle" width="60"></div>
                                     <div class="ml-2">
                                         <h4 class="mb-0"><?php echo $_SESSION['username']; ?></h4>
                                         <p class=" mb-0"><?php echo $_SESSION['email']; ?></p>
                                     </div>
                                 </div>
-                                <a class="dropdown-item" href="../../account/logs/"><i class="mdi mdi-folder-account font-18"></i> Account Logs</a>
-                                <a class="dropdown-item" href="../../account/settings/"><i class="ti-settings mr-1 ml-1"></i> Account Settings</a>
-                                <a class="dropdown-item" href="../../account/logout/"><i class="fa fa-power-off mr-1 ml-1"></i> Logout</a>
+                                <a class="dropdown-item" href="../../account/logs/"><i
+                                        class="mdi mdi-folder-account font-18"></i> Account Logs</a>
+                                <a class="dropdown-item" href="../../account/settings/"><i
+                                        class="ti-settings mr-1 ml-1"></i> Account Settings</a>
+                                <a class="dropdown-item" href="../../account/logout/"><i
+                                        class="fa fa-power-off mr-1 ml-1"></i> Logout</a>
                             </div>
                         </li>
                         <!-- ============================================================== -->
@@ -228,9 +251,16 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                 <!-- Sidebar navigation-->
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
-                        
-						<li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span class="hide-menu">Reseller</span></li>                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../reseller/keys/" aria-expanded="false"><i data-feather="key"></i><span class="hide-menu">Licenses</span></a></li>                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../reseller/balance/" aria-expanded="false"><i data-feather="credit-card"></i><span class="hide-menu">Balance</span></a></li>
-						
+
+                        <li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span
+                                class="hide-menu">Reseller</span></li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/keys/" aria-expanded="false"><i data-feather="key"></i><span
+                                    class="hide-menu">Licenses</span></a></li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/balance/" aria-expanded="false"><i
+                                    data-feather="credit-card"></i><span class="hide-menu">Balance</span></a></li>
+
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -259,9 +289,9 @@ else // if sesssion var 'app' exists, display tables using app in query etc
             <!-- ============================================================== -->
             <!-- ============================================================== -->
             <!-- Container fluid  -->
-			
-	
-   
+
+
+
             <!-- ============================================================== -->
             <div class="container-fluid" id="content" style="display:none;">
                 <!-- ============================================================== -->
@@ -270,55 +300,106 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                 <!-- File export -->
                 <div class="row">
                     <div class="col-12">
-					<form method="POST">
-					<button data-toggle="modal" type="button" data-target="#create-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create keys</button>
-                            </form>
-							<br>
-							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=uJ0Umy_C6Fg" target="tutorial">https://youtube.com/watch?v=uJ0Umy_C6Fg</a> You may also join Discord and ask for help!
-                                        </div>
-<div id="create-keys" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Add Licenses</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                        <form method="POST">
+                            <button data-toggle="modal" type="button" data-target="#create-keys"
+                                class="dt-button buttons-print btn btn-primary mr-1"><i
+                                    class="fas fa-plus-circle fa-sm text-white-50"></i> Create keys</button>
+                        </form>
+                        <br>
+                        <div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a
+                                href="https://youtube.com/watch?v=uJ0Umy_C6Fg"
+                                target="tutorial">https://youtube.com/watch?v=uJ0Umy_C6Fg</a> You may also join Discord
+                            and ask for help!
+                        </div>
+                        <div id="create-keys" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                            aria-hidden="true" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header d-flex align-items-center">
+                                        <h4 class="modal-title">Add Licenses</h4>
+                                        <button type="button" class="close ml-auto" data-dismiss="modal"
+                                            aria-hidden="true">x</button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="post">
+                                            <div class="form-group">
+                                                <label for="recipient-name" class="control-label">Amount:</label>
+                                                <input type="number" class="form-control" name="amount"
+                                                    placeholder="Default 1">
                                             </div>
-                                            <div class="modal-body">
-                                                <form method="post">
-                                                    <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Amount:</label>
-                                                        <input type="number" class="form-control" name="amount" placeholder="Default 1">
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Key Mask:</label>
-                                                        <input type="text" class="form-control" value="XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX" placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required>
-                                                    </div>
-													<div class="form-group">
+                                            <div class="form-group">
+                                                <label for="recipient-name" class="control-label">Key Mask:</label>
+                                                <input type="text" class="form-control"
+                                                    value="XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX"
+                                                    placeholder="Key Format. X is capital random char, x is lowercase"
+                                                    name="mask" required>
+                                            </div>
+
+                                            <?php 
+                                                    
+                                                    if ($keylevels != "N/A"){
+
+                                                        $keylevels = explode("|", $keylevels);
+                                                        
+                                                       
+
+                                                        foreach ($keylevels as $levels) {
+                                                           $options .= '<option>' . $levels . '</option>';
+                                                        }                                                       
+
+                                                        echo'
+                                                            <div class="form-group">
+                                                            <label for="recipient-name" class="control-label">Key Level:</label>
+                                                            <select name="level" class="form-control">' . $options . '</select>
+                                                            </div>
+                                                        ';
+
+                                                    } else{
+                                                        echo'
+                                                        <div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Level:</label>
                                                         <input type="text" class="form-control" name="level" placeholder="Default 1">
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License Note:</label>
-                                                        <input type="text" class="form-control" name="note" placeholder="Optional, e.g. this license was for Joe">
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License Expiry Duration:</label>
-                                                        <select name="expiry" class="form-control"><option>1 Day</option><option>1 Week</option><option>1 Month</option><option>3 Month</option><option>6 Month</option><option>Lifetime</option></select>
-                                                    </div>
+                                                        </div>
+                                                        ';
+                                                    }
+                                                    
+                                                    
+                                                    ?>
+
+
+                                            <div class="form-group">
+                                                <label for="recipient-name" class="control-label">License Note:</label>
+                                                <input type="text" class="form-control" name="note"
+                                                    placeholder="Optional, e.g. this license was for Joe">
                                             </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="genkeys">Add</button>
-												</form>
+                                            <div class="form-group">
+                                                <label for="recipient-name" class="control-label">License Expiry
+                                                    Duration:</label>
+                                                <select name="expiry" class="form-control">
+                                                    <option>1 Day</option>
+                                                    <option>1 Week</option>
+                                                    <option>1 Month</option>
+                                                    <option>3 Month</option>
+                                                    <option>6 Month</option>
+                                                    <option>Lifetime</option>
+                                                </select>
                                             </div>
-                                        </div>
                                     </div>
-									</div>
-					
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default waves-effect"
+                                            data-dismiss="modal">Close</button>
+                                        <button class="btn btn-danger waves-effect waves-light"
+                                            name="genkeys">Add</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-									
 
-                    <?php
+
+
+                        <?php
 					
 					
 							function license_masking($mask)
@@ -371,6 +452,14 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                                 $level = sanitize($_POST['level']);
                                 $note = sanitize($_POST['note']);
                                 
+								
+								if($keylevels != "N/A" && !in_array($level,$keylevels))
+								{
+								error("Not Authorized To Use That Level");
+								echo "<meta http-equiv='Refresh' Content='2;'>";
+								return;	
+								}
+								
                                 if(!isset($amount) || trim($amount) == '')
                                 {
                                 $amount = 1;
@@ -561,61 +650,63 @@ echo '
 
                     ?>
 
-<script type="text/javascript">
+                        <script type="text/javascript">
+                        var myLink = document.getElementById('mylink');
 
-var myLink = document.getElementById('mylink');
-
-myLink.onclick = function(){
-
-
-$(document).ready(function(){
-        $("#content").fadeOut(100);
-        $("#changeapp").fadeIn(1900);
-        }); 
-
-}
+                        myLink.onclick = function() {
 
 
-</script>
-<div id="ban-key" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Ban License</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="post"> 
-                                                    <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Ban reason:</label>
-                                                        <input type="text" class="form-control" name="reason" placeholder="Reason for ban" required>
-														<input type="hidden" class="bankey" name="key">
-                                                    </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="bankey">Ban</button>
-												</form>
-                                            </div>
-                                        </div>
+                            $(document).ready(function() {
+                                $("#content").fadeOut(100);
+                                $("#changeapp").fadeIn(1900);
+                            });
+
+                        }
+                        </script>
+                        <div id="ban-key" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                            aria-hidden="true" style="display: none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header d-flex align-items-center">
+                                        <h4 class="modal-title">Ban License</h4>
+                                        <button type="button" class="close ml-auto" data-dismiss="modal"
+                                            aria-hidden="true">ï¿½</button>
                                     </div>
-									</div>
+                                    <div class="modal-body">
+                                        <form method="post">
+                                            <div class="form-group">
+                                                <label for="recipient-name" class="control-label">Ban reason:</label>
+                                                <input type="text" class="form-control" name="reason"
+                                                    placeholder="Reason for ban" required>
+                                                <input type="hidden" class="bankey" name="key">
+                                            </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default waves-effect"
+                                            data-dismiss="modal">Close</button>
+                                        <button class="btn btn-danger waves-effect waves-light"
+                                            name="bankey">Ban</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card">
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table id="file_export" class="table table-striped table-bordered display">
                                         <thead>
                                             <tr>
-<th>Key</th>
-<th>Generated By</th>
-<th>Expires</th>
-<th>Last Login</th>
-<th>Status</th>
-<th>Action</th>
+                                                <th>Key</th>
+                                                <th>Generated By</th>
+                                                <th>Expires</th>
+                                                <th>Last Login</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-<?php
+                                            <?php
 		if($_SESSION['app']) {
         ($result = mysqli_query($link, "SELECT * FROM `keys` WHERE `genby` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
         if (mysqli_num_rows($result) > 0)
@@ -698,12 +789,12 @@ $(document).ready(function(){
                                         </tbody>
                                         <tfoot>
                                             <tr>
-<th>Key</th>
-<th>Generated By</th>
-<th>Expires</th>
-<th>Last Login</th>
-<th>Status</th>
-<th>Action</th>
+                                                <th>Key</th>
+                                                <th>Generated By</th>
+                                                <th>Expires</th>
+                                                <th>Last Login</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -713,23 +804,23 @@ $(document).ready(function(){
                     </div>
                 </div>
                 <!-- Show / hide columns dynamically -->
-                
+
                 <!-- Column rendering -->
-                
+
                 <!-- Row grouping -->
-                
+
                 <!-- Multiple table control element -->
-                
+
                 <!-- DOM / jQuery events -->
-                
+
                 <!-- Complex headers with column visibility -->
-                
+
                 <!-- language file -->
-                
+
                 <!-- Setting defaults -->
-                
+
                 <!-- Footer callback -->
-                
+
                 <?php
 				if(isset($_POST['deletekey']))
 				{
@@ -939,7 +1030,7 @@ $(document).ready(function(){
 					echo "<meta http-equiv='Refresh' Content='2'>";
 				}
 					?>
-                
+
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->
                 <!-- ============================================================== -->
@@ -958,8 +1049,10 @@ $(document).ready(function(){
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-       Copyright &copy; <script>document.write(new Date().getFullYear())</script> KeyAuth
-</footer>
+                Copyright &copy; <script>
+                document.write(new Date().getFullYear())
+                </script> KeyAuth
+            </footer>
             <!-- ============================================================== -->
             <!-- End footer -->
             <!-- ============================================================== -->
@@ -972,12 +1065,12 @@ $(document).ready(function(){
     <!-- End Wrapper -->
     <!-- ============================================================== -->
     <!-- ============================================================== -->
-    
-   
+
+
     <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->
-    
+
     <!-- Bootstrap tether Core JavaScript -->
     <script src="../../files/assets/libs/popper-js/dist/umd/popper.min.js"></script>
     <script src="../../files/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -993,7 +1086,7 @@ $(document).ready(function(){
     <!--Menu sidebar -->
     <script src="../../files/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="../../files/dist/js/feather.min.js"></script>
+    <script src="../../files/dist/js/feather.min.js"></script>
     <script src="../../files/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
@@ -1005,8 +1098,8 @@ $(document).ready(function(){
     <!--chartjs -->
     <script src="../../files/assets/libs/chart-js/dist/chart.min.js"></script>
     <script src="../../files/dist/js/pages/dashboards/dashboard1.js"></script>
-		<script src="../../files/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
-	    <!-- start - This is for export functionality only -->
+    <script src="../../files/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
@@ -1014,17 +1107,17 @@ $(document).ready(function(){
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
-  
-					
 
-<script src="../../files/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
-<script>
-                        
-		function bankey(key) {
-		 var bankey = $('.bankey');
-		 bankey.attr('value', key);
-      }
-                    </script>
+
+    <script src="../../files/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+
+    <script>
+    function bankey(key) {
+        var bankey = $('.bankey');
+        bankey.attr('value', key);
+    }
+    </script>
 </body>
+
 </html>
