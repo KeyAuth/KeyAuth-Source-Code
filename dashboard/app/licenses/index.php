@@ -1335,7 +1335,8 @@ $(document).ready(function(){
 
         $row = mysqli_fetch_array($result);
 
-        $expiry = date("Y-m-d\TH:i", $row["expires"]);
+        $now = time();
+        $expiry = date("Y-m-d\TH:i", $row["expires"] + $now);
         $currtime = date("Y-m-d\TH:i", time());
 		?>
         <div id="edit-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
@@ -1388,7 +1389,9 @@ $(document).ready(function(){
         $level = sanitize($_POST['level']);
         $hwid = sanitize($_POST['hwid']);
 
+        $now = time();
         $expiry = strtotime($expiry);
+        $expiry = $expiry - $now;
 
         if (isset($hwid) && trim($hwid) != '')
         {

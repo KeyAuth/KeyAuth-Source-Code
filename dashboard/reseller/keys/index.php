@@ -963,8 +963,9 @@ echo '
 					
                     $row = mysqli_fetch_array($result);
 					
-					$expiry = date("Y-m-d\TH:i", $row["expires"]);
-					$currtime = date("Y-m-d\TH:i", time());
+                    $now = time();
+                    $expiry = date("Y-m-d\TH:i", $row["expires"] + $now);
+                    $currtime = date("Y-m-d\TH:i", time());
 					
 					echo'<div id="ban-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
                                     <div class="modal-dialog">
@@ -977,7 +978,7 @@ echo '
                                                 <form method="post"> 
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Key Expiry:</label>
-                                                        <input class="form-control" type="datetime-local" name="expiry" value="' . date("Y-m-d\TH:i", $row["expires"]) . '" required>
+                                                        <input class="form-control" type="datetime-local" name="expiry" value="' . $expiry . '" required>
 														<input type="hidden" name="key" value="' . $key . '">
                                                     </div>
 													<div class="form-group">
@@ -1011,7 +1012,9 @@ echo '
 					$level = sanitize($_POST['level']);
 					$hwid = sanitize($_POST['hwid']);
 					
-					$expiry = strtotime($expiry);
+					$now = time();
+                    $expiry = strtotime($expiry);
+                    $expiry = $expiry - $now;
 					
 					if(isset($hwid) && trim($hwid) != '')
 					{

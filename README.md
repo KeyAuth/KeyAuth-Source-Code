@@ -36,3 +36,7 @@ c++: https://www.ssllabs.com/ - watch this video: https://a.pomf.cat/cglexh.mp4
 - (08/12/2021) Suggestion added (Limit resellers to only be able to generate a certain key level) by SoniC#1337
 
 - (08/13/2021) Added discord link api
+
+- (08/13/2021) Fixed 1970 bug on license tab
+
+- (08/13/2021) Fixed 1970 bug on reseller tab
