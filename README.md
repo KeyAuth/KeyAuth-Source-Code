@@ -34,3 +34,5 @@ c++: https://www.ssllabs.com/ - watch this video: https://a.pomf.cat/cglexh.mp4
 ## Updates ##
 
 - (08/12/2021) Suggestion added (Limit resellers to only be able to generate a certain key level) by SoniC#1337
+
+- (08/13/2021) Added discord link api
