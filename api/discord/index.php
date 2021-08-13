@@ -4,6 +4,7 @@ include '../../includes/connection.php';
 	This code is pretty much all from https://gist.github.com/Jengas/ad128715cb4f73f5cde9c467edf64b00
 	It serves as the redirect page for users who 'Link Discord' in account settings
 	Using their oauth2 access_token, it will first attempt to add them to the server, then give them a role if they're developer or seller
+  If you need help setting this up you can contact me my discord is Ninoٴ#9453
 */
 
 ini_set('display_errors', 1);
