@@ -3,11 +3,12 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 12, 2021 at 10:13 PM
+-- Generation Time: Aug 16, 2021 at 09:39 PM
 -- Server version: 10.4.20-MariaDB
 -- PHP Version: 8.0.9
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -18,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `keyauth`
+-- Database: `keyauth_main`
 --
 
 -- --------------------------------------------------------
@@ -51,21 +52,15 @@ CREATE TABLE `accounts` (
   `isbanned` int(1) NOT NULL,
   `img` varchar(90) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://i.imgur.com/cVPXjIH.jpg',
   `pp` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `dayrate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `weekrate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `monthrate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `threemonthrate` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `sixmonthrate` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `liferate` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `balance` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `keylevels` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
   `expires` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `registrationip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `lastip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `twofactor` int(1) NOT NULL DEFAULT 0,
+  `twofactor` int(1) NOT NULL DEFAULT '0',
   `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `darkmode` int(1) NOT NULL DEFAULT 0,
-  `acclogs` int(1) NOT NULL DEFAULT 1,
+  `darkmode` int(1) NOT NULL DEFAULT '0',
+  `acclogs` int(1) NOT NULL DEFAULT '1',
   `format` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
   `amount` int(3) DEFAULT NULL,
   `lvl` int(3) DEFAULT NULL,
@@ -85,9 +80,9 @@ CREATE TABLE `apps` (
   `secret` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `ownerid` varchar(39) COLLATE utf8_unicode_ci NOT NULL,
   `enabled` int(1) NOT NULL,
-  `paused` int(11) NOT NULL DEFAULT 0,
+  `paused` int(11) NOT NULL DEFAULT '0',
   `hwidcheck` int(1) NOT NULL,
-  `vpnblock` int(1) NOT NULL DEFAULT 0,
+  `vpnblock` int(1) NOT NULL DEFAULT '0',
   `sellerkey` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `ver` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT '1.0',
   `download` varchar(120) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
