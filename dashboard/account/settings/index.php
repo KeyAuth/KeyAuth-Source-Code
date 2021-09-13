@@ -303,6 +303,12 @@ if (!isset($_SESSION['username'])) {
                                             <input class="form-control" name="email" type="email" placeholder="Change email address">
                                         </div>
                                     </div>
+									<div class="form-group row">
+                                        <label for="example-password-input" class="col-2 col-form-label">Username</label>
+                                        <div class="col-10">
+                                            <input class="form-control" name="username" placeholder="Change username">
+                                        </div>
+                                    </div>
                                     <button name="updatesettings" class="btn btn-success"> <i class="fa fa-check"></i> Save</button>  <a href="JavaScript:newPopup('https://discord.com/api/oauth2/authorize?client_id=808227154931875893&redirect_uri=https%3A%2F%2Fkeyauth.com%2Fapi%2Fdiscord%2F&response_type=code&scope=identify%20guilds.join');" class="btn btn-info"> <i class="fab fa-discord"></i>  Link Discord</a>  <?php if($twofactor == 0){echo '<button name="method_2factor" class="btn waves-effect waves-light btn-dark"> <i class="fa fa-lock"></i> Enable 2FA</button>';}else{echo'<button name="method_2factor_disable" class="btn waves-effect waves-light btn-dark"> <i class="fa fa-lock"></i> Disable 2FA</button>';}?>  <button name="refreshownerid" class="btn btn-warning" onclick="return confirm('Are you sure you want to reset ownerid for your account and all your applications?')"> <i class="fa fa-check"></i> Refresh OwnerID</button>
                                 </form>
 								<?php
@@ -457,6 +463,8 @@ if (!isset($_SESSION['username'])) {
 						
                         $email = sanitize($_POST['email']);
 						
+                        $username = sanitize($_POST['username']);
+						
                         $darkmode = sanitize($_POST['darkmode']);
 						
                         $acclogs = sanitize($_POST['acclogs']);
@@ -482,6 +490,42 @@ if (!isset($_SESSION['username'])) {
 							}
 							
                             mysqli_query($link, "UPDATE `accounts` SET `email` = '$email' WHERE `username` = '".$_SESSION['username']."'");
+
+                        }
+						
+						if(isset($username) && trim($username) != '')
+
+                        {
+							
+							if($username == $_SESSION['username'])
+							{
+								error("You already occupy this username!");
+								echo "<meta http-equiv='Refresh' Content='2;'>";  
+								return;
+							}
+							
+							($result = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+							if (mysqli_num_rows($result) != 0)
+							{
+								error("Another account is already using this username!");
+								echo "<meta http-equiv='Refresh' Content='2;'>";  
+								return;
+							}
+							
+                            mysqli_query($link, "UPDATE `acclogs` SET `username` = '$username' WHERE `username` = '".$_SESSION['username']."'");
+                            mysqli_query($link, "UPDATE `files` SET `uploader` = '$username' WHERE `uploader` = '".$_SESSION['username']."'");
+                            mysqli_query($link, "UPDATE `apps` SET `owner` = '$username' WHERE `owner` = '".$_SESSION['username']."'");
+                            mysqli_query($link, "UPDATE `keys` SET `genby` = '$username' WHERE `genby` = '".$_SESSION['username']."'");
+                            mysqli_query($link, "UPDATE `logs` SET `logowner` = '$username' WHERE `logowner` = '".$_SESSION['username']."'");
+                            mysqli_query($link, "UPDATE `vars` SET `author` = '$username' WHERE `author` = '".$_SESSION['username']."'");
+                            mysqli_query($link, "UPDATE `webhooks` SET `owner` = '$username' WHERE `owner` = '".$_SESSION['username']."'");
+							
+							mysqli_query($link, "UPDATE `accounts` SET `username` = '$username' WHERE `username` = '".$_SESSION['username']."'");
+							
+							if (mysqli_affected_rows($link) != 0)
+							{
+								$_SESSION['username'] = $username;
+							}
 
                         }
 						
