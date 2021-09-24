@@ -49,7 +49,7 @@ CREATE TABLE `accounts` (
   `role` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `app` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `owner` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `isbanned` int(1) NOT NULL,
+  `banned` varchar(69) COLLATE utf8_unicode_ci DEFAULT NULL,
   `img` varchar(90) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://i.imgur.com/cVPXjIH.jpg',
   `pp` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `balance` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
@@ -131,7 +131,6 @@ CREATE TABLE `files` (
   `id` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `size` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `uploaddate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `uploader` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -143,10 +142,8 @@ CREATE TABLE `files` (
 
 CREATE TABLE `keys` (
   `key` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `note` varchar(69) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `note` varchar(69) COLLATE utf8_unicode_ci DEFAULT NULL,
   `expires` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `lastlogin` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `hwid` varchar(400) COLLATE utf8_unicode_ci NOT NULL,
   `status` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `level` varchar(12) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `genby` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
@@ -154,9 +151,7 @@ CREATE TABLE `keys` (
   `usedon` int(10) DEFAULT NULL,
   `usedby` varchar(70) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
   `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
-  `cooldown` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `banned` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `ip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT ''
+  `banned` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -168,8 +163,8 @@ CREATE TABLE `keys` (
 CREATE TABLE `logs` (
   `logdate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `logdata` varchar(275) COLLATE utf8_unicode_ci NOT NULL,
-  `logkey` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `logowner` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
+  `credential` varchar(70) COLLATE utf8_unicode_ci NOT NULL,
+  `pcuser` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
   `logapp` varchar(64) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -223,11 +218,11 @@ CREATE TABLE `subscriptions` (
 CREATE TABLE `users` (
   `username` varchar(70) NOT NULL,
   `password` varchar(70) NOT NULL,
-  `expires` varchar(70) NOT NULL DEFAULT '',
   `hwid` varchar(70) NOT NULL DEFAULT 'N/A',
   `app` varchar(64) NOT NULL,
   `banned` varchar(99) DEFAULT NULL,
-  `ip` varchar(49) DEFAULT NULL
+  `ip` varchar(49) DEFAULT NULL,
+  `cooldown` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -239,8 +234,7 @@ CREATE TABLE `users` (
 CREATE TABLE `vars` (
   `varid` varchar(49) NOT NULL,
   `msg` varchar(99) NOT NULL,
-  `app` varchar(64) NOT NULL,
-  `author` varchar(49) NOT NULL
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -253,8 +247,7 @@ CREATE TABLE `webhooks` (
   `webid` varchar(10) NOT NULL,
   `baselink` varchar(200) NOT NULL,
   `useragent` varchar(49) NOT NULL DEFAULT 'KeyAuth',
-  `app` varchar(64) NOT NULL,
-  `owner` varchar(40) NOT NULL
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
