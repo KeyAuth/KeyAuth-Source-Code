@@ -170,9 +170,9 @@
 							
 							if($acclogs) // check if account logs enabled
 							{
-							mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('".$_POST['keyauthusername']."','".time()."','$ip','".$_SERVER['HTTP_USER_AGENT']."')"); // insert ip log
+							mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('$username','".time()."','$ip','".$_SERVER['HTTP_USER_AGENT']."')"); // insert ip log
 							$ts = time() - 604800;
-							mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '" . $_POST['keyauthusername'] . "' AND `date` < '$ts'"); // delete any account logs more than a week old
+							mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '$username' AND `date` < '$ts'"); // delete any account logs more than a week old
 							}
 							
 							// webhook start
