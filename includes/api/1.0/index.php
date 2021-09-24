@@ -1,5 +1,6 @@
 <?php
 include '../../connection.php';
+include '../../functions.php';
 
 #region enc region
 function Encrypt($string, $enckey)
@@ -19,7 +20,7 @@ function Decrypt($string, $enckey)
 function register($un,$key,$pw,$hwid,$secret)
 {
 		global $link; // needed to refrence active MySQL connection
-		
+		global $ip; // needed to refrence client IP
 		
         // search username
         $result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '$secret'");
@@ -73,11 +74,11 @@ function register($un,$key,$pw,$hwid,$secret)
 					
 			}
 			
-			$hwidcheck = mysqli_query($link, "SELECT * FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '" . $_SERVER["HTTP_X_FORWARDED_FOR"] . "') AND `app` = '$secret'");
+			$hwidcheck = mysqli_query($link, "SELECT * FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '$ip') AND `app` = '$secret'");
             if (mysqli_num_rows($hwidcheck) > 0)
 
             {
-                mysqli_query($link, "UPDATE `keys` SET `status` = 'Banned',`banned` = 'This key has been banned as the client was blacklisted.' WHERE `key` = '" . $un . "' AND `app` = '" . $secret . "'");
+                mysqli_query($link, "UPDATE `keys` SET `status` = 'Banned',`banned` = 'This key has been banned as the client was blacklisted.' WHERE `key` = '$un' AND `app` = '$secret'");
 				return 'hwid_blacked';
             }
 			
@@ -137,7 +138,7 @@ function register($un,$key,$pw,$hwid,$secret)
 function login($un,$pw,$hwid,$secret,$hwidenabled)
 {
 		global $link; // needed to refrence active MySQL connection
-		
+		global $ip; // needed to refrence client IP
 		
         // Find username
         $result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '$secret'");
@@ -173,6 +174,14 @@ function login($un,$pw,$hwid,$secret,$hwidenabled)
 			{
 				return 'user_banned';
 			}
+			
+			$hwidcheck = mysqli_query($link, "SELECT * FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '$ip') AND `app` = '$secret'");
+			if (mysqli_num_rows($hwidcheck) > 0)
+	
+			{
+				mysqli_query($link, "UPDATE `users` SET `banned` = 'User is blacklisted' WHERE `username` = '$un' AND `app` = '$secret'");
+				return 'hwid_blacked';
+			}
 
             // check if pass matches
             if (!password_verify($pw, $pass))
@@ -202,7 +211,7 @@ function login($un,$pw,$hwid,$secret,$hwidenabled)
 				}
 
             }
-			mysqli_query($link, "UPDATE `users` SET `ip` = '".$_SERVER['HTTP_X_FORWARDED_FOR']."' WHERE `username` = '$un'");
+			mysqli_query($link, "UPDATE `users` SET `ip` = '$ip' WHERE `username` = '$un'");
             $result = mysqli_query($link, "SELECT `subscription`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
 
             $num = mysqli_num_rows($result);

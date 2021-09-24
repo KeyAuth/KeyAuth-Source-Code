@@ -1,13 +1,13 @@
 <?php
+include '../includes/connection.php';
+include '../includes/functions.php';
+session_start();
 
-    include '../includes/connection.php';
-    include '../includes/functions.php';
-    session_start();
-
-    if (isset($_SESSION['username'])) {
-        header("Location: ../dashboard/");
-        exit();
-    }
+if (isset($_SESSION['username']))
+{
+    header("Location: ../dashboard/");
+    exit();
+}
 
 ?>
 <!DOCTYPE html>
@@ -75,134 +75,136 @@
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 
     <?php
-        if (isset($_POST['login']))
+if (isset($_POST['login']))
+{
+
+    if (empty($_POST['keyauthusername']) || empty($_POST['keyauthpassword']))
+    {
+        error("You must fill in all the fields!");
+        return;
+    }
+
+    $username = sanitize($_POST['keyauthusername']);
+    $password = sanitize($_POST['keyauthpassword']);
+
+    ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+
+    if (mysqli_num_rows($result) == 0)
+    {
+        error("Account doesn\'t exist!");
+        return;
+    }
+    while ($row = mysqli_fetch_array($result))
+    {
+        $user = $row['username'];
+        $pass = $row['password'];
+        $id = $row['ownerid'];
+        $email = $row['email'];
+        $role = $row['role'];
+        $app = $row['app'];
+        $banned = $row['banned'];
+        $img = $row['img'];
+
+        $owner = $row['owner'];
+        $twofactor_optional = $row['twofactor'];
+        $acclogs = $row['acclogs'];
+        $google_Code = $row['googleAuthCode'];
+    }
+
+    if (!is_null($banned))
+    {
+        error("Banned: Reason: " . sanitize($banned));
+        return;
+    }
+
+    if (!password_verify($password, $pass))
+    {
+        error("Password is invalid!");
+        return;
+    }
+
+    if ($twofactor_optional)
+    {
+        // keyauthtwofactor
+        $twofactor = sanitize($_POST['keyauthtwofactor']);
+        if (empty($twofactor))
         {
-			
-            if (empty($_POST['keyauthusername']) || empty($_POST['keyauthpassword']))
-            {
-                error("You must fill in all the fields!");
-                return;
-            }
+            error("Two factor field needed for this acccount!");
+            return;
+        }
 
-            $username = sanitize($_POST['keyauthusername']);
-            $password = sanitize($_POST['keyauthpassword']);
+        require_once '../auth/GoogleAuthenticator.php';
+        $gauth = new GoogleAuthenticator();
+        $checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
 
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+        if (!$checkResult)
+        {
+            error("2FA code Invalid!");
+            return;
+        }
+    }
 
-            if (mysqli_num_rows($result) == 0)
-            {
-				error("Account doesn\'t exist!");
-                return;
-            }
-                while ($row = mysqli_fetch_array($result))
-                {
-                    $user = $row['username'];
-                    $pass = $row['password'];
-                    $id = $row['ownerid'];
-                    $email = $row['email'];
-                    $role = $row['role'];
-                    $app = $row['app'];
-                    $isbanned = $row['isbanned'];
-                    $img = $row['img'];
-                    
-                    $owner = $row['owner'];
-                    $twofactor_optional = $row['twofactor'];
-					$acclogs = $row['acclogs'];
-					$google_Code = $row['googleAuthCode'];
-                }
+    $_SESSION['username'] = $username;
+    $_SESSION['email'] = $email;
+    $_SESSION['ownerid'] = $id;
+    $_SESSION['owner'] = $owner;
+    $_SESSION['role'] = $role;
 
-                if ($isbanned)
-                {
-                    error("Your account has been banned!");
-					return;
-                }
-				
-                    if (!password_verify($password, $pass))
-                    {
-                        error("Password is invalid!");
-						return;
-                    }
-                            
-                        if ($twofactor_optional)
-                        {
-                           // keyauthtwofactor
-                           $twofactor = sanitize($_POST['keyauthtwofactor']);
-                           if (empty($twofactor))
-                           {
-				  error("Two factor field needed for this acccount!");
-                  return;
-                           }
+    if ($role == "Reseller" || $role == "Manager")
+    {
+        ($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `name` = '$app' AND `owner` = '$owner'")) or die(mysqli_error($link));
+        if (mysqli_num_rows($result) < 1)
+        {
+            error("Application you\'re assigned to no longer exists!");
+            return;
+        }
+        while ($row = mysqli_fetch_array($result))
+        {
+            $app = $row["secret"];
+        }
+        $_SESSION['app'] = $app;
+    }
 
-            require_once '../auth/GoogleAuthenticator.php';
-			$gauth = new GoogleAuthenticator();
-            $checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
-            
-            if (!$checkResult)
-            {
-				error("2FA code Invalid!");
-				return;
-			}
-                        }
+    $_SESSION['img'] = $img;
 
-                        
-                            $_SESSION['username'] = $username;
-                            $_SESSION['email'] = $email;
-                            $_SESSION['ownerid'] = $id;
-                            $_SESSION['owner'] = $owner;
-                            $_SESSION['role'] = $role;
-                            
-                            if($role == "Reseller" || $role == "Manager")
-                            {
-								($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `name` = '$app' AND `owner` = '$owner'")) or die(mysqli_error($link));
-								if (mysqli_num_rows($result) < 1)
-								{
-									error("Application you\'re assigned to no longer exists!");
-									return;
-								}
-								while ($row = mysqli_fetch_array($result))
-								{
-								$app = $row["secret"];
-								}
-                                $_SESSION['app'] = $app;
-                            }
-                            
-                            $_SESSION['img'] = $img;
-							
-							if($acclogs) // check if account logs enabled
-							{
-							mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('$username','".time()."','$ip','".$_SERVER['HTTP_USER_AGENT']."')"); // insert ip log
-							$ts = time() - 604800;
-							mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '$username' AND `date` < '$ts'"); // delete any account logs more than a week old
-							}
-							
-							// webhook start
-								$timestamp = date("c", strtotime("now"));
+    if ($acclogs) // check if account logs enabled
+    
+    {
+		$ua = sanitize($_SERVER['HTTP_USER_AGENT']);
+        mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('$username','" . time() . "','$ip','$ua')"); // insert ip log
+        $ts = time() - 604800;
+        mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '$username' AND `date` < '$ts'"); // delete any account logs more than a week old
+        
+    }
 
-								$json_data = json_encode([
-									// Message
-									"content" => "".$_SESSION['username']." has logged into KeyAuth with IP {$ip}",
-									
-									// Username
-									"username" => "KeyAuth Logs",
-								
-								], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-								
-								
-								$ch = curl_init("webhook_link_here");
-								curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-type: application/json'));
-								curl_setopt($ch,CURLOPT_POST,1);
-								curl_setopt($ch,CURLOPT_POSTFIELDS,$json_data);
-								curl_setopt($ch,CURLOPT_FOLLOWLOCATION,1);
-								curl_setopt($ch,CURLOPT_HEADER,0);
-								
-								curl_exec($ch);
-								curl_close($ch);
-								// webhook end
-								
-								mysqli_query($link, "UPDATE `accounts` SET `lastip` = '$ip' WHERE `username` = '$username'");
-							                                     
-							header("location: ../dashboard/");                           
+    // webhook start
+    $timestamp = date("c", strtotime("now"));
+
+    $json_data = json_encode([
+    // Message
+    "content" => "" . $_SESSION['username'] . " has logged into KeyAuth with IP `{$ip}`",
+
+    // Username
+    "username" => "KeyAuth Logs",
+
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+    $ch = curl_init("webhook_link_here");
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Content-type: application/json'
+    ));
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+
+    curl_exec($ch);
+    curl_close($ch);
+    // webhook end
+    mysqli_query($link, "UPDATE `accounts` SET `lastip` = '$ip' WHERE `username` = '$username'");
+
+    header("location: ../dashboard/");
 }
-    ?>
+?>
 </body>
 </html>

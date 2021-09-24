@@ -15,10 +15,12 @@ $username = $_SESSION['username'];
 ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 $row = mysqli_fetch_array($result);
 
-$isbanned = $row['isbanned'];
-if ($isbanned == "1")
+$banned = $row['banned'];
+if (!is_null($banned))
 {
-    die("ur banned");
+	echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+	session_destroy();
+	exit();
 }
 
 $role = $row['role'];
@@ -330,7 +332,7 @@ if (isset($_POST['createacc']))
         return;
     }
 
-    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `isbanned`, `img`, `balance`, `keylevels`) VALUES ('$username','$email','$pass_encrypted','','$role','$app','$owner',0,'https://i.imgur.com/TrwYFBa.png', '0|0|0|0|0|0', '$keylevels')") or die(mysqli_error($link));
+    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `img`, `balance`, `keylevels`) VALUES ('$username','$email','$pass_encrypted','','$role','$app','$owner','https://i.imgur.com/TrwYFBa.png', '0|0|0|0|0|0', '$keylevels')") or die(mysqli_error($link));
     echo '
                         <script type=\'text/javascript\'>
                         

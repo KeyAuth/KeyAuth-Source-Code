@@ -1,13 +1,13 @@
 <?php
+include '../includes/connection.php';
+include '../includes/functions.php';
+session_start();
 
-    include '../includes/connection.php';
-    include '../includes/functions.php';
-    session_start();
-
-    if (isset($_SESSION['username'])) {
-        header("Location: ../dashboard/");
-        exit();
-    }
+if (isset($_SESSION['username']))
+{
+    header("Location: ../dashboard/");
+    exit();
+}
 
 ?>
 <!DOCTYPE html>
@@ -46,6 +46,7 @@
 						<input class="input100" type="password" name="password" minlength="5" placeholder="Password" required>
 						<span class="focus-input100"></span>
 					</div>
+					
 					<div class="flex-sb-m w-full p-t-3 p-b-24">
 
 						<div>
@@ -88,7 +89,7 @@ if (isset($_POST['register']))
 
     $email_check = mysqli_query($link, "SELECT * FROM `accounts` WHERE `email` = '$email'") or die(mysqli_error($link));
     $do_email_check = mysqli_num_rows($email_check);
-
+    // $row = mysqli_fetch_array($email_check);
     if ($do_email_check > 0)
     {
         error('Email already used by username: ' . mysqli_fetch_array($email_check) ['username'] . '');
@@ -99,7 +100,7 @@ if (isset($_POST['register']))
     $ownerid = generateRandomString();
 
     $expires = time() + 3.154e+7; // set expiry to year in advance
-    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `isbanned`, `img`,`balance`, `expires`, `registrationip`) VALUES ('$username', '$email', '$pass_encrypted', '$ownerid','tester','','',0,'https://i.imgur.com/TrwYFBa.png','1', '$expires', '$ip')") or die(mysqli_error($link));
+    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `img`,`balance`, `expires`, `registrationip`) VALUES ('$username', '$email', '$pass_encrypted', '$ownerid','tester','','','https://i.imgur.com/TrwYFBa.png','1', '$expires', '$ip')") or die(mysqli_error($link));
 
     $_SESSION['username'] = $username;
     $_SESSION['email'] = $email;
@@ -110,6 +111,6 @@ if (isset($_POST['register']))
     header("location: ../dashboard/");
 }
 
-?>
+?> 
 </body>
 </html>

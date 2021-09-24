@@ -340,7 +340,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Variable Addition Successful"
             )));
         }
@@ -423,7 +423,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Subscription Addition Successful"
             )));
         }
@@ -660,7 +660,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Variable Edit Successful"
             )));
         }
@@ -1018,7 +1018,7 @@ switch ($type)
             else
             {
                 die(json_encode(array(
-                    "success" => false,
+                    "success" => true,
                     "message" => "Key Successfully Verified"
                 )));
             }
@@ -1105,7 +1105,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Deleted License"
             )));
         }
@@ -1168,7 +1168,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Deleted Unused Licenses"
             )));
         }
@@ -1233,7 +1233,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Deleted Expired Licenses"
             )));
         }
@@ -1318,7 +1318,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Deleted User"
             )));
         }
@@ -1383,7 +1383,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Deleted All Licenses"
             )));
         }
@@ -1447,7 +1447,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Deleted All Variables"
             )));
         }
@@ -1531,7 +1531,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Reset License"
             )));
         }
@@ -1615,7 +1615,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Reset User"
             )));
         }
@@ -1785,7 +1785,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Successfully Banned License"
             )));
         }
@@ -2147,7 +2147,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Balance Successfully Added"
             )));
         }
@@ -2502,6 +2502,7 @@ switch ($type)
             $status = $roww["status"];
             $level = $roww["level"];
             $genby = $roww["genby"];
+            $usedby = $roww["usedby"];
             $gendate = date('jS F Y h:i:s A (T)', $roww["gendate"]);
             $ip = $roww["ip"];
             Die(json_encode(array(
@@ -2512,6 +2513,7 @@ switch ($type)
                 "status" => "$status",
                 "level" => "$level",
                 "createdby" => "$genby",
+                "usedby" => "$usedby",
                 "creationdate" => "$gendate",
                 "ip" => "$ip"
             )));

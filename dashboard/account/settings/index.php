@@ -16,11 +16,13 @@ if (!isset($_SESSION['username'])) {
             ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
             $row = mysqli_fetch_array($result);
             
-            $isbanned = $row['isbanned'];
-            if($isbanned == "1")
-            {
-                die("ur banned");
-            }
+            $banned = $row['banned'];
+			if (!is_null($banned))
+			{
+				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+				session_destroy();
+				exit();
+			}
         
             $role = $row['role'];
             $twofactor = $row['twofactor'];
@@ -490,6 +492,36 @@ if (!isset($_SESSION['username'])) {
 							}
 							
                             mysqli_query($link, "UPDATE `accounts` SET `email` = '$email' WHERE `username` = '".$_SESSION['username']."'");
+							
+							if (mysqli_affected_rows($link) != 0)
+							{
+								// webhook start
+								$timestamp = date("c", strtotime("now"));
+								
+								$json_data = json_encode([
+								// Message
+								"content" => "" . $_SESSION['username'] . " with email " . $_SESSION['email'] . " has changed email to `{$email}`",
+								
+								// Username
+								"username" => "KeyAuth Logs",
+								
+								], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+								
+								$ch = curl_init("webhook_link_here");
+								curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+									'Content-type: application/json'
+								));
+								curl_setopt($ch, CURLOPT_POST, 1);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+								curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+								curl_setopt($ch, CURLOPT_HEADER, 0);
+								
+								curl_exec($ch);
+								curl_close($ch);
+								// webhook end
+								
+								$_SESSION['email'] = $email;
+							}
 
                         }
 						
@@ -524,6 +556,31 @@ if (!isset($_SESSION['username'])) {
 							
 							if (mysqli_affected_rows($link) != 0)
 							{
+								// webhook start
+								$timestamp = date("c", strtotime("now"));
+							
+								$json_data = json_encode([
+								// Message
+								"content" => "" . $_SESSION['username'] . " has changed username to `{$username}`",
+							
+								// Username
+								"username" => "KeyAuth Logs",
+							
+								], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+							
+								$ch = curl_init("webhook_link_here");
+								curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+									'Content-type: application/json'
+								));
+								curl_setopt($ch, CURLOPT_POST, 1);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+								curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+								curl_setopt($ch, CURLOPT_HEADER, 0);
+							
+								curl_exec($ch);
+								curl_close($ch);
+								// webhook end
+								
 								$_SESSION['username'] = $username;
 							}
 

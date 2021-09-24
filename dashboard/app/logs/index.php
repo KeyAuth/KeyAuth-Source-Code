@@ -16,13 +16,13 @@ if (!isset($_SESSION['username'])) {
             ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
             $row = mysqli_fetch_array($result);
             
-            $isbanned = $row['isbanned'];
-            if($isbanned == "1")
-            {
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>"; 
+            $banned = $row['banned'];
+			if (!is_null($banned))
+			{
+				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
 				session_destroy();
 				exit();
-            }
+			}
         
             $role = $row['role'];
             $_SESSION['role'] = $role;
@@ -254,30 +254,6 @@ else // app already selected, load page like normal
                     <ul id="sidebarnav">
                         <?php
 						sidebar($role);
-						
-		if(isset($_POST['deletekey']))
-            {
-                $logkey = sanitize($_POST['deletekey']);
-                $result = mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$logkey'");
-            if($result)
-            {
-                                                                echo '
-                            <script type=\'text/javascript\'>
-                            
-                            const notyf = new Notyf();
-                            notyf
-                              .success({
-                                message: \'Deleted Key!\',
-                                duration: 3500,
-                                dismissible: true
-                              });                
-                            
-                            </script>
-                            ';
-                            echo "<meta http-equiv='Refresh' Content='2;'>";
-            }
-
-            }
 		
 		if (isset($_POST['dellogs']))
         {
@@ -481,8 +457,8 @@ $(document).ready(function(){
                                             <tr>
 <th>Log Date</th>
 <th>Log Data</th>
-<th>Log Key</th>
-<th>Action</th>
+<th>Credential</th>
+<th>Device Name</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -494,22 +470,17 @@ $(document).ready(function(){
                 while ($row = mysqli_fetch_array($result))
                 {
 
-                                                    echo "<tr>";
-
-                                                    echo "<td><script>document.write(convertTimestamp(". $row["logdate"] ."));</script></td>";
-
-                                                    echo "  <td>". $row["logdata"]. "</td>";
+?>
+                                                    <tr>
 													
-                                                    echo "  <td>". $row["logkey"]. "</td>";
-                                                    
-                                                    // echo "  <td>". $row["status"]. "</td>";
-
-                                                    echo'<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                Manage
-                                            </button>
-                                            <div class="dropdown-menu"><form method="post">
-                                                <button class="dropdown-item" name="deletekey" value="' . $row['logkey'] . '">Delete Account</button></div></td></tr></form>';
-
+													<td><script>document.write(convertTimestamp(<?php echo $row["logdate"]; ?>));</script></td>
+                                                    <td><?php echo $row["logdata"]; ?></td>
+													
+                                                    <td><?php echo $row["credential"] ?? "N/A"; ?></td>
+													
+													<td><?php echo $row["pcuser"] ?? "N/A"; ?></td>
+                                                    </tr></form>
+												<?php
                                                 }
 
                                             }
@@ -522,8 +493,8 @@ $(document).ready(function(){
                                             <tr>
 <th>Log Date</th>
 <th>Log Data</th>
-<th>Log Key</th>
-<th>Action</th>
+<th>Credential</th>
+<th>Device Name</th>
                                             </tr>
                                         </tfoot>
                                     </table>

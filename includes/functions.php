@@ -11,14 +11,43 @@ function vpn_check($ipaddr)
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-    //for debug only!
+	
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 
     $resp = curl_exec($curl);
     $json = json_decode($resp);
 
+	if ($json->status == "error")
+	{
+		// webhook start
+        $timestamp = date("c", strtotime("now"));
+
+        $json_data = json_encode([
+        // Message
+        "content" => "<@809847976599224361> vpn check request failed with IP `{$ipaddr}`",
+
+        // Username
+        "username" => "KeyAuth Logs",
+
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        $ch = curl_init("webhook_link_here");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-type: application/json'
+        ));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+
+        curl_exec($ch);
+        curl_close($ch);
+        // webhook end
+		
+		return false;
+	}
+	
     if ($json->result > 0.995)
     {
         return true;
@@ -41,7 +70,7 @@ function sanitize($input)
 
 function fetchip()
 {
-    return $_SERVER['HTTP_CLIENT_IP'] ? $_SERVER['HTTP_CLIENT_IP'] : ($_SERVER['HTTP_X_FORWARDED_FOR'] ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR']);
+    return $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
 }
 
 function heador()

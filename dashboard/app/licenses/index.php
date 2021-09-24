@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
@@ -13,14 +13,13 @@ $username = $_SESSION['username'];
 ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 $row = mysqli_fetch_array($result);
 
-$isbanned = $row['isbanned'];
-if ($isbanned == "1")
-{
-    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
-    session_destroy();
-    exit();
-}
-
+            $banned = $row['banned'];
+			if (!is_null($banned))
+			{
+				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+				session_destroy();
+				exit();
+			}
 $role = $row['role'];
 $_SESSION['role'] = $role;
 
@@ -393,7 +392,7 @@ if (isset($_POST['change']))
                     <div class="col-12">
 					<?php heador($role, $link); ?>
 					<form method="POST">
-					<button data-toggle="modal" type="button" data-target="#create-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create keys</button>  <button data-toggle="modal" type="button" data-target="#import-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import keys</button>  <button data-toggle="modal" type="button" data-target="#comp-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Compensate</button><br><br><button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-download fa-sm text-white-50"></i> Download All keys</button>  <button name="delkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All keys</button>  <button name="delexpkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all expired keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Expired keys</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all keys?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Keys</button>  <button name="deleteallunused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all unused keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Unused Keys</button>  <button name="deleteallused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all used keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Used Keys</button>
+					<button data-toggle="modal" type="button" data-target="#create-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create keys</button>  <button data-toggle="modal" type="button" data-target="#import-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import keys</button>  <button data-toggle="modal" type="button" data-target="#comp-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Compensate</button><br><br><button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-download fa-sm text-white-50"></i> Download All keys</button>  <button name="delkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All keys</button>  <button name="delexpkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all expired keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Expired keys</button>  <button name="deleteallunused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all unused keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Unused Keys</button>  <button name="deleteallused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all used keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Used Keys</button>
                             </form>
 							<br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
@@ -561,7 +560,7 @@ function license($amount, $mask, $expiry, $level, $link, $note)
     {
 
         $license = license_masking($mask);
-        mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license','$note', '$expiry', '','','Not Used','$level','" . $_SESSION['username'] . "', '" . time() . "', '" . $_SESSION['app'] . "')");
+        mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license',NULLIF('$note', ''), '$expiry','Not Used','$level','" . $_SESSION['username'] . "', '" . time() . "', '" . $_SESSION['app'] . "')");
         $licenses[] = $license;
     }
 
@@ -646,38 +645,30 @@ if (isset($_POST['genkeys']))
                 }
 
                 $unit = sanitize($_POST['unit']);
-                if ($unit == "Days")
-                {
+                switch($unit)
+		        {
+                case "Days":
                     $multiplier = 86400;
-                }
-                else if ($unit == "Minutes")
-                {
+		        	break;
+                case "Minutes":
                     $multiplier = 60;
-                }
-                else if ($unit == "Hours")
-                {
+		        	break;
+                case "Hours":
                     $multiplier = 3600;
-                }
-                else if ($unit == "Seconds")
-                {
+		        	break;
+                case "Seconds":
                     $multiplier = 1;
-                }
-                else if ($unit == "Weeks")
-                {
+		        	break;
+                case "Weeks":
                     $multiplier = 604800;
-                }
-                else if ($unit == "Months")
-                {
+		        	break;
+                case "Months":
                     $multiplier = 2.628e+6;
-                }
-                else if ($unit == "Years")
-                {
+		        	break;
+                case "Years":
                     $multiplier = 31535965.4396976;
-                }
-				else if ($unit == "Lifetime")	
-                {	
-                    $multiplier = 315360000;	
-                }
+		        	break;
+		        }
 
                 $expiry = $expiry * $multiplier;
                 $mask = sanitize($_POST['mask']);
@@ -712,7 +703,7 @@ if (isset($_POST['genkeys']))
 
                     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-                    $ch = curl_init("webhooklinkhere");
+                    $ch = curl_init("webhook_link_here");
                     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                         'Content-type: application/json'
                     ));
@@ -1029,20 +1020,6 @@ navigator.clipboard.writeText('" . array_values($key) [0] . "');
             error("Didn\'t find any used keys!");	
         }	
     }
-
-    if (isset($_POST['resetall']))
-    {
-        mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '" . $_SESSION['app'] . "' AND `status` != 'Not Used'");
-        if (mysqli_affected_rows($link) != 0)
-        {
-            success("Reset HWID for all Keys!");
-        }
-        else
-        {
-            mysqli_close($link);
-            error("Didn\'t find any used keys!");
-        }
-    }
 ?>
 
 <script type="text/javascript">
@@ -1094,7 +1071,7 @@ $(document).ready(function(){
 <th>Creation Date</th>
 <th>Generated By</th>
 <th>Duration</th>
-<th>Last Login</th>
+<th>Note</th>
 <th>Used On</th>
 <th>Used By</th>
 <th>Status</th>
@@ -1130,7 +1107,7 @@ $(document).ready(function(){
                                                     <td><?php echo $row["genby"]; ?></td>
                                                     
                                                     <td><?php echo $row["expires"] / 86400 ?> Day(s)</td>
-                                                    <td><script>document.write(convertTimestamp(<?php echo $row["lastlogin"]; ?>));</script></td>
+                                                    <td><?php echo $row["note"] ?? "N/A"; ?></td>
 													
 													<td><script>document.write(convertTimestamp(<?php echo $row["usedon"]; ?>));</script></td>
 													<td><?php echo $row["usedby"]; ?></td>
@@ -1141,11 +1118,8 @@ $(document).ready(function(){
                                             </button>
                                             <div class="dropdown-menu">
                                                 <button class="dropdown-item" name="deletekey" value="<?php echo $key; ?>">Delete</button>
-                                                <button class="dropdown-item" name="resetkey" value="<?php echo $key; ?>">Reset HWID</button>
                                                 <a class="dropdown-item" data-toggle="modal" data-target="#ban-key" onclick="bankey('<?php echo $key; ?>')">Ban</a>
                                                 <button class="dropdown-item" name="unbankey" value="<?php echo $key; ?>">Unban</button>
-                                                <button class="dropdown-item" name="pausekey" value="<?php echo $key; ?>">Pause</button>
-                                                <button class="dropdown-item" name="unpausekey" value="<?php echo $key; ?>">Unpause</button>
                                                 <div class="dropdown-divider"></div>
 												<button class="dropdown-item" name="editkey" value="<?php echo $key; ?>">Edit</button></div></td></tr></form>
 <?php
@@ -1161,7 +1135,7 @@ $(document).ready(function(){
 <th>Creation Date</th>
 <th>Generated By</th>
 <th>Duration</th>
-<th>Last Login</th>
+<th>Note</th>
 <th>Used On</th>
 <th>Used By</th>
 <th>Status</th>
@@ -1207,21 +1181,6 @@ $(document).ready(function(){
         {
             mysqli_close($link);
             error("Failed To Delete Key!");
-        }
-    }
-    if (isset($_POST['resetkey']))
-    {
-        $key = sanitize($_POST['resetkey']);
-        mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // set HWID to blank
-        if (mysqli_affected_rows($link) != 0) // check query impacted something, else show error
-        {
-            success("Key Successfully Reset!");
-            echo "<meta http-equiv='Refresh' Content='2'>";
-        }
-        else
-        {
-            mysqli_close($link);
-            error("Failed To Reset Key!");
         }
     }
     if (isset($_POST['bankey']))
@@ -1280,46 +1239,6 @@ $(document).ready(function(){
         echo "<meta http-equiv='Refresh' Content='2'>";
     }
 
-    if (isset($_POST['pausekey']))
-    {
-        $key = sanitize($_POST['pausekey']);
-
-        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key' AND `status` = 'Used'");
-        if (mysqli_num_rows($result) == 0) // check if key exists
-        {
-            mysqli_close($link);
-            error("Key isn\'t used!");
-            echo "<meta http-equiv='Refresh' Content='2'>";
-            return;
-        }
-
-        $exp = mysqli_fetch_array($result) ["expires"] - time();
-        mysqli_query($link, "UPDATE `keys` SET `status` = 'Paused', `expires` = '$exp' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); 
-
-        success("Key Successfully Paused!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-    }
-
-    if (isset($_POST['unpausekey']))
-    {
-        $key = sanitize($_POST['unpausekey']);
-
-        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key' AND `status` = 'Paused'");
-        if (mysqli_num_rows($result) == 0)
-        {
-            mysqli_close($link);
-            error("Key isn\'t paused!");
-            echo "<meta http-equiv='Refresh' Content='2'>";
-            return;
-        }
-
-        $exp = mysqli_fetch_array($result) ["expires"] + time();
-        mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `expires` = '$exp' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
-
-        success("Key Successfully Unpaused!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-    }
-
     if (isset($_POST['editkey']))
     {
         $key = sanitize($_POST['editkey']);
@@ -1334,9 +1253,6 @@ $(document).ready(function(){
         }
 
         $row = mysqli_fetch_array($result);
-
-        $expiry = date("Y-m-d\TH:i", $row["expires"]);
-        $currtime = date("Y-m-d\TH:i", time());
 		?>
         <div id="edit-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
                                     <div class="modal-dialog">
@@ -1353,20 +1269,12 @@ $(document).ready(function(){
 														<input type="hidden" name="key" value="<?php echo $key; ?>">
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Key Expiry:</label>
-                                                        <input class="form-control" type="datetime-local" name="expiry" value="<?php echo $expiry; ?>" required>
+                                                        <label for="recipient-name" class="control-label">License Duration Unit:</label>
+                                                        <select name="unit" class="form-control"><option>Days</option><option>Minutes</option><option>Hours</option><option>Seconds</option><option>Weeks</option><option>Months</option><option>Years</option><option>Lifetime</option></select>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Additional HWID:</label>
-                                                        <input type="text" class="form-control" name="hwid" placeholder="Enter HWID if you want this key to support multiple computers">
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">HWID:</label>
-                                                        <p><?php echo $row['hwid']; ?></p>
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">IP:</label>
-                                                        <p><?php echo $row['ip']; ?></p>
+                                                        <label for="recipient-name" class="control-label">License Duration:</label>
+                                                        <input name="duration" type="number" class="form-control" placeholder="Multiplied by selected Expiry unit">
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
@@ -1381,25 +1289,45 @@ $(document).ready(function(){
     }
 
     if (isset($_POST['savekey']))
-    {
+    {	
         $key = sanitize($_POST['key']);
-
-        $expiry = sanitize($_POST['expiry']);
         $level = sanitize($_POST['level']);
-        $hwid = sanitize($_POST['hwid']);
+		$duration = sanitize($_POST['duration']);
+		
+		if(!empty($duration))
+		{
+		$unit = sanitize($_POST['unit']);
+		switch($unit)
+		{
+        case "Days":
+            $multiplier = 86400;
+			break;
+        case "Minutes":
+            $multiplier = 60;
+			break;
+        case "Hours":
+            $multiplier = 3600;
+			break;
+        case "Seconds":
+            $multiplier = 1;
+			break;
+        case "Weeks":
+            $multiplier = 604800;
+			break;
+        case "Months":
+            $multiplier = 2.628e+6;
+			break;
+        case "Years":
+            $multiplier = 31535965.4396976;
+			break;
+		}
 
-        $expiry = strtotime($expiry);
+        $duration = $duration * $multiplier;
+		
+		mysqli_query($link, "UPDATE `keys` SET `expires` = '$duration' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+		}
 
-        if (isset($hwid) && trim($hwid) != '')
-        {
-            $result = mysqli_query($link, "SELECT `hwid` FROM `keys` WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
-
-            $hwid = mysqli_fetch_array($result) ["hwid"] .= $hwid;
-
-            mysqli_query($link, "UPDATE `keys` SET `hwid` = '$hwid' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
-        }
-
-        mysqli_query($link, "UPDATE `keys` SET `expires` = '$expiry',`level` = '$level' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+        mysqli_query($link, "UPDATE `keys` SET `level` = '$level' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
 
         success("Successfully Updated Settings!");
         echo "<meta http-equiv='Refresh' Content='2'>";

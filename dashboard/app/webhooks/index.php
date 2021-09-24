@@ -15,13 +15,13 @@ $username = $_SESSION['username'];
 ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 $row = mysqli_fetch_array($result);
 
-$isbanned = $row['isbanned'];
-if ($isbanned == "1")
-{
-    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
-    session_destroy();
-    exit();
-}
+            $banned = $row['banned'];
+			if (!is_null($banned))
+			{
+				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+				session_destroy();
+				exit();
+			}
 
 $role = $row['role'];
 $_SESSION['role'] = $role;
@@ -291,7 +291,7 @@ if (isset($_POST['genwebhook']))
         }
 
         $webid = generateRandomString();
-        mysqli_query($link, "INSERT INTO `webhooks` (`webid`, `baselink`, `useragent`, `app`, `owner`) VALUES ('$webid','$base', '$ua', '" . $_SESSION['app'] . "','" . $_SESSION['username'] . "')");
+        mysqli_query($link, "INSERT INTO `webhooks` (`webid`, `baselink`, `useragent`, `app`) VALUES ('$webid','$base', '$ua', '" . $_SESSION['app'] . "')");
 
         echo "<meta http-equiv='Refresh' Content='2;'>";
         success("Created Webhook!");

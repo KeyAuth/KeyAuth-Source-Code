@@ -3,6 +3,13 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 <br>
 *You're not allowed to sell KeyAuth. source made avaliable only for personal use.*
 
+# Donate
+|BTC|ETH|LTC|
+|---|---|---|
+|1PnYzj5AsP14MvLAeBpnpGQS4C3Md1sWin|Lc3KhDNNr65HzYGzQajfYCprJRLaGkKiHz|0xC4ED0251eC83Ab95cd634D0aaAE79942720A1F4d|
+
+_Donations of all sizes welcome - Show proof of donation for exclusive role in Discord https://keyauth.com/discord_
+
 You may purchase a subscription for cheaper than the cost of hosting this yourself at https://keyauth.com/
 You may also use our tester subscription which is completley free with less features.
 
@@ -33,5 +40,6 @@ c++: https://www.ssllabs.com/ - watch this video: https://a.pomf.cat/cglexh.mp4
 
 ## Updates ##
 
-- (08/12/2021) Suggestion added (Limit resellers to only be able to generate a certain key level) by SoniC#1337
+- (09/24/2021) Deprecate old API versions, improve security, fix bugs.
 - (09/13/2021) Implement username change, suggestion by 0x420#5435
+- (08/12/2021) Suggestion added (Limit resellers to only be able to generate a certain key level) by SoniC#1337

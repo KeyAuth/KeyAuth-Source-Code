@@ -16,13 +16,13 @@ if (!isset($_SESSION['username'])) {
             ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
             $row = mysqli_fetch_array($result);
             
-            $isbanned = $row['isbanned'];
-            if($isbanned == "1")
-            {
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>"; 
+            $banned = $row['banned'];
+			if (!is_null($banned))
+			{
+				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
 				session_destroy();
 				exit();
-            }
+			}
         
             $role = $row['role'];
             $_SESSION['role'] = $role;
@@ -261,7 +261,7 @@ else // app already selected, load page like normal
 		$name = sanitize($_POST['varname']);
 		
 		$var_check = mysqli_query($link, "SELECT * FROM `vars` WHERE `varid` = '$name' AND `app` = '".$_SESSION['app']."'") or die(mysqli_error($link));
-		$do_var_check = mysqli_num_rows($email_check);
+		$do_var_check = mysqli_num_rows($var_check);
 		
 		if ($do_var_check > 0)
 		{
@@ -271,7 +271,7 @@ else // app already selected, load page like normal
 			return;
 		}
 		
-	    $result = mysqli_query($link, "INSERT INTO `vars`(`varid`, `msg`, `app`, `author`) VALUES ('$name','$msg','".$_SESSION['app']."', '".$_SESSION['username']."')");
+	    $result = mysqli_query($link, "INSERT INTO `vars`(`varid`, `msg`, `app`) VALUES ('$name','$msg','".$_SESSION['app']."')");
             if($result)
             {
                 
@@ -497,7 +497,6 @@ $(document).ready(function(){
                                             <tr>
 <th>Variable Name</th>
 <th>Variable Data</th>
-<th>Author</th>
 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -515,10 +514,6 @@ $(document).ready(function(){
                                                     echo "  <td>". $row["varid"]. "</td>";
 
                                                     echo "  <td>". $row["msg"]. "</td>";
-													
-                                                    echo "  <td>". $row["author"]. "</td>";
-                                                    
-                                                    // echo "  <td>". $row["status"]. "</td>";
 
                                                     echo'<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
@@ -539,7 +534,6 @@ $(document).ready(function(){
                                             <tr>
 <th>Variable Name</th>
 <th>Variable Data</th>
-<th>Author</th>
 <th>Action</th>
                                             </tr>
                                         </tfoot>

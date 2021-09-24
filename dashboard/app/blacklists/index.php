@@ -15,13 +15,13 @@ $username = $_SESSION['username']; // current user
 ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link)); // get user info
 $row = mysqli_fetch_array($result);
 
-$isbanned = $row['isbanned'];
-if ($isbanned == "1") // kill session for banned users
-{
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>"; 
+            $banned = $row['banned'];
+			if (!is_null($banned))
+			{
+				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
 				session_destroy();
 				exit();
-}
+			}
 
 $role = $row['role']; // get user role to determine appropriate permissions
 $_SESSION['role'] = $role;
