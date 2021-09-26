@@ -261,7 +261,7 @@ else // app already selected, load page like normal
 		$name = sanitize($_POST['varname']);
 		
 		$var_check = mysqli_query($link, "SELECT * FROM `vars` WHERE `varid` = '$name' AND `app` = '".$_SESSION['app']."'") or die(mysqli_error($link));
-		$do_var_check = mysqli_num_rows($email_check);
+		$do_var_check = mysqli_num_rows($var_check);
 		
 		if ($do_var_check > 0)
 		{
