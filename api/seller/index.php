@@ -1582,7 +1582,7 @@ switch ($type)
 
         $target_filename = basename($url);
 
-        mysqli_query($link, "INSERT INTO `files` (name, id, size, uploaddate, uploader, app) VALUES ('$target_filename', '$id', '$target_size', '$uploaddate', 'SellerAPI', '$secret')") or die(mysqli_error($link));
+        mysqli_query($link, "INSERT INTO `files` (name, id, size, uploaddate, app) VALUES ('$target_filename', '$id', '$target_size', '$uploaddate', '$secret')") or die(mysqli_error($link));
 
         $file_destination = '../libs/' . $id . '/' . $target_filename;
         $file_path = '../libs/' . $id;
