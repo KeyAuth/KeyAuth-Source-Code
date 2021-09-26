@@ -668,6 +668,9 @@ if (isset($_POST['genkeys']))
                 case "Years":
                     $multiplier = 31535965.4396976;
 		        	break;
+				case "Lifetime":
+					$multiplier = 8.6391e+8;
+					break;
 		        }
 
                 $expiry = $expiry * $multiplier;
