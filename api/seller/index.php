@@ -37,7 +37,7 @@ function license($amount, $mask, $expiry, $level, $link, $secret)
     {
 
         $license = license_masking($mask);
-        mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license','', '$expiry', '','','Not Used','$level','SellerAPI', '" . time() . "', '$secret')");
+        mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license','$expiry','Not Used','$level','SellerAPI', '" . time() . "', '$secret')");
         // echo $key;
         $licenses[] = $license;
     }
@@ -330,7 +330,7 @@ switch ($type)
                 )));
             }
         }
-        mysqli_query($link, "INSERT INTO `vars`(`varid`, `msg`, `app`, `author`) VALUES ('$name','$data','$secret', 'SellerAPI')");
+        mysqli_query($link, "INSERT INTO `vars`(`varid`, `msg`, `app`) VALUES ('$name','$data','$secret')");
 
         mysqli_close($link);
         if ($format == "text")
@@ -761,41 +761,7 @@ switch ($type)
             "totalaccs" => "$totalaccs"
         )));
     case 'addhwid':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-        }
-        $hwid = strip_tags(trim(mysqli_real_escape_string($link, $_GET['hwid'])));
-        $result = mysqli_query($link, "SELECT `hwid` FROM `keys` WHERE `key` = '$key' AND `app` = '$secret'");
-        $row = mysqli_fetch_array($result);
-        $hwidd = $row["hwid"];
-
-        $hwidd = $hwidd .= $hwid;
-
-        mysqli_query($link, "UPDATE `keys` SET `hwid` = '$hwidd' WHERE `key` = '$key' AND `app` = '$secret'");
-
-        die("Added HWID");
+        die("Endpoint Deprecated, you can no longer use keys directly. A user is created from the key, and that user has a HWID and IP associated with it.");
     case 'addhwiduser':
         $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
 
@@ -1452,89 +1418,7 @@ switch ($type)
             )));
         }
     case 'reset':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
-        $keyquery = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
-
-        $keycount = mysqli_num_rows($keyquery);
-
-        if ($keycount == 0)
-        {
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Key Not Found"
-                )));
-            }
-        }
-
-        mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '$secret' AND `key` = '$key'");
-        mysqli_close($link);
-        if ($format == "text")
-        {
-            die("Successfully Reset License");
-        }
-        else
-        {
-            die(json_encode(array(
-                "success" => true,
-                "message" => "Successfully Reset License"
-            )));
-        }
+		die("Endpoint Deprecated, you can no longer use keys directly. A user is created from the key, and that user has a HWID and IP associated with it.");
     case 'resetuser':
 
         $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
