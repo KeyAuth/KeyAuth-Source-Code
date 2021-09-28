@@ -843,7 +843,7 @@ navigator.clipboard.writeText('" . array_values($key) [0] . "');
                 return;
             }
             $expiry = $third * 86400;
-            mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `lastlogin`, `hwid`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$first','$expiry', '','','Not Used','$second','" . $_SESSION['username'] . "','" . time() . "','" . $_SESSION['app'] . "')");
+            mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$first','$expiry','Not Used','$second','" . $_SESSION['username'] . "','" . time() . "','" . $_SESSION['app'] . "')");
         }
     }
 
