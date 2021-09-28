@@ -19,8 +19,8 @@ $requrl = $_SERVER['REQUEST_URI'];
 
 $uri = trim($_SERVER['REQUEST_URI'], '/');
 $pieces = explode('/', $uri);
-$owner = $pieces[1];
-$username = $pieces[2];
+$owner = sanitize($pieces[1]);
+$username = sanitize($pieces[2]);
 
 if (!strip_tags(htmlEncode($requrl)) || substr_count($requrl, '/') != 3)
 {
