@@ -111,7 +111,7 @@ function register($un,$key,$pw,$hwid,$secret)
 			$password = password_hash($pw, PASSWORD_BCRYPT);
 			
             // create user
-            mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`) VALUES ('$un','$password', '$hwid', '$secret')");
+            mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`) VALUES ('$un','$password', NULLIF('$hwid', ''), '$secret')");
 
 			
             $result = mysqli_query($link, "SELECT `subscription`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
@@ -207,7 +207,7 @@ function login($un,$pw,$hwid,$secret,$hwidenabled)
                 }
 				else if($hwidd == NULL)
 				{
-					mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwid' WHERE `username` = '$un'");
+					mysqli_query($link, "UPDATE `users` SET `hwid` = NULLIF('$hwid', '') WHERE `username` = '$un'");
 				}
 
             }

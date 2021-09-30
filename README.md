@@ -28,8 +28,8 @@ No support is given towards setup of self-hosted KeyAuth. You may recieve suppor
 - Upload all files to your PHP host of choice
 - Right click the db_structure.sql file and click edit. Then copy the contents and paste into SQL import tab on phpmyadmin
 - Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/includes/connection.php#L19 to your database credentials
-- (Optional) Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/login/index.php#L191 to your Discord webhook link if you want to log all logins to a Discord webhook
-- (Optional) Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/dashboard/app/licenses/index.php#L715 to your Discord webhook link if you want to log all logins to a Discord webhook
+- (Optional) Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/login/index.php#L192 to your Discord webhook link if you want to log all logins to a Discord webhook
+- (Optional) Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/dashboard/app/licenses/index.php#L709 to your Discord webhook link if you want to log all logins to a Discord webhook
 
 Some pages such as the API endpoint that upgrades users after they purchase a subscription have been omitted to prevent violation of the license (No Commercial Access Allowed)
 
@@ -40,6 +40,7 @@ c++: https://www.ssllabs.com/ - watch this video: https://a.pomf.cat/cglexh.mp4
 
 ## Updates ##
 
+- (09/29/2021) Change file uploads to URL rather than storing on server.
 - (09/24/2021) Deprecate old API versions, improve security, fix bugs.
 - (09/13/2021) Implement username change, suggestion by 0x420#5435
 - (08/12/2021) Suggestion added (Limit resellers to only be able to generate a certain key level) by SoniC#1337

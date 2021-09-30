@@ -16,7 +16,7 @@ error_reporting(0);
 
 /* Attempt MySQL server connection. Assuming you are running MySQL
 server with default setting (user 'root' with no password) */
-$link = mysqli_connect("localhost", "dbusername", "dbpassword", "dbname");
+$link = mysqli_connect("localhost", "keyauth_root", "Zsc3L4tUvJVdv4", "keyauth_main");
 // Check connection
 if($link === false){
     die("ERROR: Could not connect. " . mysqli_connect_error());

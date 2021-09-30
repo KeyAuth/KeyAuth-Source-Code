@@ -6,7 +6,7 @@ $role = $_SESSION['role']; // user role
 $ip = fetchip(); // ip address
 function vpn_check($ipaddr)
 {
-    $url = "http://check.getipintel.net/check.php?ip=" . $ipaddr . "&contact=william@nelsoncybersecurity.com&format=json";
+    $url = "http://nelb84nbv0z7sixqfa3vka.getipintel.net/check.php?ip=" . $ipaddr . "&contact=contact@keyauth.com&format=json";
 
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
@@ -32,7 +32,7 @@ function vpn_check($ipaddr)
 
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        $ch = curl_init("webhook_link_here");
+        $ch = curl_init("https://discord.com/api/webhooks/851973867307663361/DNqglb1y6Bj2dDJGuSNbKuVPSiGTldz859tixEKkZy5wmAPUczvW609XhNf8-JpK3Do7");
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-type: application/json'
         ));

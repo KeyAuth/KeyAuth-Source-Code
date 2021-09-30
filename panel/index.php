@@ -51,10 +51,10 @@ echo '
 ?>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="../../../assets/img/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn.keyauth.com/assets/img/favicon.png" type="image/x-icon">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-	<link rel="stylesheet" type="text/css" href="../../../auth/css/util.css">
-	<link rel="stylesheet" type="text/css" href="../../../auth/css/main.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/util.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/main.css">
 </head>
 <body>
 	<div class="limiter">

@@ -40,6 +40,8 @@ while ($row = mysqli_fetch_array($result))
     $noactivesubs = $row['noactivesubs'];
     $keypaused = $row['keypaused'];
     $keyexpired = $row['keyexpired'];
+	$hwidmismatch = $row['hwidmismatch'];
+	$keyexpired = $row['keyexpired'];
 }
 
 switch ($_POST['type'])
@@ -83,8 +85,10 @@ switch ($_POST['type'])
 
         // Read in password
         $password = sanitize($_POST['pass']);
+		
+		$hwid = sanitize($_POST['hwid']);
 
-        $resp = register($username, $checkkey, $password, "server", $secret);
+        $resp = register($username, $checkkey, $password, $hwid, $secret);
         switch ($resp)
         {
             case 'username_taken':
@@ -112,6 +116,11 @@ switch ($_POST['type'])
                 die(json_encode(array(
                     "success" => false,
                     "message" => "Your license is banned."
+                )));
+			case 'hwid_blacked':
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "$hwidblacked"
                 )));
             case 'no_subs_for_level':
                 die(json_encode(array(
@@ -253,14 +262,21 @@ switch ($_POST['type'])
 
         // Read in password
         $password = sanitize($_POST['pass']);
+		
+		$hwid = sanitize($_POST['hwid']);
 
-        $resp = login($username, $password, "server", $secret, $hwidenabled);
+        $resp = login($username, $password, $hwid, $secret, $hwidenabled);
         switch ($resp)
         {
             case 'un_not_found':
                 die(json_encode(array(
                     "success" => false,
                     "message" => "$usernamenotfound"
+                )));
+			case 'hwid_mismatch':
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "$hwidmismatch"
                 )));
             case 'pw_mismatch':
                 die(json_encode(array(
@@ -296,13 +312,20 @@ switch ($_POST['type'])
         $session = getsession($sessionid, $secret);
         $enckey = $session["enckey"];
         $checkkey = sanitize($_POST['key']);
+		
+		$hwid = sanitize($_POST['hwid']);
 
-        $resp = login($checkkey, $checkkey, "server", $secret, $hwidenabled);
+        $resp = login($checkkey, $checkkey, $hwid, $secret, $hwidenabled);
         switch ($resp)
         {
             case 'un_not_found':
             break; // user not registered yet or user was deleted
-                
+            
+			case 'hwid_mismatch':
+                die(Encrypt(json_encode(array(
+                    "success" => false,
+                    "message" => "$hwidmismatch"
+                )) , $enckey));
             case 'user_banned':
                 die(json_encode(array(
                     "success" => false,
@@ -313,6 +336,11 @@ switch ($_POST['type'])
                     "success" => false,
                     "message" => "$passmismatch"
                 )));
+			case 'hwid_blacked':
+                die(Encrypt(json_encode(array(
+                    "success" => false,
+                    "message" => "$hwidblacked"
+                )) , $enckey));
             case 'no_active_subs':
                 die(json_encode(array(
                     "success" => false,
@@ -332,7 +360,7 @@ switch ($_POST['type'])
         }
 
         // if login didn't work, attempt to register
-        $resp = register($checkkey, $checkkey, $checkkey, "server", $secret);
+        $resp = register($checkkey, $checkkey, $checkkey, $hwid, $secret);
         switch ($resp)
         {
             case 'username_taken':
@@ -360,6 +388,11 @@ switch ($_POST['type'])
                     "success" => false,
                     "message" => "Your license is banned."
                 )));
+			case 'hwid_blacked':
+                die(Encrypt(json_encode(array(
+                    "success" => false,
+                    "message" => "$hwidblacked"
+                )) , $enckey));
             case 'no_subs_for_level':
                 die(json_encode(array(
                     "success" => false,
@@ -612,11 +645,24 @@ switch ($_POST['type'])
             )));
 
         }
+		
+		while ($row = mysqli_fetch_array($result))
+		{
+			$filename = $row['name'];
+			$url = $row['url'];
+		}
+		
+		if(!is_null($url))
+		{
+			$contents = bin2hex(file_get_contents($url));
+		}
+		else
+		{
+		$file_destination = '../../api/libs/' . $fileid . '/' . $filename;
+		
+		$contents = bin2hex(file_decrypt(file_get_contents($file_destination) , "salksalasklsakslakaslkasl"));
+		}
 
-        $filename = mysqli_fetch_array($result) ["name"];
-        $file_destination = '../../api/libs/' . $fileid . '/' . $filename;
-
-        $contents = bin2hex(file_decrypt(file_get_contents($file_destination) , "salksalasklsakslakaslkasl"));
         die(json_encode(array(
             "success" => true,
             "message" => "File download successful",

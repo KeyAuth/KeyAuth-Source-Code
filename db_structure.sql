@@ -129,6 +129,7 @@ CREATE TABLE `bans` (
 CREATE TABLE `files` (
   `name` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `id` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
+  `url` varchar(2048) COLLATE utf8_unicode_ci DEFAULT NULL,
   `size` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `uploaddate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL
@@ -218,7 +219,7 @@ CREATE TABLE `subscriptions` (
 CREATE TABLE `users` (
   `username` varchar(70) NOT NULL,
   `password` varchar(70) NOT NULL,
-  `hwid` varchar(70) NOT NULL DEFAULT 'N/A',
+  `hwid` varchar(70) DEFAULT NULL,
   `app` varchar(64) NOT NULL,
   `banned` varchar(99) DEFAULT NULL,
   `ip` varchar(49) DEFAULT NULL,

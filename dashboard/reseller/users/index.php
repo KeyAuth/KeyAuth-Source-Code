@@ -13,26 +13,15 @@ if (!isset($_SESSION['username'])) {
 
 
 	        $username = $_SESSION['username'];
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = 	'$username'")) or die(mysqli_error($link));
             $row = mysqli_fetch_array($result);
-            
-            $banned = $row['banned'];
-			if (!is_null($banned))
-			{
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
-				session_destroy();
-				exit();
-			}
         
             $role = $row['role'];
             $_SESSION['role'] = $role;
 			
-			    if($role == "Reseller")
-{
-    die('Resellers Not Allowed Here');
-}
-			
 			$darkmode = $row['darkmode'];
+
+            $keylevels = $row['keylevels'];
 
 			
                             
@@ -47,23 +36,21 @@ if (!isset($_SESSION['username'])) {
     <meta name="keywords" content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 4 admin, bootstrap 4, css3 dashboard, bootstrap 4 dashboard, xtreme admin bootstrap 4 dashboard, frontend, responsive bootstrap 4 admin template, material design, material dashboard bootstrap 4 dashboard template">
     <meta name="description" content="Xtreme is powerful and clean admin dashboard template, inpired from Google's Material Design">
     <meta name="robots" content="noindex,nofollow">
-    <title>KeyAuth - Files</title>
+    <title>KeyAuth - Reseller Users</title>
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+	<script src="../../files/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-	<link href="https://cdn.keyauth.com/dashboard/assets/libs/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
-	<link href="https://cdn.keyauth.com/dashboard/assets/libs/summernote/dist/summernote-bs4.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+	<link href="../../files/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="../../files/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="../../files/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/dist/css/style.min.css" rel="stylesheet">
+    <link href="../../files/dist/css/style.min.css" rel="stylesheet">
 	
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-	<script src="https://cdn.keyauth.com/dashboard/unixtolocal.js"></script>
+	<script src="../../files/unixtolocal.js"></script>
 
 	                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -72,80 +59,8 @@ if (!isset($_SESSION['username'])) {
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
-<?php
-
-
-if (!$_SESSION['app']) // no app selected yet
-{
-    
-
-    $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "'"); // select all apps where owner is current user
-    if (mysqli_num_rows($result) > 0) // if the user already owns an app, proceed to change app or load only app
-    {
-
-        if (mysqli_num_rows($result) == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
-        {
-            $row = mysqli_fetch_array($result);
-            $_SESSION['name'] = $row["name"];
-            $_SESSION['app'] = $row["secret"];
-            $_SESSION['secret'] = $row["secret"];
-            echo '
-                <script type=\'text/javascript\'>
-                
-                        $(document).ready(function(){
-        $("#content").fadeIn(1900);
-        $("#sticky-footer bg-white").fadeIn(1900);
-        });             
-                
-                </script>
-                ';
-        }
-        else // otherwise if the user has more than one app, choose which app to load
-        {
-            echo '
-                <script type=\'text/javascript\'>
-                
-                        $(document).ready(function(){
-        $("#changeapp").fadeIn(1900);
-        });             
-                
-                </script>
-                ';
-        }
-    }
-    else // if user doesnt have any apps created, take them to the screen to create an app
-    
-    {
-        echo '
-                <script type=\'text/javascript\'>
-                
-                        $(document).ready(function(){
-        $("#createapp").fadeIn(1900);
-        });             
-                
-                </script>
-                ';
-    }
-
-}
-else // app already selected, load page like normal
-
-{
-    echo '
-                <script type=\'text/javascript\'>
-                
-                        $(document).ready(function(){
-        $("#content").fadeIn(1900);
-        $("#sticky-footer bg-white").fadeIn(1900);
-        });             
-                
-                </script>
-                ';
-}
-
-?>
 </head>
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php echo (($darkmode ? 1 : 0) ? 'light' : 'dark'); ?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -170,17 +85,17 @@ else // app already selected, load page like normal
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="../../files/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="../../files/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                              <!-- dark Logo text -->
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                             <img src="../../files/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                              <!-- Light Logo text -->    
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                             <img src="../../files/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -276,7 +191,7 @@ else // app already selected, load page like normal
             <div class="page-breadcrumb">
                 <div class="row">
                     <div class="col-5 align-self-center">
-                        <h4 class="page-title">Files</h4>
+                        <h4 class="page-title">Reseller Users</h4>
                     </div>
                 </div>
             </div>
@@ -285,98 +200,8 @@ else // app already selected, load page like normal
             <!-- ============================================================== -->
             <!-- ============================================================== -->
             <!-- Container fluid  -->
-			
-			<div class="main-panel" id="createapp" style="padding-left:30px;display:none;">
-             <!-- Page Heading -->
-             <br>
-                    <h1 class="h3 mb-2 text-gray-800">Create an App</h1>
-                    <br>
-                    <br>
-                    <form method="POST" action="">
-   <input type="text" id="appname" name="appname" class="form-control" placeholder="Application Name..."></input>
-  <br>
-  <br>
-   <button type="submit" name"ccreateapp" class="btn btn-primary" style="color:white;">Submit</button>
-   </form>
-        </div>
-        
-			
-			<div class="main-panel" id="changeapp" style="padding-left:30px;display:none;">
-             <!-- Page Heading -->
-             <br>
-                    <h1 class="h3 mb-2 text-gray-800">Choose an App</h1>
-                    <br>
-                    <br>
-                    <form class="text-left" method="POST" action="">
-<select class="form-control" name="taskOption">
-        <?php
-        $username = $_SESSION['username'];
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    echo "  <option>". $row["name"]. "</option>";
-                }
-            }
-        
-        ?>
-</select>    
-    <!-- Do SQL query and print them out -->
-
-  <br>
-  <br>
-   <button type="submit" name="change" class="btn btn-primary" style="color:white;">Submit</button><a style="padding-left:5px;color:#4e73df;" id="createe">Create Application</a>
-   </form>
-   <script type="text/javascript">
-
-var myLink = document.getElementById('createe');
-
-myLink.onclick = function(){
-
-
-$(document).ready(function(){
-        $("#changeapp").fadeOut(100);
-        $("#createapp").fadeIn(1900);
-        }); 
-
-}
-
-
-</script>
-   <?php
-           if (isset($_POST['change']))
-        {
-            $selectOption = sanitize($_POST['taskOption']);
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    $secret = $row["secret"];
-                    $sellerkey = $row["sellerkey"];
-                }
-            }
-            else
-            {
-							mysqli_close($link);
-							error("You dont own application!");
-							echo "<meta http-equiv='Refresh' Content='2'>";
-                            return;                            
-            }
-            $_SESSION['secret'] = $secret;
-            $_SESSION['app'] = $secret;
-            $_SESSION['name'] = $selectOption;
-            $_SESSION['sellerkey'] = $sellerkey;
-			
-            success("You have changed Applications!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
-        }
-   ?>
-   </div>
-   
             <!-- ============================================================== -->
-            <div class="container-fluid" id="content" style="display:none;">
+            <div class="container-fluid" id="content">
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -385,157 +210,82 @@ $(document).ready(function(){
                     <div class="col-12">
 					<?php heador($role, $link); ?>
 					<form method="POST">
-					<button data-toggle="modal" type="button" data-target="#create-files" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Files</button>  <button name="delfiles" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all files?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Files</button>
+					<button name="delusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Users</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all users?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Users</button>
                             </form>
 							<br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
                                         </div>
-<div id="create-files" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="ban-user" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Add Files</h4>
+												<h4 class="modal-title">Ban User</h4>
                                                 <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
                                             </div>
                                             <div class="modal-body">
-                                                <form method="post">
+                                                <form method="post"> 
                                                     <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">File URL:</label>
-                                                        <input type="text" class="form-control" name="url" placeholder="Link to file">
+                                                        <label for="recipient-name" class="control-label">Ban reason:</label>
+                                                        <input type="text" class="form-control" name="reason" placeholder="Reason for ban" required>
+														<input type="hidden" class="banuser" name="un">
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="addfile">Add</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="banuser">Ban</button>
 												</form>
                                             </div>
                                         </div>
                                     </div>
 									</div>
-									
-									<div id="rename-app" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Rename Application</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="post">
-                                                    <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Name:</label>
-                                                        <input type="text" class="form-control" name="name" placeholder="New Application Name">
-                                                    </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="renameapp">Add</button>
-												</form>
-                                            </div>
-                                        </div>
-                                    </div>
-									</div>
-                    <?php
-		
-					
-					if(isset($_POST['addfile']))
-                    {
-                        $url = sanitize($_POST['url']);
-						
-						if (!filter_var($url, FILTER_VALIDATE_URL)) { 
-						error("Invalid Url!");
-						return;
-						}
-						
-                        $file = file_get_contents($url);
-
-						$filesize = strlen($file);
-						
-						if($filesize > 10000000 && $role == "tester")
-						{
-							error("Users with tester plan may only upload files up to 10MB. Paid plans may upload up to 50MB.");
-							return;
-						}
-						else if($filesize > 50000000)
-						{
-							error("File size limit is 50 MB.");
-							return;
-						}
-						
-						$id = generateRandomNum();
-						$fn = basename($url);
-						$fs = formatBytes($filesize);
-                                
-                        mysqli_query($link, "INSERT INTO `files` (name, id, url, size, uploaddate, app) VALUES ('$fn', '$id', '$url', '$fs', '".time()."', '".$_SESSION['app']."')");
-						
-						if(mysqli_affected_rows($link) != 0)
-						{
-							success("Successfully Added File!");
-						}
-						else
-						{
-							error("Failed to add file");
-						}
-                    }
-					
-                    ?>
-
-<script type="text/javascript">
-
-var myLink = document.getElementById('mylink');
-
-myLink.onclick = function(){
-
-
-$(document).ready(function(){
-        $("#content").fadeOut(100);
-        $("#changeapp").fadeIn(1900);
-        }); 
-
-}
-
-
-</script>
                         <div class="card">
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table id="file_export" class="table table-striped table-bordered display">
                                         <thead>
                                             <tr>
-<th>Filename</th>
-<th>File ID</th>
-<th>Filesize</th>
-<th>Upload Date</th>
+<th>Username</th>
+<th>HWID</th>
+<th>IP</th>
 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
 <?php
 		if($_SESSION['app']) {
-        ($result = mysqli_query($link, "SELECT * FROM `files` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
+        ($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result))
+        {
+            $rows[] = $r;
+        }
 
-                                                    echo "<tr>";
+        foreach ($rows as $row)
+        {
 
-                                                    echo "  <td>". $row["name"]. "</td>";
+        $user = $row['username'];
+		?>
 
-                                                    echo "  <td>". $row["id"]. "</td>";
+                                                    <tr>
 
-                                                    echo "  <td>". $row["size"]. "</td>";
-                                                    
-                                                    echo "  <td><script>document.write(convertTimestamp(". $row["uploaddate"]. "));</script></td>";
+                                                    <td><?php echo $row["username"]; ?></td>
 
-                                                    echo'<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <td><?php echo $row["hwid"]; ?></td>
+													
+                                                    <td><?php echo $row["ip"] ?? "N/A"; ?></td>
+
+                                                    <td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
                                             </button>
-                                            <div class="dropdown-menu"><form method="post">
-											<button class="dropdown-item" name="editfile" value="' . $row['id'] . '">Edit</button>
-                                                <button class="dropdown-item" name="deletefile" value="' . $row['id'] . '">Delete</button></div></td></tr></form>';
-
-                                                }
+                                            <div class="dropdown-menu">
+                                                <form method="post"><button class="dropdown-item" name="deleteuser" value="<?php echo $user; ?>">Delete</button>
+												<button class="dropdown-item" name="resetuser" value="<?php echo $user; ?>">Reset HWID</button>
+                                                <a class="dropdown-item" data-toggle="modal" data-target="#ban-user" onclick="banuser('<?php echo $user; ?>')">Ban</a>
+                                                <button class="dropdown-item" name="unbanuser" value="<?php echo $user; ?>">Unban</button>
+                                                <div class="dropdown-divider"></div>
+												<button class="dropdown-item" name="edituser" value="<?php echo $user; ?>">Edit</button></div></td></tr></form>
+<?php
+                                                
 
                                             }
                                             
@@ -545,10 +295,9 @@ $(document).ready(function(){
                                         </tbody>
                                         <tfoot>
                                             <tr>
-<th>Filename</th>
-<th>File ID</th>
-<th>Filesize</th>
-<th>Upload Date</th>
+<th>Username</th>
+<th>HWID</th>
+<th>IP</th>
 <th>Action</th>
                                             </tr>
                                         </tfoot>
@@ -577,103 +326,255 @@ $(document).ready(function(){
                 <!-- Footer callback -->
                 
                 <?php
-				if(isset($_POST['delfiles']))
+				if(isset($_POST['deleteuser']))
 				{
-					mysqli_query($link, "DELETE FROM `files` WHERE `app` = '".$_SESSION['app']."'");
+					$username = sanitize($_POST['deleteuser']);
+					mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$username' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$username' AND `genby` = '".$_SESSION['username']."'");
 					if(mysqli_affected_rows($link) != 0)
 					{
-						success("Files Successfully Deleted!");
+						success("User Successfully Deleted!");
 						echo "<meta http-equiv='Refresh' Content='2'>";
 					}
 					else
 					{
 						mysqli_close($link);
-						error("Failed To Delete Files!");
+						error("Failed To Delete User!");
 					}
 				}
-				
-				if(isset($_POST['deletefile']))
+								if(isset($_POST['resetuser']))
 				{
-					$file = sanitize($_POST['deletefile']);
-					mysqli_query($link, "DELETE FROM `files` WHERE `app` = '".$_SESSION['app']."' AND `id` = '$file'");
+					$un = sanitize($_POST['resetuser']);
+					mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
 					if(mysqli_affected_rows($link) != 0)
 					{
-						success("File Successfully Deleted!");
+						success("User Successfully Reset");
 						echo "<meta http-equiv='Refresh' Content='2'>";
 					}
 					else
 					{
 						mysqli_close($link);
-						error("Failed To Delete File!");
+						error("Failed To Reset User");
 					}
 				}
-				
-				if(isset($_POST['editfile']))
+				if(isset($_POST['banuser']))
 				{
-					$file = sanitize($_POST['editfile']);
+					$un = sanitize($_POST['un']);
 					
-					echo'<div id="edit-file" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
+					if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("User not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					
+					$row = mysqli_fetch_array($result);
+					$hwid = $row["hwid"];
+					$ip = $row["ip"];
+					$reason = sanitize($_POST['reason']);
+					
+					mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
+					
+					if($hwid != NULL)
+					{
+					mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','".$_SESSION['app']."')");
+					}
+					if($ip != NULL)
+					{
+					mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','".$_SESSION['app']."')");
+					}
+					success("User Successfully Banned!");
+					echo "<meta http-equiv='Refresh' Content='2'>";
+				}
+				
+				if(isset($_POST['unbanuser']))
+				{
+					$un = sanitize($_POST['unbanuser']);
+					
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
+					if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("User not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					
+					$row = mysqli_fetch_array($result);
+					$hwid = $row["hwid"];
+					$ip = $row["ip"];
+					
+					mysqli_query($link, "UPDATE `users` SET `banned` = NULL WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+					
+					success("User Successfully Unbanned!");
+					echo "<meta http-equiv='Refresh' Content='2'>";
+				}
+				
+				if(isset($_POST['edituser']))
+				{
+					$un = sanitize($_POST['edituser']);
+					
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+                    if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("User not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					
+                    $row = mysqli_fetch_array($result);
+					?>
+					<div id="edit-user" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Edit File</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+												<h4 class="modal-title">Edit User</h4>
+                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
-                                                    <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">File URL:</label>
-                                                        <input type="text" class="form-control" name="url" placeholder="Link to file">
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Password:</label>
+                                                        <input type="password" class="form-control" name="pass" placeholder="Set new password, we cannot read old password because it's hashed with BCrypt">
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Active Subscriptions:</label>
+                                                        <select class="form-control" name="sub">
+														<?php
+														$result = mysqli_query($link, "SELECT * FROM `subs` WHERE `user` = '$un' AND `app` = '".$_SESSION['app']."' AND `expiry` > '".time()."'");
+														
+														$rows = array();
+														while ($r = mysqli_fetch_assoc($result))
+														{
+															$rows[] = $r;
+														}
+														
+														foreach ($rows as $subrow)
+														{
+														
+														$value = "[" . $subrow['subscription'] . "]" . " - Expires: <script>document.write(convertTimestamp(" . $subrow["expiry"] . "));</script>";
+														?>
+														<option><?php echo $value; ?></option>
+														<?php
+														}
+														?>
+														</select>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Additional HWID:</label>
+                                                        <input type="text" class="form-control" name="hwid" placeholder="Enter HWID if you want this key to support multiple computers">
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">HWID:</label>
+                                                        <p><?php echo $row['hwid']; ?></p>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">IP:</label>
+                                                        <p><?php echo $row['ip']; ?></p>
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" value="'.$file.'" name="savefile">Save</button>
+                                                <button class="btn btn-warning waves-effect waves-light" value="<?php echo $un; ?>" name="deletesub">Delete Subscription</button>
+                                                <button class="btn btn-danger waves-effect waves-light" value="<?php echo $un; ?>" name="saveuser">Save</button>
 												</form>
                                             </div>
                                         </div>
                                     </div>
-									</div>';
+									</div>
+									<?php
 				}
 				
-				if(isset($_POST['savefile']))
+				if(isset($_POST['saveuser']))
 				{
-					$fileid = sanitize($_POST['savefile']);
-					$url = sanitize($_POST['url']);
-						
-					if (!filter_var($url, FILTER_VALIDATE_URL)) { 
-					error("Invalid Url!");
-					return;
-					}
+					$un = sanitize($_POST['saveuser']);
 					
-                    $file = file_get_contents($url);
+					$hwid = sanitize($_POST['hwid']);
+					
+					$pass = sanitize($_POST['pass']);
+					
+					if(isset($hwid) && trim($hwid) != '')
+					{
+						$result = mysqli_query($link, "SELECT `hwid` FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");                           
+						$row = mysqli_fetch_array($result);                      
+						$hwidd = $row["hwid"];
 
-					$filesize = strlen($file);
-					
-					if($filesize > 10000000 && $role == "tester")
-					{
-						error("Users with tester plan may only upload files up to 10MB. Paid plans may upload up to 50MB.");
-						return;
-					}
-					else if($filesize > 50000000)
-					{
-						error("File size limit is 50 MB.");
-						return;
+						$hwidd = $hwidd .= $hwid;
+
+						mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
 					}
 					
-					$fn = basename($url);
-					$fs = formatBytes($filesize);
-                    
-					mysqli_query($link, "UPDATE `files` SET `name` = '$fn',`size` = '$fs',`url` = '$url', `uploaddate` = '".time()."' WHERE `app` = '".$_SESSION['app']."' AND `id` = '$fileid'");
+					if(isset($pass) && trim($pass) != '')
+					{
+						mysqli_query($link, "UPDATE `users` SET `password` = '".password_hash($pass, PASSWORD_BCRYPT)."' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+					}
+		
+					success("Successfully Updated User");
+					echo "<meta http-equiv='Refresh' Content='2'>";
+				}
+				
+				if(isset($_POST['deletesub']))
+				{
+					$un = sanitize($_POST['deletesub']);
 					
+					$sub = sanitize($_POST['sub']);
+					
+					function get_string_between($string, $start, $end){
+						$string = ' ' . $string;
+						$ini = strpos($string, $start);
+						if ($ini == 0) return '';
+						$ini += strlen($start);
+						$len = strpos($string, $end, $ini) - $ini;
+						return substr($string, $ini, $len);
+					}
+					
+					$sub = get_string_between($sub, '[', ']');
+					
+					mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$un' AND `subscription` = '$sub' AND `genby` = '".$_SESSION['username']."'");
 					if(mysqli_affected_rows($link) != 0)
 					{
-						success("Successfully Updated File!");
-						echo "<meta http-equiv='Refresh' Content='2;'>";
+					success("Successfully Deleted User\'s Subscription");
+					echo "<meta http-equiv='Refresh' Content='2'>";
 					}
 					else
 					{
-						error("Failed to update file");
+						mysqli_close($link);
+						error("Failed To Delete User\'s Subscription!");
+					}
+					
+				}
+				
+				if(isset($_POST['delusers']))
+				{
+					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("Users Successfully Deleted!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Delete Users!");
+					}
+				}
+				
+				if(isset($_POST['resetall']))
+				{
+					mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("Users Successfully Reset!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Reset Users!");
 					}
 				}
 					?>
@@ -717,38 +618,33 @@ $(document).ready(function(){
     <!-- ============================================================== -->
     
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../../files/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="../../files/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.init.dark.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app-style-switcher.js"></script>
+    <script src="../../files/dist/js/app.min.js"></script>
+    <script src="../../files/dist/js/app.init.dark.js"></script>
+    <script src="../../files/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="../../files/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="../../files/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/waves.js"></script>
+    <script src="../../files/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/sidebarmenu.js"></script>
+    <script src="../../files/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="https://cdn.keyauth.com/dashboard/dist/js/feather.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/custom.min.js"></script>
+   <script src="../../files/dist/js/feather.min.js"></script>
+    <script src="../../files/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="../../files/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="../../files/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="../../files/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="../../files/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-	
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/email/email.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/summernote/dist/summernote-bs4.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/dropzone/dist/min/dropzone.min.js"></script>
-	
-		<script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="../../files/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="../../files/dist/js/pages/dashboards/dashboard1.js"></script>
+		<script src="../../files/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -760,6 +656,14 @@ $(document).ready(function(){
   
 					
 
-<script src="https://cdn.keyauth.com/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+<script src="../../files/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+
+<script>
+                        
+		function banuser(username) {
+		 var banuser = $('.banuser');
+		 banuser.attr('value', username);
+      }
+                    </script>
 </body>
 </html>

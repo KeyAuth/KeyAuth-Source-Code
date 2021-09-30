@@ -16,10 +16,10 @@ if (isset($_SESSION['username']))
 	<title>KeyAuth - Login</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="../assets/img/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn.keyauth.com/assets/img/favicon.png" type="image/x-icon">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-	<link rel="stylesheet" type="text/css" href="../auth/css/util.css">
-	<link rel="stylesheet" type="text/css" href="../auth/css/main.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/util.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/main.css">
 </head>
 <body>
 	<div class="limiter">
@@ -46,6 +46,8 @@ if (isset($_SESSION['username']))
 						<input class="input100" name="keyauthtwofactor" placeholder="Two Factor Code (if applicable)">
 						<span class="focus-input100"></span>
 					</div>
+					
+					<input type="hidden" name="recaptcha_response" id="recaptchaResponse">
 					
 					<div class="flex-sb-m w-full p-t-3 p-b-24">
 						<div>
@@ -77,13 +79,6 @@ if (isset($_SESSION['username']))
     <?php
 if (isset($_POST['login']))
 {
-
-    if (empty($_POST['keyauthusername']) || empty($_POST['keyauthpassword']))
-    {
-        error("You must fill in all the fields!");
-        return;
-    }
-
     $username = sanitize($_POST['keyauthusername']);
     $password = sanitize($_POST['keyauthpassword']);
 

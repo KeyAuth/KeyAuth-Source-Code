@@ -755,10 +755,23 @@ if (mysqli_num_rows($result) < 1)
 
 }
 
-$filename = mysqli_fetch_array($result) ["name"];
+while ($row = mysqli_fetch_array($result))
+{
+    $filename = $row['name'];
+    $url = $row['url'];
+}
+
+if(!is_null($url))
+{
+	$contents = bin2hex(file_get_contents($url));
+}
+else
+{
 $file_destination = '../../api/libs/' . $fileid . '/' . $filename;
 
 $contents = bin2hex(file_decrypt(file_get_contents($file_destination) , "salksalasklsakslakaslkasl"));
+}
+
 die(Encrypt(json_encode(array(
     "success" => true,
     "message" => "File download successful",

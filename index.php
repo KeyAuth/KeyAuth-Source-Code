@@ -115,14 +115,14 @@ $num = "N/A";
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="keywords" content="KeyAuth, Cloud Authentication, Key Authentication,Authentication, API authentication,Security, Encryption authentication, Authenticated encryption, Cybersecurity, Developer, SaaS, Software Licensing, Licensing" />
 <meta property=”og:description” content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors" />
-<meta property="og:image" content="https://keyauth.com/front/assets/img/favicon.png" />
+<meta property="og:image" content="https://cdn.keyauth.com/front/assets/img/favicon.png" />
 <meta property=”og:site_name” content="KeyAuth | Secure your software from piracy." />
 
 <!-- Schema.org markup for Google+ -->
 <meta itemprop="name" content="KeyAuth - Open Source Auth">
 <meta itemprop="description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors">
 
-<meta itemprop="image" content="https://keyauth.com/front/assets/img/favicon.png">
+<meta itemprop="image" content="https://cdn.keyauth.com/front/assets/img/favicon.png">
 
 <!-- Twitter Card data -->
 <meta name="twitter:card" content="product">
@@ -131,7 +131,7 @@ $num = "N/A";
 
 <meta name="twitter:description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors">
 <meta name="twitter:creator" content="@keyauth">
-<meta name="twitter:image" content="https://keyauth.com/front/assets/img/favicon.png">
+<meta name="twitter:image" content="https://cdn.keyauth.com/front/assets/img/favicon.png">
 
 
 <!-- Open Graph data -->
@@ -140,22 +140,22 @@ $num = "N/A";
 <meta property="og:url" content="https://keyauth.com/" />
 
 <!-- Favicon -->
-<link rel="icon" type="image/png" href="https://keyauth.com/front/assets/img/favicon.png">
+<link rel="icon" type="image/png" href="https://cdn.keyauth.com/front/assets/img/favicon.png">
 
 <!-- Fontawesome -->
-<link type="text/css" href="https://keyauth.com/vendor/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link type="text/css" href="https://cdn.keyauth.com/vendor/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
 
 <!-- Nucleo icons -->
-<link rel="stylesheet" href="https://keyauth.com/assets/css/nucleo.css" type="text/css">
+<link rel="stylesheet" href="https://cdn.keyauth.com/assets/css/nucleo.css" type="text/css">
 
 <!-- Prism -->
-<link type="text/css" href="https://keyauth.com/vendor/prismjs/themes/prism.css" rel="stylesheet">
+<link type="text/css" href="https://cdn.keyauth.com/vendor/prismjs/themes/prism.css" rel="stylesheet">
 
 <!-- Front CSS -->
-<link type="text/css" href="https://keyauth.com/front/css/front.css" rel="stylesheet">
+<link type="text/css" href="https://cdn.keyauth.com/front/css/front.css" rel="stylesheet">
 
 <!-- swiper for reviews -->
-<link rel="stylesheet" href="https://keyauth.com/front/css/swiper.min.css">
+<link rel="stylesheet" href="https://cdn.keyauth.com/front/css/swiper.min.css">
 
 <!-- Anti-flicker snippet (recommended)
 <style>.async-hide { opacity: 0 !important} </style>
@@ -276,7 +276,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <div class="container mt-n10 mt-lg-n12 z-2">
                 <div class="row justify-content-center">
                     <div class="col-12">
-                        <img src="https://keyauth.com/front/assets/img/presentation-mockup.png" alt="illustration">
+                        <img src="https://cdn.keyauth.com/front/assets/img/presentation-mockup.png" alt="illustration">
                     </div>
                 </div>
             </div>
@@ -297,7 +297,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         </div>
                     </div>
                     <div class="col-lg-6 order-lg-1">
-                        <img src="https://keyauth.com/front/assets/img/presentation-mockup-2.png" alt="Front pages overview">
+                        <img src="https://cdn.keyauth.com/front/assets/img/presentation-mockup-2.png" alt="Front pages overview">
                     </div>
                 </div>
                 <div class="row justify-content-center mb-5 mb-lg-7">
@@ -498,7 +498,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <div class="px-3 px-lg-4 py-5 text-center">
                                 <span class="icon icon-lg mb-4"><i class="fas fa-link"></i></span>
                                 <h5 class="font-weight-normal text-primary">Server-sided Webhooks</h5>
-                                <p>Protect your API link(s) by having KeyAuth send requests on the server side</p>
+                                <p>Protect your API link(s) by having KeyAuth send requests on the server-side.</p>
                             </div>
                         </div>
                     </div>
@@ -507,7 +507,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <div class="px-3 px-lg-4 py-5 text-center">
                                 <span class="icon icon-lg mb-4"><i class="fas fa-server"></i></span>
                                 <h5 class="font-weight-normal text-primary">Server-sided Variables</h5>
-                                <p>Store strings securely on the server side, only allowing access to them after authentication</p>
+                                <p>Store strings securely on the server-side, only allowing access to them after authentication</p>
                             </div>
                         </div>
                     </div>
@@ -516,7 +516,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <div class="px-3 px-lg-4 py-5 text-center">
                                 <span class="icon icon-lg mb-4"><i class="fas fa-cloud-download-alt"></i></span>
                                 <h5 class="font-weight-normal text-primary">Server-sided Files</h5>
-                                <p>Upload files securely on the server side, only allowing users to download after authentication</p>
+                                <p>Upload files securely on the server-side, only allowing users to download after authentication</p>
                             </div>
                         </div>
                     </div>
@@ -536,8 +536,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="container" id="pricing">
         <div class="row">
             <div class="col-12 col-lg-8">
-                <h2 class="h1 font-weight-light mb-3"><strong>Open source</strong> project</h2>
-                <p class="lead mb-4">Impact design system is an open source project featuring premium components, front pages and a dashboard. There's also a Pro version available with more components, pages and plugins.</p>
+                <h2 class="h1 font-weight-light mb-3"><strong>Open-source</strong> project</h2>
+                <p class="lead mb-4">KeyAuth is an open-source project. There are also cloud-hosted subscriptions for people looking to forego the investment of time and money attributed to self-hosting.</p>
                 <div class="d-flex align-items-center">
                     <a href="https://github.com/KeyAuth/KeyAuth-Source-Code" target="_blank" class="btn btn-secondary mr-4 animate-up-2">
                         View on GitHub
@@ -668,26 +668,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </main>
 
     <!-- Core -->
-<script src="https://keyauth.com/vendor/jquery/dist/jquery.min.js"></script>
-<script src="https://keyauth.com/vendor/popper.js/dist/umd/popper.min.js"></script>
-<script src="https://keyauth.com/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="https://keyauth.com/vendor/headroom.js/dist/headroom.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/popper.js/dist/umd/popper.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/headroom.js/dist/headroom.min.js"></script>
 
 <!-- swiper for reviews -->
-<script src="https://keyauth.com/vendor/swiper/swiper.min.js"></script>
-<script src="https://keyauth.com/vendor/swiper/wb.swiper-init.js"></script>
+<script src="https://cdn.keyauth.com/vendor/swiper/swiper.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/swiper/wb.swiper-init.js"></script>
 
 <!-- Vendor JS -->
-<script src="https://keyauth.com/vendor/onscreen/dist/on-screen.umd.min.js"></script>
-<script src="https://keyauth.com/vendor/waypoints/lib/jquery.waypoints.min.js"></script>
-<script src="https://keyauth.com/vendor/jarallax/dist/jarallax.min.js"></script>
-<script src="https://keyauth.com/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/onscreen/dist/on-screen.umd.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/waypoints/lib/jquery.waypoints.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/jarallax/dist/jarallax.min.js"></script>
+<script src="https://cdn.keyauth.com/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
 
 <!-- Place this tag in your head or just before your close body tag. -->
 <script async defer src="https://buttons.github.io/buttons.js"></script>
 
 <!-- Impact JS -->
-<script src="https://keyauth.com/front/assets/js/front.js"></script>
+<script src="https://cdn.keyauth.com/front/assets/js/front.js"></script>
 
     
 </body>
