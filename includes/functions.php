@@ -6,7 +6,7 @@ $role = $_SESSION['role']; // user role
 $ip = fetchip(); // ip address
 function vpn_check($ipaddr)
 {
-    $url = "http://nelb84nbv0z7sixqfa3vka.getipintel.net/check.php?ip=" . $ipaddr . "&contact=dont@contact.me&format=json";
+    $url = "http://check.getipintel.net/check.php?ip=" . $ipaddr . "&contact=dont@contact.me&format=json";
 
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
