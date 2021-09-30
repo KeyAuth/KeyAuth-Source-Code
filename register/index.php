@@ -20,15 +20,6 @@ if (isset($_SESSION['username']))
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/util.css">
 	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/main.css">
-	<script src="https://www.google.com/recaptcha/api.js?render=6LdW_eAbAAAAACfb-xQmGOsinqox3Up0R4cFbSRj"></script>
-    <script>
-        grecaptcha.ready(function () {
-            grecaptcha.execute('6LdW_eAbAAAAACfb-xQmGOsinqox3Up0R4cFbSRj', { action: 'contact' }).then(function (token) {
-                var recaptchaResponse = document.getElementById('recaptchaResponse');
-                recaptchaResponse.value = token;
-            });
-        });
-    </script>
 </head>
 <body>
 	<div class="limiter">
@@ -56,8 +47,6 @@ if (isset($_SESSION['username']))
 						<span class="focus-input100"></span>
 					</div>
 					
-					<input type="hidden" name="recaptcha_response" id="recaptchaResponse">
-					
 					<div class="flex-sb-m w-full p-t-3 p-b-24">
 
 						<div>
@@ -83,16 +72,6 @@ if (isset($_SESSION['username']))
   <?php
 if (isset($_POST['register']))
 {
-    $recaptcha_response = sanitize($_POST['recaptcha_response']);
-    $recaptcha = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=6LdW_eAbAAAAALg8QLx524hDcnYOkZYIaCSmqH_x&response=' . $recaptcha_response);
-    $recaptcha = json_decode($recaptcha);
-
-    // Take action based on the score returned:
-    if ($recaptcha->score < 0.5)
-    {
-        error("Human Check Failed!");
-        return;
-    }
 
     $username = sanitize($_POST['username']);
 

@@ -593,7 +593,7 @@ else // if sesssion var 'app' exists, display tables using app in query etc
 								], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 								
 								
-								$ch = curl_init("https://discord.com/api/webhooks/851973867307663361/DNqglb1y6Bj2dDJGuSNbKuVPSiGTldz859tixEKkZy5wmAPUczvW609XhNf8-JpK3Do7");
+								$ch = curl_init("webhook_link_here");
 								curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-type: application/json'));
 								curl_setopt($ch,CURLOPT_POST,1);
 								curl_setopt($ch,CURLOPT_POSTFIELDS,$json_data);
