@@ -276,9 +276,11 @@ if (isset($_POST['genwebhook']))
     }
 
     $base = sanitize($_POST['baselink']);
-    if (strpos($base, "https://discord.com/api/webhooks/") !== false || strpos($base, "https://discord.com/api/webhooks/") !== false || strpos($base, "https://discordapp.com/api/webhooks/") !== false || strpos($base, "https://ptb.discordapp.com/api/webhooks/") !== false || strpos($base, "https://canary.discordapp.com/api/webhooks/") !== false || strpos($base, "https://canary.discord.com/api/webhooks/") !== false || strpos($base, "https://ptb.discord.com/api/webhooks/") !== false)
+    $validation_regex = '/(http[s]:\/\/(?:ptb\.|canary\.)?(?:discord\.|discordapp\.)?com\/api\/webhooks\/[0-9]{18}\/[a-zA-Z0-9-_]+)/i';
+
+    if (preg_match($validation_regex, $base))
     {
-        error("This is not meant for Discord Webhooks! This is for sending requests securely to API without API link getting leaked. Please go to app settings if you want to use Discord webhook.");
+        error("This is not meant for Discord Webhooks! This is for sending requests securely to API without API link getting leaked. Please go to app settings if you want to use a Discord Webhook.");
     }
     else
     {
