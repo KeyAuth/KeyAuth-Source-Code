@@ -276,7 +276,7 @@ if (isset($_POST['genwebhook']))
     }
 
     $base = sanitize($_POST['baselink']);
-    $validation_regex = '/(http[s]:\/\/(?:ptb\.|canary\.)?(?:discord\.|discordapp\.)?com\/api\/webhooks\/[0-9]{18}\/[a-zA-Z0-9-_]+)/i';
+    $validation_regex = '/(https?:\/\/(?:ptb\.|canary\.)?discord(app)?\.com\/api(?:\/v[6-9]+)?\/webhooks\/\d{18}\/[\w\-]{68})/i';
 
     if (preg_match($validation_regex, $base))
     {
