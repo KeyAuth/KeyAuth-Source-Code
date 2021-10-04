@@ -4,6 +4,10 @@ error_reporting(0);
 include '../../includes/connection.php';
 include '../../includes/functions.php';
 
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
+
 $key = strip_tags(trim(mysqli_real_escape_string($link, $_GET['key'])));
 $user = strip_tags(trim(mysqli_real_escape_string($link, $_GET['user'])));
 $sellerkey = strip_tags(trim(mysqli_real_escape_string($link, $_GET['sellerkey'])));
@@ -78,6 +82,73 @@ if (!$type)
     }
 }
 
+
+$result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
+
+$num = mysqli_num_rows($result);
+
+if ($num == 0)
+{
+    http_response_code(404);
+    mysqli_close($link);
+    if ($format == "text")
+    {
+        die("Seller Key Not Found");
+    }
+    else
+    {
+        die(json_encode(array(
+            "success" => false,
+            "message" => "Seller Key Not Found"
+        )));
+    }
+}
+
+	$row = mysqli_fetch_array($result);
+	
+    $secret = $row['secret'];
+    $owner = $row['owner'];
+    $banned = $row['banned'];
+
+if($banned)
+{
+	http_response_code(403);
+    mysqli_close($link);
+    if ($format == "text")
+    {
+        die("This application has been banned from KeyAuth.com for violating terms.");
+    }
+    else
+    {
+        die(json_encode(array(
+            "success" => false,
+            "message" => "This application has been banned from KeyAuth.com for violating terms."
+        )));
+    }
+}
+
+$seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
+$sellrow = mysqli_fetch_array($seller_check);
+
+$role = $sellrow["role"];
+
+if ($role !== "seller")
+{
+    http_response_code(403);
+    mysqli_close($link);
+    if ($format == "text")
+    {
+        die("Not authorized to use SellerAPI, please upgrade.");
+    }
+    else
+    {
+        die(json_encode(array(
+            "success" => false,
+            "message" => "Not authorized to use SellerAPI, please upgrade."
+        )));
+    }
+}
+
 switch ($type)
 {
     case 'add':
@@ -136,55 +207,6 @@ switch ($type)
             $level = "1";
         }
 
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $time = time();
 
         $mask = strip_tags(trim(mysqli_real_escape_string($link, $_GET['mask'])));
@@ -238,79 +260,7 @@ switch ($type)
                 )));
             }
         }
-    case 'download':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-        $row = mysqli_fetch_array($result);
-        $secret = $row['secret'];
-
-        $myFile = "KeyAuthKeys.txt";
-        $fo = fopen($myFile, 'w') or die("can't open file");
-
-        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret'");
-        while ($row = mysqli_fetch_array($result)) $stringData .= "" . $row['key'] . "\n";
-        fwrite($fo, $stringData);
-        fclose($fo);
-
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . basename($myFile) . '"');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
-        header('Content-Length: ' . filesize($myFile));
-        readfile($myFile);
-        unlink($myFile);
-        exit;
     case 'addvar':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $name = strip_tags(trim(mysqli_real_escape_string($link, $_GET['name'])));
         $data = strip_tags(trim(mysqli_real_escape_string($link, $_GET['data'])));
 
@@ -345,55 +295,6 @@ switch ($type)
             )));
         }
     case 'addsub':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $name = strip_tags(trim(mysqli_real_escape_string($link, $_GET['name'])));
         $level = strip_tags(trim(mysqli_real_escape_string($link, $_GET['level'])));
 
@@ -428,54 +329,6 @@ switch ($type)
             )));
         }
 	case 'black':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
 		$ipaddr = $_GET['ip'] ?? $ip;
 		$ipaddr = sanitize($ipaddr);
 		
@@ -500,54 +353,6 @@ switch ($type)
             )));
         }
 	case 'activate':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
 		
 		include '../../includes/api/1.0/index.php'; // v1.0 api funcs
 
@@ -600,54 +405,6 @@ switch ($type)
                 )));
         }
     case 'editvar':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
         $varid = strip_tags(trim(mysqli_real_escape_string($link, $_GET['varid'])));
         $data = strip_tags(trim(mysqli_real_escape_string($link, $_GET['data'])));
         mysqli_query($link, "UPDATE `vars` SET `msg` = '$data' WHERE `varid` = '$varid' AND `app` = '$secret'");
@@ -665,47 +422,6 @@ switch ($type)
             )));
         }
     case 'stats':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            mysqli_close($link);
-            Die(json_encode(array(
-                "success" => false,
-                "message" => "Seller Key Not Found"
-            )));
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $unusedquery = mysqli_query($link, "SELECT count(1) FROM `keys` WHERE `app` = '$secret' AND `status` = 'Not Used'");
         $row = mysqli_fetch_array($unusedquery);
         $unused = $row[0];
@@ -763,31 +479,6 @@ switch ($type)
     case 'addhwid':
         die("Endpoint Deprecated, you can no longer use keys directly. A user is created from the key, and that user has a HWID and IP associated with it.");
     case 'addhwiduser':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-        }
         $hwid = strip_tags(trim(mysqli_real_escape_string($link, $_GET['hwid'])));
         $result = mysqli_query($link, "SELECT `hwid` FROM `users` WHERE `username` = '$user' AND `app` = '$secret'");
         $row = mysqli_fetch_array($result);
@@ -799,54 +490,6 @@ switch ($type)
 
         die("Added HWID");
     case 'extend':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
 		$name = strip_tags(trim(mysqli_real_escape_string($link, $_GET['name'])));
         $subquery = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '$secret' AND `name` = '$name'");
 
@@ -906,55 +549,6 @@ switch ($type)
 		}
 		
     case 'verify':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $keyquery = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
 
         $keycount = mysqli_num_rows($keyquery);
@@ -991,56 +585,6 @@ switch ($type)
         }
 
     case 'del':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $keyquery = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
 
         $keycount = mysqli_num_rows($keyquery);
@@ -1076,55 +620,6 @@ switch ($type)
             )));
         }
     case 'delunused':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $result = mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '$secret' AND `status` = 'Not Used'");
         mysqli_close($link);
         if ($format == "text")
@@ -1139,56 +634,6 @@ switch ($type)
             )));
         }
     case 'delexp':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $ye = time();
         $result = mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '$secret' AND `status` != 'Not Used' AND `expires` < " . $ye . "");
         mysqli_close($link);
@@ -1204,56 +649,6 @@ switch ($type)
             )));
         }
 	case 'deluser':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $usrquery = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret' AND `username` = '$user'");
 
         $usrcount = mysqli_num_rows($usrquery);
@@ -1289,56 +684,6 @@ switch ($type)
             )));
         }
     case 'delalllicenses':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $ye = time();
         $result = mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '$secret'");
         mysqli_close($link);
@@ -1354,55 +699,6 @@ switch ($type)
             )));
         }
     case 'delallvars':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $ye = time();
         $result = mysqli_query($link, "DELETE FROM `vars` WHERE `app` = '$secret'");
         mysqli_close($link);
@@ -1420,56 +716,6 @@ switch ($type)
     case 'reset':
 		die("Endpoint Deprecated, you can no longer use keys directly. A user is created from the key, and that user has a HWID and IP associated with it.");
     case 'resetuser':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $userquery = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret' AND `username` = '$user'");
 
         $usercount = mysqli_num_rows($userquery);
@@ -1504,94 +750,28 @@ switch ($type)
             )));
         }
     case 'upload':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $url = strip_tags(trim(mysqli_real_escape_string($link, $_GET['url'])));
 
-        if (empty($url))
-        {
-            http_response_code(410);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("File URL Not Specified");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "File URL Not Specified"
-                )));
-            }
-        }
+        if (!filter_var($url, FILTER_VALIDATE_URL)) { 
+		error("Invalid Url!");
+		return;
+		}
+		
+        $file = file_get_contents($url);
 
-        $id = generateRandomNum();
-        $uploaddate = date('m/d/Y h:i:s a', time());
-
-        $headers = get_headers($url, true);
-        $target_size = $headers['Content-Length'];
-        $target_size = formatBytes($target_size);
-
-        $target_filename = basename($url);
-
-        mysqli_query($link, "INSERT INTO `files` (name, id, size, uploaddate, app) VALUES ('$target_filename', '$id', '$target_size', '$uploaddate', '$secret')") or die(mysqli_error($link));
-
-        $file_destination = '../libs/' . $id . '/' . $target_filename;
-        $file_path = '../libs/' . $id;
-
-        mkdir($file_path, 0777);
-        $linktents = file_get_contents($url);
-        $encrypted = file_encrypt($linktents, "salksalasklsakslakaslkasl");
-
-        file_put_contents($file_destination, $encrypted);
+		$filesize = strlen($file);
+		
+		if($filesize > 50000000)
+		{
+			error("File size limit is 50 MB.");
+			return;
+		}
+		
+		$id = generateRandomNum();
+		$fn = basename($url);
+		$fs = formatBytes($filesize);
+                
+        mysqli_query($link, "INSERT INTO `files` (name, id, url, size, uploaddate, app) VALUES ('$fn', '$id', '$url', '$fs', '".time()."', '$secret')");
 
         mysqli_close($link);
         if ($format == "text")
@@ -1607,56 +787,6 @@ switch ($type)
         }
 
     case 'ban':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $reason = strip_tags(trim(mysqli_real_escape_string($link, $_GET['reason'])));
 
         mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '$secret' AND `key` = '$key'");
@@ -1674,49 +804,6 @@ switch ($type)
             )));
         }
     case 'fetchallkeys':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            Die(json_encode(array(
-                "success" => false,
-                "message" => "Seller Key Not Found"
-            )));
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
@@ -1758,49 +845,6 @@ switch ($type)
             )));
         }
     case 'fetchallusers':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            Die(json_encode(array(
-                "success" => false,
-                "message" => "Seller Key Not Found"
-            )));
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
@@ -1842,28 +886,6 @@ switch ($type)
             )));
         }
     case 'setseller':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
         mysqli_close($link);
         if ($format == "text")
         {
@@ -1877,55 +899,6 @@ switch ($type)
             )));
         }
     case 'balance':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $name = $row['name'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $username = strip_tags(trim(mysqli_real_escape_string($link, $_GET['username'])));
         if (empty($username))
         {
@@ -2035,69 +1008,86 @@ switch ($type)
                 "message" => "Balance Successfully Added"
             )));
         }
+		case 'usersub':
+		$result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `user` = '$user'");
+	
+		$num = mysqli_num_rows($result);
+	
+		if ($num == 0)
+		{
+			http_response_code(406);
+			mysqli_close($link);
+			Die(json_encode(array(
+				"success" => false,
+				"message" => "No Subscriptions Found" // in theory this should not happen
+			)));
+		}
+	
+		if ($format == "text")
+		{
+		// $result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `user` = '$user'"); // this is not needed as results already has a value so we dont need to get it again
+	
+			while ($row = mysqli_fetch_array($result))
+			{
+				$stringData .= "" . $row['user'] . " " . $row['subscription'] . " " . $row['expiry'] . " " . $row['key'] . "\n"; 
+			}
+			$remove = substr($stringData, 0, -2);
+			echo $remove;
+			break;
+		}
+		else
+		{
+			$rows = array();
+			while ($r = mysqli_fetch_assoc($result))
+			{
+				$rows[] = $r;
+			}
+			mysqli_close($link);
+			die(json_encode(array(
+				"success" => true,
+				"message" => "Successfully Retrieved User Subscription",
+				"subs" => $rows
+			)));
+		}
     case 'getsettings':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
+        if ($row["enabled"] == 0)
         {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
+            $enabled = false;
+        }
+        else
+        {
+            $enabled = true;
         }
 
-        while ($row = mysqli_fetch_array($result))
+        if ($row["hwidcheck"] == 0)
         {
-            if ($row["enabled"] == 0)
-            {
-                $enabled = false;
-            }
-            else
-            {
-                $enabled = true;
-            }
-
-            if ($row["hwidcheck"] == 0)
-            {
-                $hwidcheck = false;
-            }
-            else
-            {
-                $hwidcheck = true;
-            }
-            $ver = $row["ver"];
-            $download = $row["download"];
-            $webhook = $row["webhook"];
-            $resellerstore = $row["resellerstore"];
-            $appdisabled = $row["appdisabled"];
-            $usernametaken = $row["usernametaken"];
-            $keynotfound = $row["keynotfound"];
-            $keyused = $row["keyused"];
-            $nosublevel = $row["nosublevel"];
-            $usernamenotfound = $row["usernamenotfound"];
-            $passmismatch = $row["passmismatch"];
-            $hwidmismatch = $row["hwidmismatch"];
-            $noactivesubs = $row["noactivesubs"];
-            $hwidblacked = $row["hwidblacked"];
-            $keypaused = $row["keypaused"];
-            $keyexpired = $row["keyexpired"];
-            $sellixsecret = $row["sellixsecret"];
-            $dayproduct = $row["dayproduct"];
-            $weekproduct = $row["weekproduct"];
-            $monthproduct = $row["monthproduct"];
-            $lifetimeproduct = $row["lifetimeproduct"];
+            $hwidcheck = false;
         }
+        else
+        {
+            $hwidcheck = true;
+        }
+        $ver = $row["ver"];
+        $download = $row["download"];
+        $webhook = $row["webhook"];
+        $resellerstore = $row["resellerstore"];
+        $appdisabled = $row["appdisabled"];
+        $usernametaken = $row["usernametaken"];
+        $keynotfound = $row["keynotfound"];
+        $keyused = $row["keyused"];
+        $nosublevel = $row["nosublevel"];
+        $usernamenotfound = $row["usernamenotfound"];
+        $passmismatch = $row["passmismatch"];
+        $hwidmismatch = $row["hwidmismatch"];
+        $noactivesubs = $row["noactivesubs"];
+        $hwidblacked = $row["hwidblacked"];
+        $keypaused = $row["keypaused"];
+        $keyexpired = $row["keyexpired"];
+        $sellixsecret = $row["sellixsecret"];
+        $dayproduct = $row["dayproduct"];
+        $weekproduct = $row["weekproduct"];
+        $monthproduct = $row["monthproduct"];
+        $lifetimeproduct = $row["lifetimeproduct"];
 
         mysqli_close($link);
         if ($format == "text")
@@ -2158,205 +1148,7 @@ switch ($type)
                 "liferesellerproductid" => "$lifetimeproduct"
             )));
         }
-    case 'pauseall':
-
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
-        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `status` = 'Used'");
-
-        if (mysqli_num_rows($result) > 0)
-        {
-            while ($row = mysqli_fetch_array($result))
-            {
-                $expires = $row['expires'];
-                $exp = $expires - time();
-                mysqli_query($link, "UPDATE `keys` SET `status` = 'Paused', `expires` = '$exp' WHERE `app` = '$secret' AND `key` = '" . $row['key'] . "'");
-            }
-            mysqli_close($link);
-            Die(json_encode(array(
-                "success" => true,
-                "message" => "Paused all keys"
-            )));
-        }
-        else
-        {
-            mysqli_close($link);
-            Die(json_encode(array(
-                "success" => false,
-                "message" => "Found no used keys"
-            )));
-        }
-    case 'unpauseall':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
-        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `status` = 'Paused'");
-
-        if (mysqli_num_rows($result) > 0)
-        {
-            while ($row = mysqli_fetch_array($result))
-            {
-                $expires = $row['expires'];
-                $exp = $expires + time();
-                mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `expires` = '$exp' WHERE `app` = '$secret' AND `key` = '" . $row['key'] . "'");
-            }
-            mysqli_close($link);
-            Die(json_encode(array(
-                "success" => true,
-                "message" => "Unpaused all keys"
-            )));
-        }
-        else
-        {
-            mysqli_close($link);
-            Die(json_encode(array(
-                "success" => false,
-                "message" => "Found no paused keys"
-            )));
-        }
     case 'info':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $resultt = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
         $numm = mysqli_num_rows($resultt);
 
@@ -2404,27 +1196,6 @@ switch ($type)
         }
 
     case 'updatesettings':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
         $enabled = strip_tags(trim(mysqli_real_escape_string($link, $_GET['enabled'])));
         $hwidcheck = strip_tags(trim(mysqli_real_escape_string($link, $_GET['hwidcheck'])));
         $ver = strip_tags(trim(mysqli_real_escape_string($link, $_GET['ver'])));
@@ -2572,55 +1343,6 @@ switch ($type)
             )));
         }
     case 'edit':
-        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
-
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0)
-        {
-            http_response_code(404);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Seller Key Not Found");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Seller Key Not Found"
-                )));
-            }
-        }
-
-        while ($row = mysqli_fetch_array($result))
-        {
-            $secret = $row['secret'];
-            $owner = $row['owner'];
-        }
-
-        $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
-        $row = mysqli_fetch_array($seller_check);
-
-        $role = $row["role"];
-
-        if ($role !== "seller")
-        {
-            http_response_code(403);
-            mysqli_close($link);
-            if ($format == "text")
-            {
-                die("Not authorized to use SellerAPI, please upgrade.");
-            }
-            else
-            {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "Not authorized to use SellerAPI, please upgrade."
-                )));
-            }
-        }
-
         $expiry = strip_tags(trim(mysqli_real_escape_string($link, $_GET['expiry'])));
         mysqli_query($link, "UPDATE `keys` SET `expires` = '$expiry' WHERE `app` = '$secret' AND `key` = '$key'");
 
