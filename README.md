@@ -4,7 +4,6 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 *You're not allowed to sell KeyAuth. source made avaliable only for personal use.*
 
 Credits to https://github.com/fingu/c_auth for his client examples he gave me permission to use. Much appreciated <3
-
 # Donate
 |BTC|ETH|LTC|
 |---|---|---|
