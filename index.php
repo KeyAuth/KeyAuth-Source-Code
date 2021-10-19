@@ -240,8 +240,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 </ul>
             </div>
             <div class="d-none d-lg-block d-lg-none">
-                <a href="https://keyauth.com/login" class="btn btn-md btn-docs btn-outline-white animate-up-2 mr-3"><i class="fas fa-sign-in-alt mr-2"></i> Login</a>
-                <a href="https://keyauth.com/register" class="btn btn-md btn-secondary animate-up-2"><i class="fas fa-paper-plane mr-2"></i> Register</a>
+                <a href="login/index.php" class="btn btn-md btn-docs btn-outline-white animate-up-2 mr-3"><i class="fas fa-sign-in-alt mr-2"></i> Login</a>
+                <a href="register/index.php" class="btn btn-md btn-secondary animate-up-2"><i class="fas fa-paper-plane mr-2"></i> Register</a>
             </div>
             <div class="d-flex d-lg-none align-items-center">
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_global"
