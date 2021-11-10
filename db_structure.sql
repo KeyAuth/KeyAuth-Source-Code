@@ -101,10 +101,10 @@ CREATE TABLE `apps` (
   `keypaused` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Your Key is paused and cannot be used at the moment.',
   `keyexpired` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Key has expired.',
   `sellixsecret` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `dayproduct` varchar(13) COLLATE utf8_unicode_ci NOT NULL,
-  `weekproduct` varchar(13) COLLATE utf8_unicode_ci NOT NULL,
-  `monthproduct` varchar(13) COLLATE utf8_unicode_ci NOT NULL,
-  `lifetimeproduct` varchar(13) COLLATE utf8_unicode_ci NOT NULL
+  `dayproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `weekproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `monthproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `lifetimeproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
