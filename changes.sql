@@ -260,35 +260,35 @@ ALTER TABLE apps
    ADD COLUMN shoppysecret VARCHAR(16)
                 CHARACTER SET utf8
                 COLLATE utf8_unicode_ci
-                NOT NULL
+                DEFAULT NULL
    AFTER sellixlifetimeproduct;
 
 ALTER TABLE apps
    ADD COLUMN shoppydayproduct VARCHAR(7)
                 CHARACTER SET utf8
                 COLLATE utf8_unicode_ci
-                NOT NULL
+                DEFAULT NULL
    AFTER shoppysecret;
 
 ALTER TABLE apps
    ADD COLUMN shoppyweekproduct VARCHAR(7)
                 CHARACTER SET utf8
                 COLLATE utf8_unicode_ci
-                NOT NULL
+                DEFAULT NULL
    AFTER shoppydayproduct;
 
 ALTER TABLE apps
    ADD COLUMN shoppymonthproduct VARCHAR(7)
                 CHARACTER SET utf8
                 COLLATE utf8_unicode_ci
-                NOT NULL
+                DEFAULT NULL
    AFTER shoppyweekproduct;
 
 ALTER TABLE apps
    ADD COLUMN shoppylifetimeproduct VARCHAR(7)
                 CHARACTER SET utf8
                 COLLATE utf8_unicode_ci
-                NOT NULL
+                DEFAULT NULL
    AFTER shoppymonthproduct;
 
 ALTER TABLE apps
