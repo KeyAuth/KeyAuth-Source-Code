@@ -16,7 +16,8 @@ $username = $_SESSION['username'];
 $row = mysqli_fetch_array($result);
 
 $banned = $row['banned'];
-if (!is_null($banned))
+$lastreset = $row['lastreset'];
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 {
 	echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
 	session_destroy();
@@ -25,6 +26,13 @@ if (!is_null($banned))
 
 $role = $row['role'];
 $_SESSION['role'] = $role;
+
+$expires = $row['expires'];
+$timeleft = false;
+if(in_array($role,array("developer", "seller")))
+{
+	$timeleft = expire_check($username, $expires);
+}
 
 if ($role != "developer" && $role != "seller")
 {
@@ -46,7 +54,7 @@ $darkmode = $row['darkmode'];
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Manage Accounts</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.com/static/images/favicon.png">
 	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
 	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
@@ -60,7 +68,15 @@ $darkmode = $row['darkmode'];
 
 
 
-	                    
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	});
+	</script>                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -228,6 +244,9 @@ sidebar($role);
                 <!-- File export -->
                 <div class="row">
                     <div class="col-12">
+					<?php if($timeleft) { ?>
+					<div class="alert alert-warning alert-rounded">Your account subscription expires, in less than a month, check account details for exact date.</div>
+					<?php } ?>
 					<button data-toggle="modal" type="button" data-target="#create-account" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Account</button>
 							<br>
 							<br>
@@ -238,13 +257,13 @@ sidebar($role);
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Add Accounts</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">X</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
                                                     <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Account Role:</label>
-                                                        <select name="role" class="form-control"><option>Reseller</option><option>Manager</option></select>
+                                                        <label for="recipient-name" class="control-label">Account Role: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If reseller, account will be able to create as many keys as their balance allows. Balance can be given manually by you by editing account after it's made, or your reseller can purchase their balance. If manager, the account is locked to that certain application and can do just about everything except rename, pause, refresh secret, and delete application."></i></label>
+                                                        <select name="role" class="form-control"><option value="Reseller">Reseller</option><option value="Manager">Manager</option></select>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Account Application:</label>
@@ -263,15 +282,15 @@ if (mysqli_num_rows($result) > 0)
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Account Username:</label>
-                                                        <input type="text" class="form-control" placeholder="Username for account you manage" name="username">
+                                                        <input type="text" class="form-control" placeholder="Username for account you manage" name="username" required>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Account Email:</label>
-                                                        <input type="text" class="form-control" placeholder="Email for account you manage" name="email">
+                                                        <input type="text" class="form-control" placeholder="Email for account you manage" name="email" required>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Account Password:</label>
-                                                        <input type="password" class="form-control" placeholder="Password for account you manage" name="pw">
+                                                        <input type="password" class="form-control" placeholder="Password for account you manage" name="pw" required>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Allowed License Levels:</label>
@@ -527,42 +546,50 @@ if (isset($_POST['editacc']))
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Edit Account</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">�</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post"> 
                                                     <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Day Balance:</label>
+                                                        <label for="recipient-name" class="control-label">Day Balance: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Number of day keys account can create"></i></label>
                                                         <input type="text" class="form-control" name="daybalance" value="' . $day . '" required>
 														<input type="hidden" name="account" value="' . $account . '">
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Week Balance:</label>
+                                                        <label for="recipient-name" class="control-label">Week Balance: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Number of week keys account can create"></i></label>
                                                         <input type="text" class="form-control" name="weekbalance" value="' . $week . '" required>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Month Balance:</label>
+                                                        <label for="recipient-name" class="control-label">Month Balance: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Number of month keys account can create"></i></label>
                                                         <input type="text" class="form-control" name="monthbalance" value="' . $month . '" required>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Three Month Balance:</label>
+                                                        <label for="recipient-name" class="control-label">Three Month Balance: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Number of three-month keys account can create"></i></label>
                                                         <input type="text" class="form-control" name="threemonthbalance" value="' . $threemonth . '" required>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Six Month Balance:</label>
+                                                        <label for="recipient-name" class="control-label">Six Month Balance: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Number of six-month keys account can create"></i></label>
                                                         <input type="text" class="form-control" name="sixmonthbalance" value="' . $sixmonth . '" required>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Lifetime Balance:</label>
+                                                        <label for="recipient-name" class="control-label">Lifetime Balance: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Number of lifetime keys account can create"></i></label>
                                                         <input type="text" class="form-control" name="lifebalance" value="' . $life . '" required>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Allowed License Levels:</label>
                                                         <input type="text" class="form-control" name="keylevels" placeholder="Enter Levels In Format: 1|2|3, Leave It Blank For All Levels" value="' . $keylevels . '">
                                                     </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Email:</label>
+                                                        <input type="email" class="form-control" name="email" placeholder="Enter new email">
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Password:</label>
+                                                        <input type="password" class="form-control" name="pw" placeholder="Enter new password">
+                                                    </div>
                                             </div>
                                             <div class="modal-footer">
-                                            <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                            <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
                                             <button class="btn btn-danger waves-effect waves-light" name="saveacc">Save</button>
 												</form>
                                             </div>
@@ -582,6 +609,26 @@ if (isset($_POST['saveacc']))
     $sixmonth = sanitize($_POST['sixmonthbalance']);
     $lifetime = sanitize($_POST['lifebalance']);
     $keylevels = sanitize($_POST['keylevels']) ?? "N/A";
+	
+	$email = sanitize($_POST['email']);
+	$pw = password_hash(sanitize($_POST['pw']), PASSWORD_BCRYPT);
+	
+	if(!empty($email))
+	{
+		$email_check = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `email` = '$email'") or die(mysqli_error($link));
+		$do_email_check = mysqli_num_rows($email_check);
+		if ($do_email_check > 0)
+		{
+			error("Email already taken!");
+			echo '<meta http-equiv="refresh" content="5">';
+			return;
+		}
+		mysqli_query($link, "UPDATE `accounts` SET email = '$email' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
+	}
+	if(!empty($pw))
+	{
+		mysqli_query($link, "UPDATE `accounts` SET password = '$pw' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
+	}
 
     $balance = $day . '|' . $week . '|' . $month . '|' . $threemonth . '|' . $sixmonth . '|' . $lifetime;
 

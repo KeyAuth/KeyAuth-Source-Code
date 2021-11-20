@@ -41,67 +41,35 @@ if (!isset($_SESSION['username'])) {
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Reseller Licenses</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/dist/css/style.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 
 
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	});
+	</script>
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
-    <?php
-
-
-// $_SESSION['app'] = "appname";
-if(!$_SESSION['app']) { // if app is not 
-
-
-
-$result = mysqli_query($link, "SELECT 1 FROM apps WHERE owner='".$_SESSION['username']."' LIMIT 1");
-if (mysqli_fetch_row($result)) {
-    
-    $row = mysqli_fetch_array($result);
-    $_SESSION['app'] = $row["name"];
-    
-echo '
-                <script type=\'text/javascript\'>
-                
-                        $(document).ready(function(){
-        $("#changeapp").fadeIn(1900);
-        });             
-                
-                </script>
-                ';
-}
-else // if user doesnt have any apps created
-{
-    echo '
-                <script type=\'text/javascript\'>
-                
-                        $(document).ready(function(){
-        $("#createapp").fadeIn(1900);
-        });             
-                
-                </script>
-                ';
-}
-
-}
-else // if sesssion var 'app' exists, display tables using app in query etc
-{
-    echo '
-                <script type=\'text/javascript\'>
+<script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#content").fadeIn(1900);
@@ -109,10 +77,6 @@ else // if sesssion var 'app' exists, display tables using app in query etc
         });             
                 
                 </script>
-                ';
-}
-
-?>
 </head>
 
 <body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
@@ -142,18 +106,18 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-icon.png" alt="homepage"
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-icon.png" alt="homepage"
                                 class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                             <!-- dark Logo text -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo text -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-text.png" class="light-logo"
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo"
                                 alt="homepage" />
                         </span>
                     </a>
@@ -249,10 +213,12 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                 href="../../reseller/keys/" aria-expanded="false"><i data-feather="key"></i><span
                                     class="hide-menu">Licenses</span></a></li>
+						<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/users/" aria-expanded="false"><i data-feather="users"></i><span
+                                    class="hide-menu">Users</span></a></li>
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                 href="../../reseller/balance/" aria-expanded="false"><i
                                     data-feather="credit-card"></i><span class="hide-menu">Balance</span></a></li>
-
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -562,6 +528,15 @@ else // if sesssion var 'app' exists, display tables using app in query etc
 							   
                                 $mask = sanitize($_POST['mask']);
 								
+								$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$mask'");
+                                if(mysqli_num_rows($result) !== 0)
+								{
+									mysqli_close($link);
+									error("Key already exists, try a different one!");
+									echo "<meta http-equiv='Refresh' Content='2'>";
+									return;
+								}
+								
 								
 								// mask instead of format
 								// check if amount is over one and mask does not contain any Xs
@@ -575,35 +550,12 @@ else // if sesssion var 'app' exists, display tables using app in query etc
 								
 								
                                 $key = license($amount,$mask,$expiry,$level,$link);
-                                
+								
                                 if($result)
                                 {
                                 mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '".$_SESSION['username']."'");
 								
-								// webhook start
-								$timestamp = date("c", strtotime("now"));
-
-								$json_data = json_encode([
-									// Message
-									"content" => "".$_SESSION['username']." has created {$amount} keys",
-									
-									// Username
-									"username" => "KeyAuth Logs",
-								
-								], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-								
-								
-								$ch = curl_init("webhook_link_here");
-								curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-type: application/json'));
-								curl_setopt($ch,CURLOPT_POST,1);
-								curl_setopt($ch,CURLOPT_POSTFIELDS,$json_data);
-								curl_setopt($ch,CURLOPT_FOLLOWLOCATION,1);
-								curl_setopt($ch,CURLOPT_HEADER,0);
-								
-								curl_exec($ch);
-								curl_close($ch);
-								// webhook end
-								
+								wh_log($logwebhook, "{$username} has created {$amount} keys", $webhookun);
 								
                                 
                                 if($amount > 1)
@@ -940,33 +892,33 @@ echo '
     <!-- ============================================================== -->
 
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.init.dark.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app-style-switcher.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.init.dark.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/waves.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/sidebarmenu.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/feather.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/custom.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
     <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -978,7 +930,7 @@ echo '
 
 
 
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
     <script>
     function bankey(key) {

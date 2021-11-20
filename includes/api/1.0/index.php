@@ -60,6 +60,8 @@ function register($un,$key,$pw,$hwid,$secret)
                 $status = $row['status'];
 
                 $level = $row['level'];
+				
+                $genby = $row['genby'];
 
             }
             // check license status
@@ -67,8 +69,6 @@ function register($un,$key,$pw,$hwid,$secret)
 			{
 				case 'Used':
 					return 'key_already_used';
-				case 'Paused':
-					return 'key_paused';
 				case 'Banned':
 					return 'key_banned';
 					
@@ -110,8 +110,10 @@ function register($un,$key,$pw,$hwid,$secret)
             }
 			$password = password_hash($pw, PASSWORD_BCRYPT);
 			
+			$createdate = time();
+			
             // create user
-            mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`) VALUES ('$un','$password', NULLIF('$hwid', ''), '$secret')");
+            mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`,`owner`,`createdate`) VALUES ('$un','$password', NULLIF('$hwid', ''), '$secret', '$genby', '$createdate')");
 
 			
             $result = mysqli_query($link, "SELECT `subscription`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
@@ -120,16 +122,23 @@ function register($un,$key,$pw,$hwid,$secret)
 
             while ($r = mysqli_fetch_assoc($result))
             {
-
+				
+				$timeleft = $r["expiry"] - time();
+				$r += [ "timeleft" => $timeleft ];
                 $rows[] = $r;
 
             }
-
-            // mysqli_close($link);
             
 
             // success
-            return $rows;
+            return array(
+                "username" => "$un",
+                "subscriptions" => $rows,
+                "ip" => $ip,
+				"hwid" => $hwid,
+				"createdate" => "$createdate",
+				"lastlogin" => "".time().""
+            );
         }
 }
 #endregion
@@ -163,10 +172,10 @@ function login($un,$pw,$hwid,$secret,$hwidenabled)
             {
 
                 $pass = $row['password'];
-
                 //$expires = $row['expires'];
                 $hwidd = $row['hwid'];
                 $banned = $row['banned'];
+                $createdate = $row['createdate'];
 
             }
 			
@@ -183,14 +192,21 @@ function login($un,$pw,$hwid,$secret,$hwidenabled)
 				return 'hwid_blacked';
 			}
 
-            // check if pass matches
-            if (!password_verify($pw, $pass))
-
-            {
-
-                return 'pw_mismatch';
-
-            }
+			if(!is_null($pass))
+			{
+				// check if pass matches
+				if (!password_verify($pw, $pass))
+				{
+	
+					return 'pw_mismatch';
+	
+				}
+			}
+			else
+			{
+				$pass_encrypted = password_hash($pw, PASSWORD_BCRYPT);
+				mysqli_query($link, "UPDATE `users` SET `password` = '$pass_encrypted' WHERE `username` = '$un' AND `app` = '$secret'");
+			}
 
             // check if hwid enabled for application
             if ($hwidenabled == "1")
@@ -207,38 +223,51 @@ function login($un,$pw,$hwid,$secret,$hwidenabled)
                 }
 				else if($hwidd == NULL)
 				{
-					mysqli_query($link, "UPDATE `users` SET `hwid` = NULLIF('$hwid', '') WHERE `username` = '$un'");
+					mysqli_query($link, "UPDATE `users` SET `hwid` = NULLIF('$hwid', '') WHERE `username` = '$un' AND `app` = '$secret'");
 				}
 
             }
-			mysqli_query($link, "UPDATE `users` SET `ip` = '$ip' WHERE `username` = '$un'");
-            $result = mysqli_query($link, "SELECT `subscription`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
+			
+            $result = mysqli_query($link, "SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
 
             $num = mysqli_num_rows($result);
 
             if ($num == 0)
 
             {
+				$result = mysqli_query($link, "SELECT `paused` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `paused` = 1");
+				if(mysqli_num_rows($result) >= 1)
+				{
+					mysqli_close($link);
+					return 'sub_paused';
+				}
 
                 mysqli_close($link);
                 return 'no_active_subs';
 
             }
+			$lastlogin = time();
+			mysqli_query($link, "UPDATE `users` SET `ip` = NULLIF('$ip', ''),`lastlogin` = '$lastlogin' WHERE `username` = '$un'");
 
             $rows = array();
 
             while ($r = mysqli_fetch_assoc($result))
             {
-
+				$timeleft = $r["expiry"] - time();
+				$r += [ "timeleft" => $timeleft ];
                 $rows[] = $r;
 
             }
-
-            // mysqli_close($link);
-            
-
-            // success
-            return $rows;
+			
+            // success			
+			return array(
+                "username" => "$un",
+                "subscriptions" => $rows,
+                "ip" => $ip,
+				"hwid" => $hwid,
+				"createdate" => $createdate,
+				"lastlogin" => "$lastlogin"
+            );
 
         }
 }

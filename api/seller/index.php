@@ -260,6 +260,234 @@ switch ($type)
                 )));
             }
         }
+	case 'setvar':
+		$var = sanitize($_GET['var']);
+		$data = sanitize($_GET['data']);
+		
+		if($user == "all")
+		{
+			$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret'");
+			if(mysqli_num_rows($result) == 0)
+			{
+				http_response_code(406);
+				mysqli_close($link);
+				if ($format == "text")
+				{
+					die("You have no users");
+				}
+				else
+				{
+					die(json_encode(array(
+						"success" => false,
+						"message" => "You have no users"
+					)));
+				}
+			}
+			
+			$rows = array();
+			while ($r = mysqli_fetch_assoc($result))
+			{
+				$rows[] = $r;
+			}
+		
+			foreach ($rows as $row)
+			{
+				mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '".$row['username']."', '$secret')");
+			}
+		}
+		else
+		{
+			mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '$user', '$secret')");
+		}
+		
+		if(mysqli_affected_rows($link) != 0)
+		{
+			mysqli_close($link);
+			if ($format == "text")
+			{
+				die("Set variable for selected user(s)");
+			}
+			else
+			{
+				die(json_encode(array(
+					"success" => true,
+					"message" => "Set variable for selected user(s)"
+				)));
+			}
+		}
+		else
+		{
+			mysqli_close($link);
+			if ($format == "text")
+			{
+				die("Failed To set variable for selected user(s)");
+			}
+			else
+			{
+				die(json_encode(array(
+					"success" => false,
+					"message" => "Failed To set variable for selected user(s)"
+				)));
+			}
+		}
+	case 'getvar':
+		$var = sanitize($_GET['var']);
+		
+		$result = mysqli_query($link, "SELECT * FROM `uservars` WHERE `name` = '$var' AND `user` = '$user' AND `app` = '$secret'");
+		
+		if(mysqli_num_rows($result) == 0)
+		{
+			http_response_code(404);
+			mysqli_close($link);
+			if ($format == "text")
+			{
+				die("Variable not found for user");
+			}
+			else
+			{
+				die(json_encode(array(
+					"success" => false,
+					"message" => "Variable not found for user"
+				)));
+			}
+		}
+		
+        $row = mysqli_fetch_array($result);
+		$data = $row['data'];
+		
+		mysqli_close($link);
+		if ($format == "text")
+		{
+			die($data);
+		}
+		else
+		{
+			die(json_encode(array(
+				"success" => true,
+				"message" => "Successfully retrieved variable",
+				"response" => $data
+			)));
+		}
+	case 'fetchallblacks':
+		$result = mysqli_query($link, "SELECT `hwid`, `ip`, `type` FROM `bans` WHERE `app` = '$secret'");
+	
+		if (mysqli_num_rows($result) == 0)
+		{
+			http_response_code(406);
+			mysqli_close($link);
+			Die(json_encode(array(
+				"success" => false,
+				"message" => "No blacklists found"
+			)));
+		}
+	
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		mysqli_close($link);
+		die(json_encode(array(
+			"success" => true,
+			"message" => "Successfully retrieved blacklists",
+			"subs" => $rows
+		)));
+	case 'fetchallsubs':
+		$result = mysqli_query($link, "SELECT `name`, `level` FROM `subscriptions` WHERE `app` = '$secret'");
+	
+		if (mysqli_num_rows($result) == 0)
+		{
+			http_response_code(406);
+			mysqli_close($link);
+			Die(json_encode(array(
+				"success" => false,
+				"message" => "No subscriptions found"
+			)));
+		}
+	
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		mysqli_close($link);
+		die(json_encode(array(
+			"success" => true,
+			"message" => "Successfully retrieved subscriptions",
+			"subs" => $rows
+		)));
+	case 'fetchalluservars':
+		$result = mysqli_query($link, "SELECT `name`, `data`, `user` FROM `uservars` WHERE `app` = '$secret'");
+	
+		if (mysqli_num_rows($result) == 0)
+		{
+			http_response_code(406);
+			mysqli_close($link);
+			Die(json_encode(array(
+				"success" => false,
+				"message" => "No user variables Found"
+			)));
+		}
+	
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		mysqli_close($link);
+		die(json_encode(array(
+			"success" => true,
+			"message" => "Successfully retrieved user variables",
+			"vars" => $rows
+		)));
+	case 'fetchallfiles':
+        $result = mysqli_query($link, "SELECT `id`, `url` FROM `files` WHERE `app` = '$secret'");
+
+        if (mysqli_num_rows($result) == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "No files Found"
+            )));
+        }
+
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result))
+        {
+            $rows[] = $r;
+        }
+        mysqli_close($link);
+        die(json_encode(array(
+            "success" => true,
+            "message" => "Successfully retrieved files",
+            "files" => $rows
+        )));
+	case 'fetchallvars':
+        $result = mysqli_query($link, "SELECT `varid`, `msg` FROM `vars` WHERE `app` = '$secret'");
+
+        if (mysqli_num_rows($result) == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "No variables Found"
+            )));
+        }
+
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result))
+        {
+            $rows[] = $r;
+        }
+        mysqli_close($link);
+        die(json_encode(array(
+            "success" => true,
+            "message" => "Successfully retrieved variables",
+            "vars" => $rows
+        )));
     case 'addvar':
         $name = strip_tags(trim(mysqli_real_escape_string($link, $_GET['name'])));
         $data = strip_tags(trim(mysqli_real_escape_string($link, $_GET['data'])));
@@ -404,6 +632,20 @@ switch ($type)
                     )
                 )));
         }
+	case 'resetpw':
+        mysqli_query($link, "UPDATE `users` SET `password` = NULL WHERE `username` = '$user' AND `app` = '$secret'");
+        mysqli_close($link);
+        if ($format == "text")
+        {
+            die("Password reset successful");
+        }
+        else
+        {
+            die(json_encode(array(
+                "success" => true,
+                "message" => "Password reset successful"
+            )));
+        }
     case 'editvar':
         $varid = strip_tags(trim(mysqli_real_escape_string($link, $_GET['varid'])));
         $data = strip_tags(trim(mysqli_real_escape_string($link, $_GET['data'])));
@@ -547,7 +789,92 @@ switch ($type)
                 )));
             }
 		}
+    case 'extendall':
+		$name = strip_tags(trim(mysqli_real_escape_string($link, $_GET['name'])));
+        $subquery = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '$secret' AND `name` = '$name'");
+
+        $subcount = mysqli_num_rows($subquery);
+
+        if ($subcount == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("No Subscriptions With That Name");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "No Subscriptions With That Name"
+                )));
+            }
+        }
+        
+		$expiry = strip_tags(trim(mysqli_real_escape_string($link, $_GET['expiry'])));
+		$expiry = ($expiry * 86400) + time();
 		
+		$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret'");
+		if(mysqli_num_rows($result) == 0)
+		{
+			http_response_code(406);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("No users found");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "No users found"
+                )));
+            }
+		}
+		
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		
+		foreach ($rows as $row)
+		{
+			mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('".$row['username']."','$name', '$expiry', '$secret')");
+		}
+		
+		if (mysqli_affected_rows($link) != 0)
+		{
+			mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Successfully Extended All Users");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => true,
+                    "message" => "Successfully Extended All Users"
+                )));
+            }
+		}
+		else
+		{
+			http_response_code(500);
+			mysqli_close($link);
+            if ($format == "text")
+            {
+                die("Failed To Extend All Users");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "Failed To Extend All Users"
+                )));
+            }
+		}
     case 'verify':
         $keyquery = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
 
@@ -583,7 +910,39 @@ switch ($type)
                 )));
             }
         }
+    case 'verifyuser':
+        $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret' AND `username` = '$user'");
 
+        if (mysqli_num_rows($result) == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("User Not Found");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "User Not Found"
+                )));
+            }
+        }
+        else
+        {
+            if ($format == "text")
+            {
+                die("User Successfully Verified");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => true,
+                    "message" => "User Successfully Verified"
+                )));
+            }
+        }
     case 'del':
         $keyquery = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
 
@@ -648,6 +1007,69 @@ switch ($type)
                 "message" => "Successfully Deleted Expired Licenses"
             )));
         }
+    case 'delexpusers':
+        $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret'");
+		if(mysqli_num_rows($result) == 0)
+		{
+			http_response_code(406);
+			mysqli_close($link);
+			if ($format == "text")
+            {
+                die("You have no users");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "You have no users"
+                )));
+            }
+		}
+		
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		
+		$success = 0;
+		foreach ($rows as $row)
+		{
+			$result = mysqli_query($link, "SELECT * FROM `subs` WHERE `user` = '".$row['username']."' AND `app` = '$secret' AND `expiry` > '".time()."'");
+			if(mysqli_num_rows($result) == 0)
+			{
+				$success = 1;
+				mysqli_query($link, "DELETE FROM `users` WHERE `app` = '$secret' AND `username` = '".$row['username']."'");
+			}
+		}
+		if($success)
+		{
+			if ($format == "text")
+			{
+				die("Expired Users Successfully Deleted");
+			}
+			else
+			{
+				die(json_encode(array(
+					"success" => true,
+					"message" => "Expired Users Successfully Deleted"
+				)));
+			}
+		}
+		else
+		{
+			if ($format == "text")
+			{
+				die("No users are expired");
+			}
+			else
+			{
+				die(json_encode(array(
+					"success" => true,
+					"message" => "No users are expired"
+				)));
+			}
+		}
 	case 'deluser':
         $usrquery = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret' AND `username` = '$user'");
 
@@ -753,8 +1175,18 @@ switch ($type)
         $url = strip_tags(trim(mysqli_real_escape_string($link, $_GET['url'])));
 
         if (!filter_var($url, FILTER_VALIDATE_URL)) { 
-		error("Invalid Url!");
-		return;
+            mysqli_close($link);
+            if ($format == "text")
+            {
+                die("URL is invalid");
+            }
+            else
+            {
+                die(json_encode(array(
+                    "success" => false,
+                    "message" => "URL is invalid"
+                )));
+            }
 		}
 		
         $file = file_get_contents($url);

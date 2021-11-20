@@ -10,21 +10,12 @@ if (!isset($_SESSION['username'])) {
          header("Location: ../../../login/");
         exit();
 }
-
-
 	        $username = $_SESSION['username'];
             ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = 	'$username'")) or die(mysqli_error($link));
             $row = mysqli_fetch_array($result);
-        
             $role = $row['role'];
             $_SESSION['role'] = $role;
-			
 			$darkmode = $row['darkmode'];
-
-            $keylevels = $row['keylevels'];
-
-			
-                            
 ?>
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -38,27 +29,43 @@ if (!isset($_SESSION['username'])) {
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Reseller Users</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-	<script src="../../files/assets/libs/jquery/dist/jquery.min.js"></script>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
+	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="../../files/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    <link href="../../files/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="../../files/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="../../files/dist/css/style.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 	
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-	<script src="../../files/unixtolocal.js"></script>
+	<script src="https://cdn.keyauth.uk/dashboard/unixtolocal.js"></script>
 
-	                    
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	});
+	</script>                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
+<script type='text/javascript'>
+                
+                        $(document).ready(function(){
+        $("#content").fadeIn(1900);
+        $("#sticky-footer bg-white").fadeIn(1900);
+        });             
+                
+                </script>
 </head>
 <body data-theme="<?php echo (($darkmode ? 1 : 0) ? 'light' : 'dark'); ?>">
     <!-- ============================================================== -->
@@ -85,17 +92,17 @@ if (!isset($_SESSION['username'])) {
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="../../files/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="../../files/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                              <!-- dark Logo text -->
-                             <img src="../../files/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                              <!-- Light Logo text -->    
-                             <img src="../../files/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -169,9 +176,19 @@ if (!isset($_SESSION['username'])) {
                 <!-- Sidebar navigation-->
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
-                        <?php
-						sidebar($role);
-						?>
+
+                        <li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span
+                                class="hide-menu">Reseller</span></li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/keys/" aria-expanded="false"><i data-feather="key"></i><span
+                                    class="hide-menu">Licenses</span></a></li>
+						<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/users/" aria-expanded="false"><i data-feather="users"></i><span
+                                    class="hide-menu">Users</span></a></li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/balance/" aria-expanded="false"><i
+                                    data-feather="credit-card"></i><span class="hide-menu">Balance</span></a></li>
+
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -201,19 +218,18 @@ if (!isset($_SESSION['username'])) {
             <!-- ============================================================== -->
             <!-- Container fluid  -->
             <!-- ============================================================== -->
-            <div class="container-fluid" id="content">
+            <div class="container-fluid" id="content" style="display:none;">
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
                 <!-- File export -->
                 <div class="row">
                     <div class="col-12">
-					<?php heador($role, $link); ?>
 					<form method="POST">
-					<button name="delusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Users</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all users?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Users</button>
+					<button name="delusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Users</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all users?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Users</button>
                             </form>
 							<br>
-							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
+							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=oLj04x0k1RI" target="tutorial">https://youtube.com/watch?v=oLj04x0k1RI</a> You may also join Discord and ask for help!
                                         </div>
 <div id="ban-user" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
@@ -253,7 +269,7 @@ if (!isset($_SESSION['username'])) {
                                         <tbody>
 <?php
 		if($_SESSION['app']) {
-        ($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
+        ($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
         $rows = array();
         while ($r = mysqli_fetch_assoc($result))
         {
@@ -270,7 +286,7 @@ if (!isset($_SESSION['username'])) {
 
                                                     <td><?php echo $row["username"]; ?></td>
 
-                                                    <td><?php echo $row["hwid"]; ?></td>
+                                                    <td><?php echo $row["hwid"] ?? "N/A"; ?></td>
 													
                                                     <td><?php echo $row["ip"] ?? "N/A"; ?></td>
 
@@ -329,10 +345,10 @@ if (!isset($_SESSION['username'])) {
 				if(isset($_POST['deleteuser']))
 				{
 					$username = sanitize($_POST['deleteuser']);
-					mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$username' AND `genby` = '".$_SESSION['username']."'");
-					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$username' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$username' AND `owner` = '".$_SESSION['username']."'");
 					if(mysqli_affected_rows($link) != 0)
 					{
+						mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$username'");
 						success("User Successfully Deleted!");
 						echo "<meta http-equiv='Refresh' Content='2'>";
 					}
@@ -342,10 +358,10 @@ if (!isset($_SESSION['username'])) {
 						error("Failed To Delete User!");
 					}
 				}
-								if(isset($_POST['resetuser']))
+				if(isset($_POST['resetuser']))
 				{
 					$un = sanitize($_POST['resetuser']);
-					mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `owner` = '".$_SESSION['username']."'");
 					if(mysqli_affected_rows($link) != 0)
 					{
 						success("User Successfully Reset");
@@ -361,7 +377,7 @@ if (!isset($_SESSION['username'])) {
 				{
 					$un = sanitize($_POST['un']);
 					
-					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `owner` = '".$_SESSION['username']."'");
 					if(mysqli_num_rows($result) == 0)
 					{
 						mysqli_close($link);
@@ -375,25 +391,33 @@ if (!isset($_SESSION['username'])) {
 					$ip = $row["ip"];
 					$reason = sanitize($_POST['reason']);
 					
-					mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `owner` = '".$_SESSION['username']."'");
 					
-					if($hwid != NULL)
+					if(mysqli_affected_rows($link) != 0)
 					{
-					mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','".$_SESSION['app']."')");
+						if($hwid != NULL)
+						{
+						mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','".$_SESSION['app']."')");
+						}
+						if($ip != NULL)
+						{
+						mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','".$_SESSION['app']."')");
+						}
+						success("User Successfully Banned!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
 					}
-					if($ip != NULL)
+					else
 					{
-					mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','".$_SESSION['app']."')");
+						mysqli_close($link);
+						error("Failed To Ban User");
 					}
-					success("User Successfully Banned!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
 				}
 				
 				if(isset($_POST['unbanuser']))
 				{
 					$un = sanitize($_POST['unbanuser']);
 					
-					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `owner` = '".$_SESSION['username']."'");
 					if(mysqli_num_rows($result) == 0)
 					{
 						mysqli_close($link);
@@ -406,18 +430,26 @@ if (!isset($_SESSION['username'])) {
 					$hwid = $row["hwid"];
 					$ip = $row["ip"];
 					
-					mysqli_query($link, "UPDATE `users` SET `banned` = NULL WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `genby` = '".$_SESSION['username']."'");
-					mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "UPDATE `users` SET `banned` = NULL WHERE `app` = '".$_SESSION['app']."' AND `username` = '$un' AND `owner` = '".$_SESSION['username']."'");
 					
-					success("User Successfully Unbanned!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
+					if(mysqli_affected_rows($link) != 0)
+					{
+						mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '".$_SESSION['app']."'");
+						success("User Successfully Unbanned!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Unban User");
+					}
 				}
 				
 				if(isset($_POST['edituser']))
 				{
 					$un = sanitize($_POST['edituser']);
 					
-					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'");
                     if(mysqli_num_rows($result) == 0)
 					{
 						mysqli_close($link);
@@ -456,7 +488,7 @@ if (!isset($_SESSION['username'])) {
 														foreach ($rows as $subrow)
 														{
 														
-														$value = "[" . $subrow['subscription'] . "]" . " - Expires: <script>document.write(convertTimestamp(" . $subrow["expiry"] . "));</script>";
+														$value = "[" . $subrow['subscription'] . "] - Expires: <script>document.write(convertTimestamp(" . $subrow["expiry"] . "));</script>";
 														?>
 														<option><?php echo $value; ?></option>
 														<?php
@@ -499,18 +531,18 @@ if (!isset($_SESSION['username'])) {
 					
 					if(isset($hwid) && trim($hwid) != '')
 					{
-						$result = mysqli_query($link, "SELECT `hwid` FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");                           
+						$result = mysqli_query($link, "SELECT `hwid` FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'");                           
 						$row = mysqli_fetch_array($result);                      
 						$hwidd = $row["hwid"];
 
 						$hwidd = $hwidd .= $hwid;
 
-						mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+						mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'");
 					}
 					
 					if(isset($pass) && trim($pass) != '')
 					{
-						mysqli_query($link, "UPDATE `users` SET `password` = '".password_hash($pass, PASSWORD_BCRYPT)."' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+						mysqli_query($link, "UPDATE `users` SET `password` = '".password_hash($pass, PASSWORD_BCRYPT)."' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'");
 					}
 		
 					success("Successfully Updated User");
@@ -520,6 +552,15 @@ if (!isset($_SESSION['username'])) {
 				if(isset($_POST['deletesub']))
 				{
 					$un = sanitize($_POST['deletesub']);
+					
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'");
+                    if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("User not Found!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
 					
 					$sub = sanitize($_POST['sub']);
 					
@@ -534,7 +575,7 @@ if (!isset($_SESSION['username'])) {
 					
 					$sub = get_string_between($sub, '[', ']');
 					
-					mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$un' AND `subscription` = '$sub' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$un' AND `subscription` = '$sub'");
 					if(mysqli_affected_rows($link) != 0)
 					{
 					success("Successfully Deleted User\'s Subscription");
@@ -550,7 +591,7 @@ if (!isset($_SESSION['username'])) {
 				
 				if(isset($_POST['delusers']))
 				{
-					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'");
 					if(mysqli_affected_rows($link) != 0)
 					{
 						success("Users Successfully Deleted!");
@@ -565,7 +606,7 @@ if (!isset($_SESSION['username'])) {
 				
 				if(isset($_POST['resetall']))
 				{
-					mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
+					mysqli_query($link, "UPDATE `users` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `owner` = '".$_SESSION['username']."'");
 					if(mysqli_affected_rows($link) != 0)
 					{
 						success("Users Successfully Reset!");
@@ -618,33 +659,33 @@ if (!isset($_SESSION['username'])) {
     <!-- ============================================================== -->
     
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="../../files/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="../../files/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="../../files/dist/js/app.min.js"></script>
-    <script src="../../files/dist/js/app.init.dark.js"></script>
-    <script src="../../files/dist/js/app-style-switcher.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.init.dark.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="../../files/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="../../files/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="../../files/dist/js/waves.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="../../files/dist/js/sidebarmenu.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="../../files/dist/js/feather.min.js"></script>
-    <script src="../../files/dist/js/custom.min.js"></script>
+   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="../../files/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="../../files/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="../../files/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="../../files/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="../../files/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="../../files/dist/js/pages/dashboards/dashboard1.js"></script>
-		<script src="../../files/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
+		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -656,7 +697,7 @@ if (!isset($_SESSION['username'])) {
   
 					
 
-<script src="../../files/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 <script>
                         

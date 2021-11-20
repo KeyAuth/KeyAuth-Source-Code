@@ -30,6 +30,8 @@ while ($row = mysqli_fetch_array($result))
     $webhook = $row['webhook'];
     $appdisabled = $row['appdisabled'];
 
+	$banned = $row['banned'];
+	
     // custom error messages
     $usernametaken = $row['usernametaken'];
     $keynotfound = $row['keynotfound'];
@@ -42,6 +44,14 @@ while ($row = mysqli_fetch_array($result))
     $keyexpired = $row['keyexpired'];
 	$hwidmismatch = $row['hwidmismatch'];
 	$keyexpired = $row['keyexpired'];
+}
+
+if($banned)
+{
+	die(json_encode(array(
+        "success" => false,
+        "message" => "This application has been banned from KeyAuth.com for violating terms."
+    )));	
 }
 
 switch ($_POST['type'])
@@ -75,7 +85,6 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         // Read in username
         $username = sanitize($_POST['username']);
@@ -143,8 +152,6 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
-
         // Read in username
         $username = sanitize($_POST['username']);
 
@@ -170,7 +177,7 @@ switch ($_POST['type'])
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$checkkey' AND `app` = '$secret'");
 
         // check if key exists
-        if (mysqli_num_rows($result) < 1)
+        if (mysqli_num_rows($result) == 0)
 
         {
 
@@ -255,7 +262,6 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         // Read in username
         $username = sanitize($_POST['username']);
@@ -310,7 +316,6 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
         $checkkey = sanitize($_POST['key']);
 		
 		$hwid = sanitize($_POST['hwid']);
@@ -322,10 +327,10 @@ switch ($_POST['type'])
             break; // user not registered yet or user was deleted
             
 			case 'hwid_mismatch':
-                die(Encrypt(json_encode(array(
+                die(json_encode(array(
                     "success" => false,
                     "message" => "$hwidmismatch"
-                )) , $enckey));
+                )));
             case 'user_banned':
                 die(json_encode(array(
                     "success" => false,
@@ -337,10 +342,10 @@ switch ($_POST['type'])
                     "message" => "$passmismatch"
                 )));
 			case 'hwid_blacked':
-                die(Encrypt(json_encode(array(
+                die(json_encode(array(
                     "success" => false,
                     "message" => "$hwidblacked"
-                )) , $enckey));
+                )));
             case 'no_active_subs':
                 die(json_encode(array(
                     "success" => false,
@@ -389,10 +394,10 @@ switch ($_POST['type'])
                     "message" => "Your license is banned."
                 )));
 			case 'hwid_blacked':
-                die(Encrypt(json_encode(array(
+                die(json_encode(array(
                     "success" => false,
                     "message" => "$hwidblacked"
-                )) , $enckey));
+                )));
             case 'no_subs_for_level':
                 die(json_encode(array(
                     "success" => false,
@@ -415,9 +420,16 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
-        $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
-        // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
+
+        $varid = sanitize($_POST['varid']);
+        $varquery = mysqli_query($link, "SELECT * FROM `vars` WHERE `varid` = '$varid' AND `app` = '$secret'");
+        $row = mysqli_fetch_array($varquery);
+		$msg = $row['msg'];
+        $authed = $row['authed'];
+		
+		if($authed) // if variable requires user to be authenticated
+		{
+		$validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
         if (!$validated)
         {
             die(json_encode(array(
@@ -425,10 +437,7 @@ switch ($_POST['type'])
                 "message" => "Session is not validated."
             )));
         }
-
-        $varid = sanitize($_POST['varid']);
-        $varquery = mysqli_query($link, "SELECT * FROM `vars` WHERE `varid` = '$varid' AND `app` = '$secret'");
-        $msg = mysqli_fetch_array($varquery) ['msg'];
+		}
 
         die(json_encode(array(
             "success" => true,
@@ -439,7 +448,6 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
         $credential = $session["credential"];
         $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
         // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
@@ -554,7 +562,6 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
         $credential = $session["credential"];
         $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
         // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
@@ -570,7 +577,7 @@ switch ($_POST['type'])
 
         $webquery = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `webid` = '$webid' AND `app` = '$secret'");
 
-        if (mysqli_num_rows($webquery) < 1)
+        if (mysqli_num_rows($webquery) == 0)
 
         {
 
@@ -619,23 +626,12 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
-        $credential = $session["credential"];
-        $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
-        // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
-        if (!$validated)
-        {
-            die(json_encode(array(
-                "success" => false,
-                "message" => "Session is not validated."
-            )));
-        }
 
         $fileid = sanitize($_POST['fileid']);
 
         $result = mysqli_query($link, "SELECT * FROM `files` WHERE `app` = '$secret' AND `id` = '$fileid'");
 
-        if (mysqli_num_rows($result) < 1)
+        if (mysqli_num_rows($result) == 0)
 
         {
 
@@ -650,18 +646,23 @@ switch ($_POST['type'])
 		{
 			$filename = $row['name'];
 			$url = $row['url'];
+			$authed = $row['authed'];
 		}
 		
-		if(!is_null($url))
+		if($authed) // if variable requires user to be authenticated
 		{
-			$contents = bin2hex(file_get_contents($url));
+			$validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
+			// ensure session is validated before returning authenticated var --> todo: unauthenticated vars
+			if (!$validated)
+			{
+				die(json_encode(array(
+					"success" => false,
+					"message" => "Session is not validated."
+				)));
+			}
 		}
-		else
-		{
-		$file_destination = '../../api/libs/' . $fileid . '/' . $filename;
 		
-		$contents = bin2hex(file_decrypt(file_get_contents($file_destination) , "salksalasklsakslakaslkasl"));
-		}
+		$contents = bin2hex(file_get_contents($url));
 
         die(json_encode(array(
             "success" => true,
@@ -673,7 +674,6 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
         $credential = $session["credential"];
         $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
         // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
@@ -703,7 +703,6 @@ switch ($_POST['type'])
         // retrieve session info
         $sessionid = sanitize($_POST['sessionid']);
         $session = getsession($sessionid, $secret);
-        $enckey = $session["enckey"];
         $credential = $session["credential"];
         $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
         // ensure session is validated before returning authenticated var --> todo: unauthenticated vars

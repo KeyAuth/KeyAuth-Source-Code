@@ -1,84 +1,3 @@
-<?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-include 'includes/connection.php';
-
-// database stats
-$result = mysqli_query($link,"select count(1) FROM `accounts`");
-$row = mysqli_fetch_array($result);
-
-$accs = number_format($row[0]);
-
-$result = mysqli_query($link,"select count(1) FROM `apps`");
-$row = mysqli_fetch_array($result);
-
-$apps = number_format($row[0]);
-
-$result = mysqli_query($link,"select count(1) FROM `keys`");
-$row = mysqli_fetch_array($result);
-
-$keys = number_format($row[0]);
-
-mysqli_close($link);
-
-// request stats
-
-if(file_exists('flux.json'))
-{
-$json_object = file_get_contents('flux.json');
-$data = json_decode($json_object, true);
-
-$url = "https://rest.fluxcdn.com/log/stats/v2/5633/1d";
-
-$curl = curl_init($url);
-curl_setopt($curl, CURLOPT_URL, $url);
-curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-$headers = array(
-   "session: " . $data['session'],
-);
-curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-$response = curl_exec($curl);
-$httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-curl_close($curl);
-if($httpcode !== 200)
-{
-	$ch = curl_init( "https://rest.fluxcdn.com/users/login" );
-	$payload = json_encode( array( "email"=> $data['email'], "password"=> $data['pass'] ) );
-	curl_setopt( $ch, CURLOPT_POSTFIELDS, $payload );
-	curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-	$result = curl_exec($ch);
-	curl_close($ch);
-	$json = json_decode($result);
-	$data['session'] = $json->token;
-	$json_object = json_encode($data);
-	file_put_contents('flux.json', $json_object);
-	$num = "N/A";
-}
-else
-{
-	$user = json_decode($response);
-	$num = 0;
-	foreach($user->statistics as $mydata)
-	
-		{
-				$num += $mydata->successful;
-		}
-	$num = number_format($num);
-}
-
-}
-else
-{
-$num = "N/A";	
-}
-?>
 <!--
 
 =========================================================
@@ -96,7 +15,6 @@ $num = "N/A";
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 -->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -137,7 +55,7 @@ $num = "N/A";
 <!-- Open Graph data -->
 <meta property="og:title" content="KeyAuth - Open Source Auth" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://keyauth.com/" />
+<meta property="og:url" content="./" />
 
 <!-- Favicon -->
 <link rel="icon" type="image/png" href="https://cdn.keyauth.com/front/assets/img/favicon.png">
@@ -156,46 +74,9 @@ $num = "N/A";
 
 <!-- swiper for reviews -->
 <link rel="stylesheet" href="https://cdn.keyauth.com/front/css/swiper.min.css">
-
-<!-- Anti-flicker snippet (recommended)
-<style>.async-hide { opacity: 0 !important} </style>
-<script>(function(a,s,y,n,c,h,i,d,e){s.className+=' '+y;h.start=1*new Date;
-h.end=i=function(){s.className=s.className.replace(RegExp(' ?'+y),'')};
-(a[n]=a[n]||[]).hide=h;setTimeout(function(){i();h.end=null},c);h.timeout=c;
-})(window,document.documentElement,'async-hide','dataLayer',4000,
-{'GTM-K9BGS8K':true});</script>
-
-<!-- Analytics-Optimize Snippet
-<script>
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-ga('create', 'UA-46172202-22', 'auto', {allowLinker: true});
-ga('set', 'anonymizeIp', true);
-ga('require', 'GTM-K9BGS8K');
-ga('require', 'displayfeatures');
-ga('require', 'linker');
-ga('linker:autoLink', ["2checkout.com","avangate.com"]);
-</script>
-<!-- end Analytics-Optimize Snippet -->
-
-<!-- Google Tag Manager
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-NKDMSK6');</script>
-<!-- End Google Tag Manager -->
 </head>
 
 <body>
-
-    <!-- Google Tag Manager (noscript)
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NKDMSK6"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-
     <header class="header-global">
     <nav id="navbar-main" class="navbar navbar-main navbar-expand-lg headroom py-lg-3 px-lg-6 navbar-dark navbar-theme-primary">
         <div class="container">
@@ -224,7 +105,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                                             <span class="small">Examples and guides</span>
                                         </div>
                                     </a>
-                                    <a target="_blank" href="https://keyauth.com/discord"
+                                    <a target="_blank" href="./discord"
                                         class="list-group-item list-group-item-action d-flex align-items-center p-0 py-3 px-lg-4">
                                         <span class="icon icon-sm icon-primary"><i
                                                 class="fas fa-microphone-alt"></i></span>
@@ -240,8 +121,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 </ul>
             </div>
             <div class="d-none d-lg-block d-lg-none">
-                <a href="https://keyauth.com/login" class="btn btn-md btn-docs btn-outline-white animate-up-2 mr-3"><i class="fas fa-sign-in-alt mr-2"></i> Login</a>
-                <a href="https://keyauth.com/register" class="btn btn-md btn-secondary animate-up-2"><i class="fas fa-paper-plane mr-2"></i> Register</a>
+                <a href="./login" class="btn btn-md btn-docs btn-outline-white animate-up-2 mr-3"><i class="fas fa-sign-in-alt mr-2"></i> Login</a>
+                <a href="./register" class="btn btn-md btn-secondary animate-up-2"><i class="fas fa-paper-plane mr-2"></i> Register</a>
             </div>
             <div class="d-flex d-lg-none align-items-center">
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_global"
@@ -261,7 +142,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <div class="col-12 col-sm-8 col-md-7 col-lg-6 text-center">
                         <h1 class="display-4 text-muted mb-5 font-weight-normal">KeyAuth is an Open-source authentication system with cloud-hosted subscriptions available as well.</h1>
                         <div class="d-flex align-items-center justify-content-center mb-5">
-                            <a href="https://keyauth.com/register" class="btn btn-secondary mb-3 mt-2 mr-3 animate-up-2"><span class="fas fa-user-plus mr-2"></span> Register</a>
+                            <a href="./register" class="btn btn-secondary mb-3 mt-2 mr-3 animate-up-2"><span class="fas fa-user-plus mr-2"></span> Register</a>
                             <div class="mt-1">
                                 <!-- Place this tag where you want the button to render. -->
                                 <a class="github-button" href="https://github.com/KeyAuth/KeyAuth-Source-Code" data-color-scheme="no-preference: dark; light: light; dark: light;" data-icon="octicon-star" data-size="large" data-show-count="true">Star</a>                            
@@ -305,29 +186,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <div class="icon icon-shape icon-lg bg-white shadow-lg border-light rounded-circle icon-secondary mb-4">
                             <i class="fas fa-users"></i>
                         </div>
-                        <h3 class="font-weight-bolder"><?php echo $accs; ?></h3>
+                        <h3 class="font-weight-bolder" id="accs"></h3>
                         <p class="text-gray">Accounts</p>
                     </div>
                     <div class="col-6 col-md-3 text-center mb-4">
                         <div class="icon icon-shape icon-lg bg-white shadow-lg border-light rounded-circle icon-secondary mb-4">
                             <i class="fas fa-th"></i>
                         </div>
-                        <h3 class="font-weight-bolder"><?php echo $apps; ?></h3>
+                        <h3 class="font-weight-bolder" id="apps"></h3>
                         <p class="text-gray">Applications</p>
                     </div>
                     <div class="col-6 col-md-3 text-center">
                         <div class="icon icon-shape icon-lg bg-white shadow-lg border-light rounded-circle icon-secondary mb-4">
                             <i class="fas fa-key"></i>
                         </div>
-                        <h3 class="font-weight-bolder"><?php echo $keys; ?></h3>
+                        <h3 class="font-weight-bolder" id="licenses"></h3>
                         <p class="text-gray">Licenses</p>
                     </div>
                     <div class="col-6 col-md-3 text-center">
                         <div class="icon icon-shape icon-lg bg-white shadow-lg border-light rounded-circle icon-secondary mb-4">
                             <i class="fas fa-chart-line"></i>
                         </div>
-                        <h3 class="font-weight-bolder"><?php echo $num; ?></h3>
-                        <p class="text-gray">Requests in the last 24h</p>
+                        <h3 class="font-weight-bolder" id="uptime"></h3>
+                        <p class="text-gray">Uptime in the last month</p>
                     </div>
                 </div>
                 <div class="row justify-content-between align-items-center mb-5 mb-lg-7">
@@ -365,7 +246,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                     <footer class="blockquote-footer d-flex align-items-center">
                       <div class="testimony__avatar d-inline-block mr-3">
-                        <img class="rounded-circle" src="https://keyauth.com/static/images/administrator.png" srcset="https://keyauth.com/static/images/administrator.png" alt="Avatar">
+                        <img class="rounded-circle" src="https://cdn.keyauth.com/static/images/administrator.png" srcset="https://cdn.keyauth.com/static/images/administrator.png" alt="Avatar">
                       </div>
 
                       <div class="testimony__info d-inline-block">
@@ -394,7 +275,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                     <footer class="blockquote-footer d-flex align-items-center">
                       <div class="testimony__avatar d-inline-block mr-3">
-                        <img class="rounded-circle" src="https://keyauth.com/static/images/ktown.png" srcset="https://keyauth.com/static/images/ktown.png" alt="Avatar">
+                        <img class="rounded-circle" src="https://cdn.keyauth.com/static/images/ktown.png" srcset="https://cdn.keyauth.com/static/images/ktown.png" alt="Avatar">
                       </div>
 
                       <div class="testimony__info d-inline-block">
@@ -423,7 +304,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                     <footer class="blockquote-footer d-flex align-items-center">
                       <div class="testimony__avatar d-inline-block mr-3">
-                        <img class="rounded-circle" src="https://keyauth.com/static/images/kairo.gif" srcset="https://keyauth.com/static/images/kairo.gif" alt="Avatar">
+                        <img class="rounded-circle" src="https://cdn.keyauth.com/static/images/kairo.gif" srcset="https://cdn.keyauth.com/static/images/kairo.gif" alt="Avatar">
                       </div>
 
                       <div class="testimony__info d-inline-block">
@@ -568,7 +449,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 			<div class="card-body pt-5">
 				<ul class="list-group simple-list">
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Users<span class="font-weight-bolder"> 50</span></li>
-					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-times"></i></span>Upload Files</li>
+					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Upload Files (10 MB)</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-times"></i></span>Create Webhooks</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Variables</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Logs</li>
@@ -579,7 +460,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 				</ul>
 			</div>
 			<div class="card-footer px-4 pb-4">
-				<!-- Button --><a href="https://keyauth.com/register" class="btn btn-block btn-outline-gray animate-up-2">Start for Free <span class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a></div>
+				<!-- Button --><a href="./register" class="btn btn-block btn-outline-gray animate-up-2">Start for Free <span class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a></div>
 		</div>
 	</div>
 	<div class="col-12 col-lg-4">
@@ -594,7 +475,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 			<div class="card-body pt-5">
 				<ul class="list-group simple-list">
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Users<span class="font-weight-bolder"> Unlimited</span></li>
-					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Upload Files</li>
+					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Upload Files (50 MB)</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Create Webhooks</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Variables</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Logs</li>
@@ -605,7 +486,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 				</ul>
 			</div>
 			<div class="card-footer px-4 pb-4">
-				<!-- Button --><a href="https://keyauth.com/dashboard/account/upgrade/" class="btn btn-block btn-outline-primary">Go to Developer<span class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a></div>
+				<!-- Button --><a href="./dashboard/account/upgrade/" class="btn btn-block btn-outline-primary">Go to Developer<span class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a></div>
 		</div>
 	</div>
 	<div class="col-12 col-lg-4">
@@ -620,7 +501,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 			<div class="card-body pt-5">
 				<ul class="list-group simple-list">
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Users<span class="font-weight-bolder"> Unlimited</span></li>
-					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Upload Files</li>
+					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Upload Files (50 MB)</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Create Webhooks</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Variables</li>
 					<li class="list-group-item font-weight-normal"><span class="icon-gray"><i class="fas fa-check"></i></span>Logs</li>
@@ -631,7 +512,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 				</ul>
 			</div>
 			<div class="card-footer px-4 pb-4">
-				<!-- Button --><a href="https://keyauth.com/dashboard/account/upgrade/" class="btn btn-block btn-outline-secondary">Start with Seller<span class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a></div>
+				<!-- Button --><a href="./dashboard/account/upgrade/" class="btn btn-block btn-outline-secondary">Start with Seller<span class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a></div>
 		</div>
 	</div>
 </div>
@@ -646,13 +527,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <ul class="links-vertical">
                     <li><a target="_blank" href="https://docs.keyauth.com/">Documentation</a></li>
                     <li><a target="_blank" href="https://stats.uptimerobot.com/2DrzGFk4PY">Server Status</a></li>
-                    <li><a target="_blank" href="https://keyauth.com/discord">Contact Us</a></li>
+                    <li><a target="_blank" href="./discord">Contact Us</a></li>
                 </ul>
             </div>
             <div class="col-6 col-sm-3 col-lg-2 mb-4 mb-lg-0">
                 <h6></h6>
                 <ul class="links-vertical">
-                    <li><a target="_blank" href="https://keyauth.com/discord">Support</a></li>
+                    <li><a target="_blank" href="./discord">Support</a></li>
                     <li><a target="_blank" href="https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/LICENSE.txt">License</a>
                     </li>
                 </ul>
@@ -689,7 +570,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- Impact JS -->
 <script src="https://cdn.keyauth.com/front/assets/js/front.js"></script>
 
-    
+<script>
+window.onload  = function() {
+  const xhttp = new XMLHttpRequest();
+  xhttp.onload = function() {
+  	const json = JSON.parse(this.responseText);
+    document.getElementById("accs").innerHTML = json.accounts;
+    document.getElementById("apps").innerHTML = json.applications;
+    document.getElementById("licenses").innerHTML = json.licenses;
+    document.getElementById("uptime").innerHTML = json.uptime + "%";
+  }
+  xhttp.open("GET", "./stats.php");
+  xhttp.send();
+}
+</script>
 </body>
-
 </html>

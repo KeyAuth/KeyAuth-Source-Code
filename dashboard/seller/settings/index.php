@@ -16,7 +16,8 @@ $username = $_SESSION['username'];
 $row = mysqli_fetch_array($result);
 
             $banned = $row['banned'];
-			if (!is_null($banned))
+			$lastreset = $row['lastreset'];
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 			{
 				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
 				session_destroy();
@@ -25,6 +26,13 @@ $row = mysqli_fetch_array($result);
 
 $role = $row['role'];
 $_SESSION['role'] = $role;
+
+$expires = $row['expires'];
+$timeleft = false;
+if(in_array($role,array("developer", "seller")))
+{
+	$timeleft = expire_check($username, $expires);
+}
 
 if ($role != "developer" && $role != "seller")
 {
@@ -46,21 +54,26 @@ $darkmode = $row['darkmode'];
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Seller Settings</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
+	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/dist/css/style.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 	
-
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-
-
-	                    
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	});
+	</script>                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -177,17 +190,17 @@ else
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                              <!-- dark Logo text -->
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                              <!-- Light Logo text -->    
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -390,7 +403,12 @@ if (isset($_POST['change']))
                 <!-- File export -->
                 <div class="row">
                     <div class="col-12">
+					<div class="card"> <div class="card-body">
 					<?php heador($role, $link); ?>
+					</div></div>
+					<?php if($timeleft) { ?>
+					<div class="alert alert-warning alert-rounded">Your account subscription expires, in less than a month, check account details for exact date.</div>
+					<?php } ?>
 					<form method="post">
 					<button name="refreshseller" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to refresh Seller Key? This will make it such that previous links to manage your application will NOT work. Only refresh seller key if your current one got revealed to an unauthorized user.')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> Refresh Seller Key</button></form><br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
@@ -454,22 +472,14 @@ if (mysqli_num_rows($result) > 0)
 									<div class="form-group row">
                                         <label for="example-tel-input" class="col-2 col-form-label">Seller Key</label>
                                         <div class="col-10">
-                                            <input class="form-control" value="<?php echo $sellerkey; ?>">
+                                            <label class="form-control"><p class="secret"><?php echo $sellerkey; ?></p></label>
                                         </div>
                                     </div>
 									<div class="form-group row">
-                                        <label for="example-tel-input" class="col-2 col-form-label">Customer Login Link</label>
+                                        <label for="example-tel-input" class="col-2 col-form-label">Seller Link <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="You can use this link with Shoppy or Sellix dynamic product type to automatically send key to customer so you never have to restock."></i></label>
                                         <div class="col-10">
-                                            <label class="form-control">
-											<a href="<?php echo "https://keyauth.com/panel/" . $_SESSION['username'] . "/" . $_SESSION['name']; ?>" style="color:#00FFFF;" target="appdownload"><?php echo "https://keyauth.com/panel/" . $_SESSION['username'] . "/" . $_SESSION['name']; ?></a>
-											</label>
-                                        </div>
-                                    </div>
-									<div class="form-group row">
-                                        <label for="example-tel-input" class="col-2 col-form-label">Seller Link</label>
-                                        <div class="col-10">
-                                            <label class="form-control"><?php
-echo '<a href="https://keyauth.com/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text" target="webhooklink" class="secretlink">https://keyauth.com/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text</a>';
+                                            <label class="form-control" style="height:auto;"><?php
+echo '<p href="https://keyauth.com/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text" target="webhooklink" class="secretlink">https://keyauth.com/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text</p>';
 
 ?></label>
                                         </div>
@@ -569,33 +579,33 @@ if (isset($_POST['refreshseller']))
     <!-- ============================================================== -->
     
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.init.dark.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app-style-switcher.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.init.dark.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/waves.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/sidebarmenu.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="https://cdn.keyauth.com/dashboard/dist/js/feather.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/custom.min.js"></script>
+   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-		<script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
+		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -607,7 +617,7 @@ if (isset($_POST['refreshseller']))
   
 					
 
-<script src="https://cdn.keyauth.com/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 <script type="text/javascript">
 // Popup window code

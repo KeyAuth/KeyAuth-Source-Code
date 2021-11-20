@@ -1,4 +1,5 @@
 <?php
+
 include '../includes/connection.php';
 include '../includes/functions.php';
 session_start();
@@ -46,8 +47,6 @@ if (isset($_SESSION['username']))
 						<input class="input100" name="keyauthtwofactor" placeholder="Two Factor Code (if applicable)">
 						<span class="focus-input100"></span>
 					</div>
-					
-					<input type="hidden" name="recaptcha_response" id="recaptchaResponse">
 					
 					<div class="flex-sb-m w-full p-t-3 p-b-24">
 						<div>
@@ -144,6 +143,7 @@ if (isset($_POST['login']))
     $_SESSION['ownerid'] = $id;
     $_SESSION['owner'] = $owner;
     $_SESSION['role'] = $role;
+	$_SESSION['logindate'] = time();
 
     if ($role == "Reseller" || $role == "Manager")
     {
@@ -171,31 +171,8 @@ if (isset($_POST['login']))
         mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '$username' AND `date` < '$ts'"); // delete any account logs more than a week old
         
     }
-
-    // webhook start
-    $timestamp = date("c", strtotime("now"));
-
-    $json_data = json_encode([
-    // Message
-    "content" => "" . $_SESSION['username'] . " has logged into KeyAuth with IP `{$ip}`",
-
-    // Username
-    "username" => "KeyAuth Logs",
-
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-    $ch = curl_init("webhook_link_here");
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-        'Content-type: application/json'
-    ));
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
-
-    curl_exec($ch);
-    curl_close($ch);
-    // webhook end
+	wh_log($logwebhook, "{$username} has logged into KeyAuth with IP `{$ip}`", $webhookun);
+	
     mysqli_query($link, "UPDATE `accounts` SET `lastip` = '$ip' WHERE `username` = '$username'");
 
     header("location: ../dashboard/");

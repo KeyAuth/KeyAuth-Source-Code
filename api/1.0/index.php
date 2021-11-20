@@ -2,6 +2,7 @@
 include '../../includes/connection.php'; // mysql conn
 include '../../includes/functions.php'; // general funcs
 include '../../includes/api/1.0/index.php'; // v1.0 api funcs
+
 $ownerid = sanitize(hex2bin($_POST['ownerid'])); // ownerid of account that owns application
 $name = sanitize(hex2bin($_POST['name'])); // application name
 $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `ownerid` = '$ownerid' AND `name` = '$name'");
@@ -23,7 +24,11 @@ while ($row = mysqli_fetch_array($result))
     $download = $row['download'];
     $webhook = $row['webhook'];
     $appdisabled = $row['appdisabled'];
+    $hashcheck = $row['hashcheck'];
+    $serverhash = $row['hash'];
 
+	$banned = $row['banned'];
+	
     // custom error messages
     $usernametaken = $row['usernametaken'];
     $keynotfound = $row['keynotfound'];
@@ -34,8 +39,23 @@ while ($row = mysqli_fetch_array($result))
     $hwidmismatch = $row['hwidmismatch'];
     $noactivesubs = $row['noactivesubs'];
     $hwidblacked = $row['hwidblacked'];
-    $keypaused = $row['keypaused'];
+    $pausedsub = $row['pausedsub'];
     $keyexpired = $row['keyexpired'];
+    $vpnblocked = $row['vpnblocked'];
+    $keybanned = $row['keybanned'];
+    $userbanned = $row['userbanned'];
+    $sessionunauthed = $row['sessionunauthed'];
+    $hashcheckfail = $row['hashcheckfail'];
+	
+	$sessionexpiry = $row['session'];
+}
+
+if($banned)
+{
+	die(Encrypt(json_encode(array(
+        "success" => false,
+        "message" => "This application has been banned from KeyAuth.com for violating terms."
+    )) , $secret));	
 }
 
 switch (hex2bin($_POST['type']))
@@ -48,7 +68,7 @@ switch (hex2bin($_POST['type']))
             {
                 die(Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "VPNs are disallowed on this application"
+                    "message" => "$vpnblocked"
                 )) , $secret));
             }
         }
@@ -75,13 +95,32 @@ switch (hex2bin($_POST['type']))
                 "message" => "invalidver",
                 "download" => "$download"
             ) , JSON_UNESCAPED_SLASHES) , $secret));
-
         }
+		
+		$hash = sanitize($_POST['hash']);
+		
+		if($hashcheck)
+		{
+			if($hash != $serverhash)
+			{
+				if(is_null($serverhash))
+				{
+					mysqli_query($link, "UPDATE `apps` SET `hash` = '$hash' WHERE `secret` = '$secret'");
+				}
+				else
+				{
+					die(Encrypt(json_encode(array(
+					"success" => false,
+					"message" => "$hashcheckfail"
+					)) , $secret));	
+				}
+			}
+		}
 
         $enckey = sanitize(Decrypt($_POST['enckey'], $secret));
         $sessionid = generateRandomString();
         // session init
-        $time = time() + 21600;
+        $time = time() + $sessionexpiry;
         mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`) VALUES ('$sessionid','$secret', '$time', '$enckey')");
 
         die(Encrypt(json_encode(array(
@@ -95,17 +134,6 @@ switch (hex2bin($_POST['type']))
         $sessionid = sanitize(hex2bin($_POST['sessionid']));
         $session = getsession($sessionid, $secret);
         $enckey = $session["enckey"];
-
-        if ($vpnblock)
-        {
-            if (vpn_check($ip))
-            {
-                die(Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "VPNs are disallowed on this application"
-                )) , $enckey));
-            }
-        }
 
         // Read in username
         $username = sanitize(Decrypt($_POST['username'], $enckey));
@@ -137,16 +165,11 @@ switch (hex2bin($_POST['type']))
                     "success" => false,
                     "message" => "$keyused"
                 )) , $enckey));
-            case 'key_paused':
-                die(Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "$keypaused"
-                )) , $enckey));
             case 'key_banned':
                 global $banned;
                 die(Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "Your license is banned."
+                    "message" => "$keybanned"
                 )) , $enckey));
             case 'hwid_blacked':
                 die(Encrypt(json_encode(array(
@@ -159,15 +182,11 @@ switch (hex2bin($_POST['type']))
                     "message" => "$nosublevel"
                 )) , $enckey));
             default:
-                mysqli_query($link, "UPDATE `sessions` SET `credential` = '$username',`validated` = 'true' WHERE `id` = '$sessionid'");
+                mysqli_query($link, "UPDATE `sessions` SET `credential` = '$username',`validated` = 1 WHERE `id` = '$sessionid'");
                 die(Encrypt(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
-                    "info" => array(
-                        "username" => "$username",
-                        "subscriptions" => $resp,
-                        "ip" => $ip
-                    )
+                    "info" => $resp
                 )) , $enckey));
         }
     case 'upgrade':
@@ -175,17 +194,6 @@ switch (hex2bin($_POST['type']))
         $sessionid = sanitize(hex2bin($_POST['sessionid']));
         $session = getsession($sessionid, $secret);
         $enckey = $session["enckey"];
-
-        if ($vpnblock)
-        {
-            if (vpn_check($ip))
-            {
-                die(Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "VPNs are disallowed on this application"
-                )) , $enckey));
-            }
-        }
 
         // Read in username
         $username = Decrypt($_POST['username'], $enckey);
@@ -214,7 +222,7 @@ switch (hex2bin($_POST['type']))
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$checkkey' AND `app` = '$secret'");
 
         // check if key exists
-        if (mysqli_num_rows($result) < 1)
+        if (mysqli_num_rows($result) == 0)
 
         {
 
@@ -296,17 +304,6 @@ switch (hex2bin($_POST['type']))
         $session = getsession($sessionid, $secret);
         $enckey = $session["enckey"];
 
-        if ($vpnblock)
-        {
-            if (vpn_check($ip))
-            {
-                die(Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "VPNs are disallowed on this application"
-                )) , $enckey));
-            }
-        }
-
         // Read in username
         $username = sanitize(Decrypt($_POST['username'], $enckey));
 
@@ -332,7 +329,7 @@ switch (hex2bin($_POST['type']))
             case 'user_banned':
                 die(Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "The user is banned"
+                    "message" => "$userbanned"
                 )) , $enckey));
             case 'hwid_mismatch':
                 die(Encrypt(json_encode(array(
@@ -344,21 +341,22 @@ switch (hex2bin($_POST['type']))
                     "success" => false,
                     "message" => "$hwidblacked"
                 )) , $enckey));
+			case 'sub_paused':
+				die(Encrypt(json_encode(array(
+						"success" => false,
+						"message" => "$pausedsub"
+					)) , $enckey));
             case 'no_active_subs':
                 die(Encrypt(json_encode(array(
                     "success" => false,
                     "message" => "$noactivesubs"
                 )) , $enckey));
             default:
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 'true',`credential` = '$username' WHERE `id` = '$sessionid'");
+                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$username' WHERE `id` = '$sessionid'");
                 die(Encrypt(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
-                    "info" => array(
-                        "username" => "$username",
-                        "subscriptions" => $resp,
-                        "ip" => $ip
-                    )
+                    "info" => $resp
                 )) , $enckey));
         }
 
@@ -368,17 +366,6 @@ switch (hex2bin($_POST['type']))
         $session = getsession($sessionid, $secret);
         $enckey = $session["enckey"];
         $checkkey = sanitize(Decrypt($_POST['key'], $enckey));
-
-        if ($vpnblock)
-        {
-            if (vpn_check($ip))
-            {
-                die(Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "VPNs are disallowed on this application"
-                )) , $enckey));
-            }
-        }
 
         $hwid = sanitize(Decrypt($_POST['hwid'], $enckey));
 
@@ -396,13 +383,18 @@ switch (hex2bin($_POST['type']))
             case 'user_banned':
                 die(Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "The user is banned"
+                    "message" => "$userbanned"
                 )) , $enckey));
             case 'pw_mismatch':
                 die(Encrypt(json_encode(array(
                     "success" => false,
                     "message" => "$passmismatch"
                 )) , $enckey));
+			case 'sub_paused':
+				die(Encrypt(json_encode(array(
+						"success" => false,
+						"message" => "$pausedsub"
+					)) , $enckey));
             case 'hwid_blacked':
                 die(Encrypt(json_encode(array(
                     "success" => false,
@@ -414,15 +406,11 @@ switch (hex2bin($_POST['type']))
                     "message" => "$noactivesubs"
                 )) , $enckey));
             default:
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 'true',`credential` = '$checkkey' WHERE `id` = '$sessionid'");
+                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$checkkey' WHERE `id` = '$sessionid'");
                 die(Encrypt(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
-                    "info" => array(
-                        "username" => "$checkkey",
-                        "subscriptions" => $resp,
-                        "ip" => $ip
-                    )
+                    "info" => $resp
                 )) , $enckey));
         }
 
@@ -445,15 +433,10 @@ switch (hex2bin($_POST['type']))
                     "success" => false,
                     "message" => "$keyused"
                 )) , $enckey));
-            case 'key_paused':
-                die(Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "$keypaused"
-                )) , $enckey));
             case 'key_banned':
                 die(Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "Your license is banned."
+                    "message" => "$keybanned"
                 )) , $enckey));
             case 'hwid_blacked':
                 die(Encrypt(json_encode(array(
@@ -466,70 +449,222 @@ switch (hex2bin($_POST['type']))
                     "message" => "$nosublevel"
                 )) , $enckey));
             default:
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 'true',`credential` = '$checkkey' WHERE `id` = '$sessionid'");
+                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$checkkey' WHERE `id` = '$sessionid'");
                 die(Encrypt(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
-                    "info" => array(
-                        "username" => "$checkkey",
-                        "subscriptions" => $resp,
-                        "ip" => $ip
-                    )
+                    "info" => $resp
                 )) , $enckey));
         }
-
+	case 'setvar':
+		$sessionid = sanitize(hex2bin($_POST['sessionid']));
+        $session = getsession($sessionid, $secret);
+        $enckey = $session["enckey"];
+        if (!$session["validated"])
+        {
+            die(Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "$sessionunauthed"
+            )) , $enckey));
+        }
+		
+		$var = sanitize(Decrypt($_POST['var'], $enckey));
+		$data = sanitize(Decrypt($_POST['data'], $enckey));
+		
+		mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '".$session["credential"]."', '$secret')");
+		
+		if(mysqli_affected_rows($link) != 0)
+		{
+			die(Encrypt(json_encode(array(
+                    "success" => true,
+                    "message" => "Successfully set variable"
+                )) , $enckey));
+		}
+		else
+		{
+			mysqli_close($link);
+			die(Encrypt(json_encode(array(
+                    "success" => false,
+                    "message" => "Failed to set variable"
+                )) , $enckey));
+		}
+	case 'getvar':
+		$sessionid = sanitize(hex2bin($_POST['sessionid']));
+        $session = getsession($sessionid, $secret);
+        $enckey = $session["enckey"];
+        if (!$session["validated"])
+        {
+            die(Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "$sessionunauthed"
+            )) , $enckey));
+        }
+		
+		$var = sanitize(Decrypt($_POST['var'], $enckey));
+		
+		$result = mysqli_query($link, "SELECT * FROM `uservars` WHERE `name` = '$var' AND `user` = '".$session["credential"]."' AND `app` = '$secret'");
+		
+		if(mysqli_num_rows($result) == 0)
+		{
+			mysqli_close($link);
+			die(Encrypt(json_encode(array(
+                    "success" => false,
+                    "message" => "Variable not found for user"
+                )) , $enckey));
+		}
+		
+        $row = mysqli_fetch_array($result);
+		$data = $row['data'];
+		
+		
+		die(Encrypt(json_encode(array(
+                "success" => true,
+                "message" => "Successfully retrieved variable",
+				"response" => $data
+            )) , $enckey));
     case 'var':
         // retrieve session info
         $sessionid = sanitize(hex2bin($_POST['sessionid']));
         $session = getsession($sessionid, $secret);
         $enckey = $session["enckey"];
 
-        if ($vpnblock)
-        {
-            if (vpn_check($ip))
-            {
-                die(Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "VPNs are disallowed on this application"
-                )) , $enckey));
-            }
-        }
-
-        $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
-        // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
-        if (!$validated)
+        $varid = sanitize(Decrypt($_POST['varid'], $enckey));
+        $varquery = mysqli_query($link, "SELECT * FROM `vars` WHERE `varid` = '$varid' AND `app` = '$secret'");
+        $row = mysqli_fetch_array($varquery);
+		$msg = $row['msg'];
+        $authed = $row['authed'];
+		
+		if($authed) // if variable requires user to be authenticated
+		{
+        if (!$session["validated"])
         {
             die(Encrypt(json_encode(array(
                 "success" => false,
-                "message" => "Session is not validated."
+                "message" => "$sessionunauthed"
             )) , $enckey));
         }
-
-        $varid = sanitize(Decrypt($_POST['varid'], $enckey));
-        $varquery = mysqli_query($link, "SELECT * FROM `vars` WHERE `varid` = '$varid' AND `app` = '$secret'");
-        $msg = mysqli_fetch_array($varquery) ['msg'];
-
+		}
+		
         die(Encrypt(json_encode(array(
             "success" => true,
             "message" => "$msg"
         )) , $enckey));
+	case 'checkblacklist':
+		// retrieve session info
+        $sessionid = sanitize(hex2bin($_POST['sessionid']));
+        $session = getsession($sessionid, $secret);
+        $enckey = $session["enckey"];
+		
+		$hwid = sanitize(Decrypt($_POST['hwid'], $enckey));
+		$result = mysqli_query($link, "SELECT * FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '$ip') AND `app` = '$secret'");
+		
+		if(mysqli_num_rows($result) != 0)
+		{
+			die(Encrypt(json_encode(array(
+                "success" => true,
+                "message" => "Client is blacklisted"
+            )) , $enckey));
+		}
+		else
+		{
+			die(Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "Client is not blacklisted"
+            )) , $enckey));
+		}
+	case 'chatget':
+        // retrieve session info
+        $sessionid = sanitize(hex2bin($_POST['sessionid']));
+        $session = getsession($sessionid, $secret);
+        $enckey = $session["enckey"];
+		if (!$session["validated"])
+        {
+            die(Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "$sessionunauthed"
+            )) , $enckey));
+        }
+		
+        $channel = sanitize(Decrypt($_POST['channel'], $enckey));
+        $result = mysqli_query($link, "SELECT `author`, `message`, `timestamp` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret'");
+		
+		$rows = array();
 
+        while ($r = mysqli_fetch_assoc($result))
+        {
+            $rows[] = $r;
+        }
+		
+        die(Encrypt(json_encode(array(
+            "success" => true,
+            "message" => "Successfully retrieved chat messages",
+			"messages" => $rows
+        )) , $enckey));
+	case 'chatsend':
+        // retrieve session info
+        $sessionid = sanitize(hex2bin($_POST['sessionid']));
+        $session = getsession($sessionid, $secret);
+        $enckey = $session["enckey"];
+		if (!$session["validated"])
+        {
+            die(Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "$sessionunauthed"
+            )) , $enckey));
+        }
+		
+        $channel = sanitize(Decrypt($_POST['channel'], $enckey));
+        $result = mysqli_query($link, "SELECT * FROM `chats` WHERE `name` = '$channel' AND `app` = '$secret'");
+		
+		if(mysqli_num_rows($result) == 0)
+		{
+			die(Encrypt(json_encode(array(
+            "success" => false,
+            "message" => "Chat channel not found"
+			)) , $enckey));
+		}
+		
+		$row = mysqli_fetch_array($result);
+        $delay = $row['delay'];
+		$credential = $session["credential"];
+		$result = mysqli_query($link, "SELECT * FROM `chatmsgs` WHERE `author` = '$credential' AND `channel` = '$channel' AND `app` = '$secret' ORDER BY `id` DESC LIMIT 1");
+		
+		$row = mysqli_fetch_array($result);
+		$time = $row['timestamp'];
+			
+		if(time() - $time < $delay)
+		{
+			die(Encrypt(json_encode(array(
+            "success" => false,
+            "message" => "Chat slower, you've hit the delay limit"
+			)) , $enckey));
+		}
+		
+		$result = mysqli_query($link, "SELECT * FROM `chatmutes` WHERE `user` = '$credential' AND `app` = '$secret'");
+		if(mysqli_num_rows($result) != 0)
+		{
+			$row = mysqli_fetch_array($result);
+			$unmuted = $row["time"];
+			$unmuted = date("F j, Y, g:i a",$unmuted	);
+			
+			die(Encrypt(json_encode(array(
+            "success" => false,
+            "message" => "You're muted from chat until $unmuted"
+			)) , $enckey));
+		}
+		
+		$message = sanitize(Decrypt($_POST['message'], $enckey));
+		mysqli_query($link, "INSERT INTO `chatmsgs` (`author`, `message`, `timestamp`, `channel`,`app`) VALUES ('$credential','$message','".time()."','$channel','$secret')");
+		mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = 'testing' AND `app` = '171a43c3e76d9e6163880bc54c7078b1c045aefd94fad652a89868c0c1845dc3' ORDER BY `id` DESC LIMIT 20) foo );");
+        die(Encrypt(json_encode(array(
+            "success" => true,
+            "message" => "Successfully sent chat message"
+        )) , $enckey));
     case 'log':
         // retrieve session info
         $sessionid = sanitize(hex2bin($_POST['sessionid']));
         $session = getsession($sessionid, $secret);
         $enckey = $session["enckey"];
-
-        if ($vpnblock)
-        {
-            if (vpn_check($ip))
-            {
-                die(Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "VPNs are disallowed on this application"
-                )) , $enckey));
-            }
-        }
 
         $credential = $session["credential"];
 
@@ -640,111 +775,64 @@ switch (hex2bin($_POST['type']))
     $session = getsession($sessionid, $secret);
     $enckey = $session["enckey"];
 
-    if ($vpnblock)
-    {
-        if (vpn_check($ip))
-        {
-            die(Encrypt(json_encode(array(
-                "success" => false,
-                "message" => "VPNs are disallowed on this application"
-            )) , $enckey));
-        }
-    }
-
-    $credential = $session["credential"];
-    $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
-    // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
-    if (!$validated)
-    {
-        die(Encrypt(json_encode(array(
-            "success" => false,
-            "message" => "Session is not validated."
-        )) , $enckey));
-    }
-
     $webid = sanitize(Decrypt($_POST['webid'], $enckey));
-
     $webquery = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `webid` = '$webid' AND `app` = '$secret'");
-
-    if (mysqli_num_rows($webquery) < 1)
-
+    if (mysqli_num_rows($webquery) == 0)
     {
-
         die(Encrypt(json_encode(array(
             "success" => false,
-            "message" => "webhook Not Found."
+            "message" => "Webhook Not Found."
         )) , $enckey));
-
     }
 
-    elseif (mysqli_num_rows($webquery) > 0)
-
+    while ($row = mysqli_fetch_array($webquery))
     {
 
-        while ($rowww = mysqli_fetch_array($webquery))
-        {
+        $baselink = $row['baselink'];
 
-            $baselink = $rowww['baselink'];
-
-            $useragent = $rowww['useragent'];
-
-        }
-
-        $params = sanitize(Decrypt($_POST['params'], $enckey));
-
-        $url = $baselink .= $params;
-
-        $ch = curl_init($url);
-
-        // https://keyauth.com/api/seller/?sellerkey=sellerkeyhere&type=add&expiry=0.00694444444
-        curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $response = curl_exec($ch);
-
-        // curl_close($ch);
-        die(Encrypt(json_encode(array(
-            "success" => true,
-            "message" => "webhook request successful",
-            "resp" => "$response"
-        )) , $enckey));
-
+        $useragent = $row['useragent'];
+		
+		$authed = $row['authed'];
     }
+		
+	if($authed) // if variable requires user to be authenticated
+	{
+		if (!$session["validated"])
+		{
+			die(Encrypt(json_encode(array(
+				"success" => false,
+				"message" => "$sessionunauthed"
+			)) , $enckey));
+		}
+	}
 
+    $params = sanitize(Decrypt($_POST['params'], $enckey));
+
+    $url = $baselink .= $params;
+
+    $ch = curl_init($url);
+	
+    curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+    $response = curl_exec($ch);
+    die(Encrypt(json_encode(array(
+        "success" => true,
+        "message" => "Webhook request successful",
+        "response" => "$response"
+    )) , $enckey));
 case 'file' :
 // retrieve session info
 $sessionid = sanitize(hex2bin($_POST['sessionid']));
 $session = getsession($sessionid, $secret);
 $enckey = $session["enckey"];
 
-if ($vpnblock)
-{
-    if (vpn_check($ip))
-    {
-        die(Encrypt(json_encode(array(
-            "success" => false,
-            "message" => "VPNs are disallowed on this application"
-        )) , $enckey));
-    }
-}
-
-$credential = $session["credential"];
-$validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
-// ensure session is validated before returning authenticated var --> todo: unauthenticated vars
-if (!$validated)
-{
-    die(Encrypt(json_encode(array(
-        "success" => false,
-        "message" => "Session is not validated."
-    )) , $enckey));
-}
-
 $fileid = sanitize(Decrypt($_POST['fileid'], $enckey));
 
 $result = mysqli_query($link, "SELECT * FROM `files` WHERE `app` = '$secret' AND `id` = '$fileid'");
 
-if (mysqli_num_rows($result) < 1)
+if (mysqli_num_rows($result) == 0)
 
 {
 
@@ -759,18 +847,21 @@ while ($row = mysqli_fetch_array($result))
 {
     $filename = $row['name'];
     $url = $row['url'];
+    $authed = $row['authed'];
+}
+	
+if($authed) // if file requires user to be authenticated
+{
+	if (!$session["validated"])
+	{
+		die(Encrypt(json_encode(array(
+			"success" => false,
+			"message" => "$sessionunauthed"
+		)) , $enckey));
+	}
 }
 
-if(!is_null($url))
-{
-	$contents = bin2hex(file_get_contents($url));
-}
-else
-{
-$file_destination = '../../api/libs/' . $fileid . '/' . $filename;
-
-$contents = bin2hex(file_decrypt(file_get_contents($file_destination) , "salksalasklsakslakaslkasl"));
-}
+$contents = bin2hex(file_get_contents($url));
 
 die(Encrypt(json_encode(array(
     "success" => true,
@@ -784,25 +875,12 @@ case 'ban':
     $session = getsession($sessionid, $secret);
     $enckey = $session["enckey"];
 
-    if ($vpnblock)
-    {
-        if (vpn_check($ip))
-        {
-            die(Encrypt(json_encode(array(
-                "success" => false,
-                "message" => "VPNs are disallowed on this application"
-            )) , $enckey));
-        }
-    }
-
     $credential = $session["credential"];
-    $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
-    // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
-    if (!$validated)
+    if (!$session["validated"])
     {
         die(Encrypt(json_encode(array(
             "success" => false,
-            "message" => "Session is not validated."
+            "message" => "$sessionunauthed"
         )) , $enckey));
     }
 
@@ -835,25 +913,12 @@ case 'check':
     $session = getsession($sessionid, $secret);
     $enckey = $session["enckey"];
 
-    if ($vpnblock)
-    {
-        if (vpn_check($ip))
-        {
-            die(Encrypt(json_encode(array(
-                "success" => false,
-                "message" => "VPNs are disallowed on this application"
-            )) , $enckey));
-        }
-    }
-
     $credential = $session["credential"];
-    $validated = filter_var($session["validated"], FILTER_VALIDATE_BOOLEAN);
-    // ensure session is validated before returning authenticated var --> todo: unauthenticated vars
-    if (!$validated)
+    if (!$session["validated"])
     {
         die(Encrypt(json_encode(array(
             "success" => false,
-            "message" => "Session is not validated."
+            "message" => "$sessionunauthed"
         )) , $enckey));
     }
     else

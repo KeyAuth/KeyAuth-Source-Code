@@ -55,7 +55,7 @@ if(in_array($role,array("developer", "seller")))
     <meta name="keywords" content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 4 admin, bootstrap 4, css3 dashboard, bootstrap 4 dashboard, xtreme admin bootstrap 4 dashboard, frontend, responsive bootstrap 4 admin template, material design, material dashboard bootstrap 4 dashboard template">
     <meta name="description" content="Xtreme is powerful and clean admin dashboard template, inpired from Google's Material Design">
     <meta name="robots" content="noindex,nofollow">
-    <title>KeyAuth - Logs</title>
+    <title>KeyAuth - Sessions</title>
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
 	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
@@ -79,7 +79,7 @@ if(in_array($role,array("developer", "seller")))
 	//change selectboxes to selectize mode to be searchable
 	$("select").select2();
 	});
-	</script>						
+	</script>                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -270,27 +270,6 @@ else // app already selected, load page like normal
                     <ul id="sidebarnav">
                         <?php
 						sidebar($role);
-		
-		if (isset($_POST['dellogs']))
-        {
-            $result = mysqli_query($link, "DELETE FROM `logs` WHERE `logapp` = '".$_SESSION['app']."'");
-            if($result)
-            {
-                                                    echo '
-                            <script type=\'text/javascript\'>
-                            
-                            const notyf = new Notyf();
-                            notyf
-                              .success({
-                                message: \'Deleted All Logs!\',
-                                duration: 3500,
-                                dismissible: true
-                              });                
-                            
-                            </script>
-                            ';      
-            }
-        }
 						?>
                     </ul>
                 </nav>
@@ -311,7 +290,7 @@ else // app already selected, load page like normal
             <div class="page-breadcrumb">
                 <div class="row">
                     <div class="col-5 align-self-center">
-                        <h4 class="page-title">Logs</h4>
+                        <h4 class="page-title">Sessions</h4>
                     </div>
                 </div>
             </div>
@@ -361,6 +340,7 @@ else // app already selected, load page like normal
 
   <br>
   <br>
+  <form method="post">
    <button type="submit" name="change" class="btn btn-primary" style="color:white;">Submit</button><a style="padding-left:5px;color:#4e73df;" id="createe">Create Application</a>
    </form>
    <script type="text/javascript">
@@ -425,35 +405,9 @@ $(document).ready(function(){
 					<div class="alert alert-warning alert-rounded">Your account subscription expires, in less than a month, check account details for exact date.</div>
 					<?php } ?>
 					<form method="post">
-					<button name="dellogs" onclick="return confirm('Are you sure you want to delete all logs?')" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Logs</button></form>
-							<br>
-							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=uJ0Umy_C6Fg" target="tutorial">https://youtube.com/watch?v=uJ0Umy_C6Fg</a> You may also join Discord and ask for help!
-                                        </div>
-										
-										<div id="rename-app" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Rename Application</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="post">
-                                                    <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Name:</label>
-                                                        <input type="text" class="form-control" name="name" placeholder="New Application Name">
-                                                    </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="renameapp">Add</button>
-												</form>
-                                            </div>
-                                        </div>
-                                    </div>
-									</div>
-                    
-
+					<button name="killall" onclick="return confirm('Are you sure you want to kill all user\'s sessions?')" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Kill All Sessions</button>
+                    </form>
+					<br>
 <script type="text/javascript">
 
 var myLink = document.getElementById('mylink');
@@ -476,32 +430,40 @@ $(document).ready(function(){
                                     <table id="file_export" class="table table-striped table-bordered display">
                                         <thead>
                                             <tr>
-<th>Log Date</th>
-<th>Log Data</th>
+<th>ID</th>
 <th>Credential</th>
-<th>Device Name</th>
+<th>Expires</th>
+<th>Authenticated</th>
+<th>Manage</th>
                                             </tr>
                                         </thead>
                                         <tbody>
 <?php
 		if($_SESSION['app']) {
-        ($result = mysqli_query($link, "SELECT * FROM `logs` WHERE `logapp` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+        ($result = mysqli_query($link, "SELECT * FROM `sessions` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
         if (mysqli_num_rows($result) > 0)
             {
                 while ($row = mysqli_fetch_array($result))
                 {
+				$cred = $row["credential"] ?? "N/A";
+                                                    echo "<tr>";
 
-?>
-                                                    <tr>
+                                                    echo "  <td>". $row["id"]. "</td>";
+
+                                                    echo "  <td>". $cred . "</td>"; 
 													
-													<td><script>document.write(convertTimestamp(<?php echo $row["logdate"]; ?>));</script></td>
-                                                    <td><?php echo $row["logdata"]; ?></td>
+													echo "  <td><script>document.write(convertTimestamp(". $row["expiry"]. "));</script></td>";
 													
-                                                    <td><?php echo $row["credential"] ?? "N/A"; ?></td>
-													
-													<td><?php echo $row["pcuser"] ?? "N/A"; ?></td>
-                                                    </tr></form>
-												<?php
+                                                    echo "  <td>". (($row['validated'] ? 1 : 0) ? 'true' : 'false'). "</td>";
+                                                    
+                                                    // echo "  <td>". $row["status"]. "</td>";
+
+                                                    echo'<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Manage
+                                            </button>
+                                            <div class="dropdown-menu"><form method="post">
+                                                <button class="dropdown-item" name="kill" value="' . $row['id'] . '">Kill</button></div></td></tr></form>';
+
                                                 }
 
                                             }
@@ -512,10 +474,11 @@ $(document).ready(function(){
                                         </tbody>
                                         <tfoot>
                                             <tr>
-<th>Log Date</th>
-<th>Log Data</th>
+<th>ID</th>
 <th>Credential</th>
-<th>Device Name</th>
+<th>Expires</th>
+<th>Authenticated</th>
+<th>Manage</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -541,6 +504,41 @@ $(document).ready(function(){
                 <!-- Setting defaults -->
                 
                 <!-- Footer callback -->
+                
+                <?php
+				if(isset($_POST['killall']))
+				{
+					mysqli_query($link, "DELETE FROM `sessions` WHERE `app` = '".$_SESSION['app']."'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("Killed All Sessions!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Kill Sessions!");
+					}	
+				}	
+			
+			
+				
+				if(isset($_POST['kill']))
+				{
+					$session = sanitize($_POST['kill']);
+					mysqli_query($link, "DELETE FROM `sessions` WHERE `app` = '".$_SESSION['app']."' AND `id` = '$session'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("Successfully Killed Session!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To kill Session!");
+					}
+				}
+					?>
                 
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->
@@ -617,8 +615,6 @@ $(document).ready(function(){
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
   
-					
-
 <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 </body>
 </html>

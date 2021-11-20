@@ -17,7 +17,8 @@ if (!isset($_SESSION['username'])) {
             $row = mysqli_fetch_array($result);
             
             $banned = $row['banned'];
-            if (!is_null($banned))
+            $lastreset = $row['lastreset'];
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
             {
 				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
 				session_destroy();
@@ -44,7 +45,7 @@ if (!isset($_SESSION['username'])) {
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Account Logs</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.com/static/images/favicon.png">
 	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
 	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
@@ -58,7 +59,15 @@ if (!isset($_SESSION['username'])) {
 
 
 
-	                    
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	});
+	</script>                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>

@@ -37,69 +37,36 @@ if (!isset($_SESSION['username'])) {
     <title>KeyAuth - Balance</title>
 	<script src="https://cdn.sellix.io/static/js/embed.js" ></script>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
+	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/dist/css/style.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 	
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
 
 
-	                    
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	});
+	</script>                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
-<?php
-
-
-// $_SESSION['app'] = "appname";
-if(!$_SESSION['app']) { // if app is not 
-
-
-
-$result = mysqli_query($link, "SELECT 1 FROM apps WHERE owner='".$_SESSION['username']."' LIMIT 1");
-if (mysqli_fetch_row($result)) {
-    
-    $row = mysqli_fetch_array($result);
-    $_SESSION['app'] = $row["name"];
-    
-echo '
-                <script type=\'text/javascript\'>
-                
-                        $(document).ready(function(){
-        $("#changeapp").fadeIn(1900);
-        });             
-                
-                </script>
-                ';
-}
-else // if user doesnt have any apps created
-{
-    echo '
-                <script type=\'text/javascript\'>
-                
-                        $(document).ready(function(){
-        $("#createapp").fadeIn(1900);
-        });             
-                
-                </script>
-                ';
-}
-
-}
-else // if sesssion var 'app' exists, display tables using app in query etc
-{
-    echo '
-                <script type=\'text/javascript\'>
+<script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#content").fadeIn(1900);
@@ -107,10 +74,6 @@ else // if sesssion var 'app' exists, display tables using app in query etc
         });             
                 
                 </script>
-                ';
-}
-
-?>
 </head>
 <body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
     <!-- ============================================================== -->
@@ -137,17 +100,17 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                              <!-- dark Logo text -->
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                              <!-- Light Logo text -->    
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -221,9 +184,19 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                 <!-- Sidebar navigation-->
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
-                        
-						<li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span class="hide-menu">Reseller</span></li>                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../reseller/keys/" aria-expanded="false"><i data-feather="key"></i><span class="hide-menu">Licenses</span></a></li>                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../reseller/balance/" aria-expanded="false"><i data-feather="credit-card"></i><span class="hide-menu">Balance</span></a></li>
-						
+
+                        <li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span
+                                class="hide-menu">Reseller</span></li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/keys/" aria-expanded="false"><i data-feather="key"></i><span
+                                    class="hide-menu">Licenses</span></a></li>
+						<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/users/" aria-expanded="false"><i data-feather="users"></i><span
+                                    class="hide-menu">Users</span></a></li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="../../reseller/balance/" aria-expanded="false"><i
+                                    data-feather="credit-card"></i><span class="hide-menu">Balance</span></a></li>
+
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -263,25 +236,6 @@ else // if sesssion var 'app' exists, display tables using app in query etc
                 <!-- File export -->
                 <div class="row">
                     <div class="col-12">
-					
-
-<script type="text/javascript">
-
-var myLink = document.getElementById('mylink');
-
-myLink.onclick = function(){
-
-
-$(document).ready(function(){
-        $("#content").fadeOut(100);
-        $("#changeapp").fadeIn(1900);
-        }); 
-
-}
-
-
-</script>
-
                         <div class="card">
                             <div class="card-body">
                                 <?php
@@ -296,40 +250,76 @@ $(document).ready(function(){
 
 							
 
-						if($row["dayproduct"] != NULL)
+						if($row["sellixdayproduct"] != NULL)
 
                         {
 
-							echo '<a data-sellix-product="'.$row["dayproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Day Keys</a>';
+							echo '<a data-sellix-product="'.$row["sellixdayproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Day Keys (sellix)</a>';
 
 						}
 
-						if($row["weekproduct"] != NULL)
+						if($row["sellixweekproduct"] != NULL)
 
                         {
 
-							echo '<br><br><a data-sellix-product="'.$row["weekproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Week Keys</a>';
+							echo '<br><br><a data-sellix-product="'.$row["sellixweekproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Week Keys (sellix)</a>';
 
 						}
 
-						if($row["monthproduct"] != NULL)
+						if($row["sellixmonthproduct"] != NULL)
 
                         {
 
-							echo '<br><br><a data-sellix-product="'.$row["monthproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Month Keys</a>';
+							echo '<br><br><a data-sellix-product="'.$row["sellixmonthproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Month Keys (sellix)</a>';
 
 						}
 
-						if($row["lifetimeproduct"] != NULL)
+						if($row["sellixlifetimeproduct"] != NULL)
 
                         {
 
-							echo '<br><br><a data-sellix-product="'.$row["lifetimeproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Lifetime Keys</a>';
+							echo '<br><br><a data-sellix-product="'.$row["sellixlifetimeproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Lifetime Keys (sellix)</a>';
 
 						}
-
+                        }
 						
+						if($row["shoppysecret"] != NULL)
 
+                        {
+
+							
+
+						if($row["shoppydayproduct"] != NULL)
+
+                        {
+
+							echo '<br><br><a data-shoppy-product="'.$row["shoppydayproduct"].'" data-shoppy-username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Day Keys (shoppy)</a>';
+
+						}
+
+						if($row["shoppyweekproduct"] != NULL)
+
+                        {
+
+							echo '<br><br><a data-shoppy-product="'.$row["shoppyweekproduct"].'" data-shoppy-username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Week Keys (shoppy)</a>';
+
+						}
+
+						if($row["shoppymonthproduct"] != NULL)
+
+                        {
+
+							echo '<br><br><a data-shoppy-product="'.$row["shoppymonthproduct"].'" data-shoppy-username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Month Keys (shoppy)</a>';
+
+						}
+
+						if($row["shoppylifetimeproduct"] != NULL)
+
+                        {
+
+							echo '<br><br><a data-shoppy-product="'.$row["shoppylifetimeproduct"].'" data-shoppy-username="'.$_SESSION['username'].'" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Lifetime Keys (shoppy)</a>';
+
+						}
                         }
 
 						
@@ -431,220 +421,6 @@ $(document).ready(function(){
                 
                 <!-- Footer callback -->
                 
-                <?php
-				if(isset($_POST['deletekey']))
-				{
-					$key = sanitize($_POST['deletekey']);
-					mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `genby` = '".$_SESSION['username']."'");
-					if(mysqli_affected_rows($link) != 0)
-					{
-						success("Key Successfully Deleted!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-					}
-					else
-					{
-						mysqli_close($link);
-						error("Failed To Delete Key!");
-					}
-				}
-				if(isset($_POST['resetkey']))
-				{
-					$key = sanitize($_POST['resetkey']);
-					mysqli_query($link, "UPDATE `keys` SET `hwid` = '' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `genby` = '".$_SESSION['username']."'");
-					if(mysqli_affected_rows($link) != 0)
-					{
-						success("Key Successfully Reset!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-					}
-					else
-					{
-						mysqli_close($link);
-						error("Failed To Reset Key!");
-					}
-				}
-				if(isset($_POST['bankey']))
-				{
-					$key = sanitize($_POST['key']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `genby` = '".$_SESSION['username']."'");
-					if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key not Found!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$row = mysqli_fetch_array($result);
-					$hwid = $row["hwid"];
-					$reason = sanitize($_POST['reason']);
-					
-					mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					
-					if($hwid != NULL)
-					{
-					mysqli_query($link, "INSERT INTO `bans`(`hwid`, `app`) VALUES ('$hwid','".$_SESSION['app']."')");
-					}
-					success("Key Successfully Banned!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-				
-				if(isset($_POST['unbankey']))
-				{
-					$key = sanitize($_POST['unbankey']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `genby` = '".$_SESSION['username']."'");
-					if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key not Found!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$row = mysqli_fetch_array($result);
-					$hwid = $row["hwid"];
-					
-					mysqli_query($link, "UPDATE `keys` SET `banned` = NULL, `status` = 'Used' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key'");
-					mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' AND `app` = '".$_SESSION['app']."'");
-					
-					success("Key Successfully Unbanned!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-				
-				if(isset($_POST['pausekey']))
-				{
-					$key = sanitize($_POST['pausekey']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `status` = 'Used' AND `genby` = '".$_SESSION['username']."'");
-					if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key isn\'t used!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$row = mysqli_fetch_array($result);
-					$expires = $row['expires'];
-					
-					$exp = $expires - time();
-					mysqli_query($link, "UPDATE `keys` SET `status` = 'Paused', `expires` = '$exp' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `genby` = '".$_SESSION['username']."'");
-					
-					success("Key Successfully Paused!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-				
-				if(isset($_POST['unpausekey']))
-				{
-					$key = sanitize($_POST['unpausekey']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `status` = 'Paused' AND `genby` = '".$_SESSION['username']."'");
-					if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key isn\'t paused!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-					$row = mysqli_fetch_array($result);
-					$expires = $row['expires'];
-					
-					$exp = $expires + time();
-					mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `expires` = '$exp' WHERE `app` = '".$_SESSION['app']."' AND `key` = '$key' AND `genby` = '".$_SESSION['username']."'");
-					
-					success("Key Successfully Unpaused!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-				
-				if(isset($_POST['editkey']))
-				{
-					$key = sanitize($_POST['editkey']);
-					
-					$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$key' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
-                    if(mysqli_num_rows($result) == 0)
-					{
-						mysqli_close($link);
-						error("Key not Found!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
-					}
-					
-                    $row = mysqli_fetch_array($result);
-					
-					$expiry = date("Y-m-d\TH:i", $row["expires"]);
-					$currtime = date("Y-m-d\TH:i", time());
-					
-					echo'<div id="ban-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true"o ydo >
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Edit License</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="post"> 
-                                                    <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Key Level:</label>
-                                                        <input type="text" class="form-control" name="level" value="' . $row['level'] . '" required>
-														<input type="hidden" name="key" value="' . $key . '">
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Key Expiry:</label>
-                                                        <input class="form-control" type="datetime-local" name="expiry" value="' . date("Y-m-d\TH:i", $row["expires"]) . '" required>
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Additional HWID:</label>
-                                                        <input type="text" class="form-control" name="hwid" placeholder="Enter HWID if you want this key to support multiple computers">
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">HWID:</label>
-                                                        <p>' . $row['hwid'] . '</p>
-                                                    </div>
-													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">IP:</label>
-                                                        <p>' . $row['ip'] . '</p>
-                                                    </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="savekey">Save</button>
-												</form>
-                                            </div>
-                                        </div>
-                                    </div>
-									</div>';
-				}
-				
-				if(isset($_POST['savekey']))
-				{
-					$key = sanitize($_POST['key']);
-					
-					$expiry = sanitize($_POST['expiry']);
-					$level = sanitize($_POST['level']);
-					$hwid = sanitize($_POST['hwid']);
-					
-					$expiry = strtotime($expiry);
-					
-					if(isset($hwid) && trim($hwid) != '')
-					{
-						$result = mysqli_query($link, "SELECT `hwid` FROM `keys` WHERE `key` = '$key' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");                           
-						$row = mysqli_fetch_array($result);                      
-						$hwidd = $row["hwid"];
-
-						$hwidd = $hwidd .= $hwid;
-
-						mysqli_query($link, "UPDATE `keys` SET `hwid` = '$hwidd' WHERE `key` = '$key' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
-					}
-
-					mysqli_query($link, "UPDATE `keys` SET `expires` = '$expiry',`level` = '$level' WHERE `key` = '$key' AND `app` = '".$_SESSION['app']."' AND `genby` = '".$_SESSION['username']."'");
-		
-					success("Successfully Updated Settings!");
-					echo "<meta http-equiv='Refresh' Content='2'>";
-				}
-					?>
-                
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->
                 <!-- ============================================================== -->
@@ -684,33 +460,33 @@ $(document).ready(function(){
     <!-- ============================================================== -->
     
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.init.dark.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app-style-switcher.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.init.dark.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/waves.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/sidebarmenu.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="https://cdn.keyauth.com/dashboard/dist/js/feather.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/custom.min.js"></script>
+   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-		<script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
+		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -718,18 +494,8 @@ $(document).ready(function(){
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
-  
-					
+    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>		
 
-<script src="https://cdn.keyauth.com/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
-
-<script>
-                        
-		function bankey(key) {
-		 var bankey = $('.bankey');
-		 bankey.attr('value', key);
-      }
-                    </script>
+<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 </body>
 </html>

@@ -16,7 +16,8 @@ $username = $_SESSION['username'];
 $row = mysqli_fetch_array($result);
 
             $banned = $row['banned'];
-			if (!is_null($banned))
+			$lastreset = $row['lastreset'];
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 			{
 				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
 				session_destroy();
@@ -25,6 +26,13 @@ $row = mysqli_fetch_array($result);
 
 $role = $row['role'];
 $_SESSION['role'] = $role;
+
+$expires = $row['expires'];
+$timeleft = false;
+if(in_array($role,array("developer", "seller")))
+{
+	$timeleft = expire_check($username, $expires);
+}
 
 if ($role == "Reseller")
 {
@@ -46,21 +54,29 @@ $darkmode = $row['darkmode'];
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Webhooks</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
+	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/dist/css/style.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 	
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
 
 
-	                    
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	});
+	</script>                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -177,17 +193,17 @@ else
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                              <!-- dark Logo text -->
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                              <!-- Light Logo text -->    
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -291,7 +307,8 @@ if (isset($_POST['genwebhook']))
         }
 
         $webid = generateRandomString();
-        mysqli_query($link, "INSERT INTO `webhooks` (`webid`, `baselink`, `useragent`, `app`) VALUES ('$webid','$base', '$ua', '" . $_SESSION['app'] . "')");
+		$authed = sanitize($_POST['authed']) == NULL ? 0 : 1;
+        mysqli_query($link, "INSERT INTO `webhooks` (`webid`, `baselink`, `useragent`, `app`, `authed`) VALUES ('$webid','$base', '$ua', '" . $_SESSION['app'] . "', '$authed')");
 
         echo "<meta http-equiv='Refresh' Content='2;'>";
         success("Created Webhook!");
@@ -423,13 +440,18 @@ if (isset($_POST['change']))
                 <!-- File export -->
                 <div class="row">
                     <div class="col-12">
+					<div class="card"> <div class="card-body">
 					<?php heador($role, $link); ?>
+					</div></div>
+					<?php if($timeleft) { ?>
+					<div class="alert alert-warning alert-rounded">Your account subscription expires, in less than a month, check account details for exact date.</div>
+					<?php } ?>
 					<button data-toggle="modal" type="button" data-target="#create-webhook" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Webhook</button>
 							<br>
 							<br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
                                         </div>
-<div id="create-webhook" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="create-webhook" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -439,13 +461,19 @@ if (isset($_POST['change']))
                                             <div class="modal-body">
                                                 <form method="post">
                                                     <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Webhook Endpoint:</label>
+                                                        <label for="recipient-name" class="control-label">Webhook Endpoint: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Webhooks can be used to send GET request with query paramaters from the KeyAuth server so you don't expose the link in your loader. The webhook function returns a string which is the response from the link. There is zero reason to send requests to links which need to be kept private in your loader without the webhok function. You run the risk of the link getting leaked."></i></label>
                                                         <input type="url" class="form-control" name="baselink" placeholder="The Link You Want KeyAuth to Send Request to" required>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">User-Agent:</label>
+                                                        <label for="recipient-name" class="control-label">User-Agent: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="This is useless to most people, but if the link requires a certain user agent to keep bad actors out, specify that user agent here."></i></label>
                                                         <input type="text" class="form-control" placeholder="Default: KeyAuth" name="useragent">
                                                     </div>
+													<div class="form-check">
+													<input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
+													<label class="form-check-label" for="flexCheckChecked">
+														Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
+													</label>
+													</div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
@@ -456,7 +484,7 @@ if (isset($_POST['change']))
                                     </div>
 									</div>
 									
-									<div id="rename-app" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+									<div id="rename-app" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -505,6 +533,7 @@ $(document).ready(function(){
 <th>Webhook ID</th>
 <th>Webhook Endpoint</th>
 <th>User-Agent</th>
+<th>Authenticated</th>
 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -525,6 +554,8 @@ if ($_SESSION['app'])
             echo "  <td>" . $row["baselink"] . "</td>";
 
             echo "  <td>" . $row["useragent"] . "</td>";
+			
+            echo "  <td>" . (($row["authed"] ? 1 : 0) ? 'True' : 'False') . "</td>";
 
             // echo "  <td>". $row["status"]. "</td>";
             echo '<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -547,6 +578,7 @@ if ($_SESSION['app'])
 <th>Webhook ID</th>
 <th>Webhook Endpoint</th>
 <th>User-Agent</th>
+<th>Authenticated</th>
 <th>Action</th>
                                             </tr>
                                         </tfoot>
@@ -609,7 +641,7 @@ if (isset($_POST['editwebhook']))
     $baselink = $row["baselink"];
     $useragent = $row["useragent"];
 
-    echo '<div id="edit-webhook" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
+    echo '<div id="edit-webhook" class="modal show" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -691,33 +723,33 @@ if (isset($_POST['savewebhook']))
     <!-- ============================================================== -->
     
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.init.dark.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app-style-switcher.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.init.dark.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/waves.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/sidebarmenu.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="https://cdn.keyauth.com/dashboard/dist/js/feather.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/custom.min.js"></script>
+   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-		<script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
+		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -729,6 +761,6 @@ if (isset($_POST['savewebhook']))
   
 					
 
-<script src="https://cdn.keyauth.com/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 </body>
 </html>

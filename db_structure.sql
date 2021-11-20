@@ -2,13 +2,12 @@
 -- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Aug 16, 2021 at 09:39 PM
--- Server version: 10.4.20-MariaDB
--- PHP Version: 8.0.9
+-- Host: localhost
+-- Generation Time: Nov 20, 2021 at 10:34 AM
+-- Server version: 10.3.31-MariaDB-0ubuntu0.20.04.1
+-- PHP Version: 7.3.31-1+focal
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -19,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `keyauth_main`
+-- Database: `keya_main`
 --
 
 -- --------------------------------------------------------
@@ -50,22 +49,24 @@ CREATE TABLE `accounts` (
   `app` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `owner` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `banned` varchar(69) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `admin` int(1) NOT NULL DEFAULT 0,
   `img` varchar(90) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://i.imgur.com/cVPXjIH.jpg',
   `pp` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `balance` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `keylevels` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
-  `expires` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `expires` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
   `registrationip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `lastip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `twofactor` int(1) NOT NULL DEFAULT '0',
+  `twofactor` int(1) NOT NULL DEFAULT 0,
   `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `darkmode` int(1) NOT NULL DEFAULT '0',
-  `acclogs` int(1) NOT NULL DEFAULT '1',
+  `darkmode` int(1) NOT NULL DEFAULT 0,
+  `acclogs` int(1) NOT NULL DEFAULT 1,
   `format` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
   `amount` int(3) DEFAULT NULL,
   `lvl` int(3) DEFAULT NULL,
   `note` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `duration` int(3) DEFAULT NULL
+  `duration` int(3) DEFAULT NULL,
+  `lastreset` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -80,12 +81,14 @@ CREATE TABLE `apps` (
   `secret` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `ownerid` varchar(39) COLLATE utf8_unicode_ci NOT NULL,
   `enabled` int(1) NOT NULL,
-  `paused` int(11) NOT NULL DEFAULT '0',
+  `banned` int(1) NOT NULL DEFAULT 0,
+  `paused` int(11) NOT NULL DEFAULT 0,
   `hwidcheck` int(1) NOT NULL,
-  `vpnblock` int(1) NOT NULL DEFAULT '0',
+  `vpnblock` int(1) NOT NULL DEFAULT 0,
   `sellerkey` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `ver` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT '1.0',
   `download` varchar(120) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `hash` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
   `webhook` varchar(130) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `resellerstore` varchar(69) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `appdisabled` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'This application is disabled',
@@ -98,13 +101,27 @@ CREATE TABLE `apps` (
   `hwidmismatch` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'HWID Doesn''t match. Ask for key reset.',
   `noactivesubs` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'No active subscriptions found.',
   `hwidblacked` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'You''ve been blacklisted from our application',
-  `keypaused` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Your Key is paused and cannot be used at the moment.',
+  `pausedsub` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Your Key is paused and cannot be used at the moment.',
+  `vpnblocked` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'VPNs are disallowed on this application',
+  `keybanned` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Your license is banned',
+  `userbanned` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'The user is banned',
+  `sessionunauthed` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Session is not validated',
+  `hashcheckfail` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'This program hash does not match, make sure you''re using latest version',
   `keyexpired` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Key has expired.',
   `sellixsecret` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `dayproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `weekproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `monthproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `lifetimeproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL
+  `sellixdayproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `sellixweekproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `sellixmonthproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `sellixlifetimeproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `shoppysecret` varchar(16) COLLATE utf8_unicode_ci NOT NULL,
+  `shoppydayproduct` varchar(7) COLLATE utf8_unicode_ci NOT NULL,
+  `shoppyweekproduct` varchar(7) COLLATE utf8_unicode_ci NOT NULL,
+  `shoppymonthproduct` varchar(7) COLLATE utf8_unicode_ci NOT NULL,
+  `shoppylifetimeproduct` varchar(7) COLLATE utf8_unicode_ci NOT NULL,
+  `cooldown` int(10) NOT NULL DEFAULT 604800,
+  `panelstatus` int(1) NOT NULL DEFAULT 1,
+  `session` int(10) NOT NULL DEFAULT 21600,
+  `hashcheck` int(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -123,6 +140,45 @@ CREATE TABLE `bans` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `chatmsgs`
+--
+
+CREATE TABLE `chatmsgs` (
+  `id` int(255) NOT NULL,
+  `author` varchar(70) NOT NULL,
+  `message` varchar(2000) NOT NULL,
+  `timestamp` int(10) NOT NULL,
+  `channel` varchar(50) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chatmutes`
+--
+
+CREATE TABLE `chatmutes` (
+  `user` varchar(70) NOT NULL,
+  `time` int(10) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chats`
+--
+
+CREATE TABLE `chats` (
+  `name` varchar(50) NOT NULL,
+  `delay` int(10) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `files`
 --
 
@@ -132,7 +188,8 @@ CREATE TABLE `files` (
   `url` varchar(2048) COLLATE utf8_unicode_ci DEFAULT NULL,
   `size` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `uploaddate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
-  `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL
+  `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `authed` int(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -142,6 +199,7 @@ CREATE TABLE `files` (
 --
 
 CREATE TABLE `keys` (
+  `id` int(11) NOT NULL,
   `key` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `note` varchar(69) COLLATE utf8_unicode_ci DEFAULT NULL,
   `expires` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
@@ -150,7 +208,7 @@ CREATE TABLE `keys` (
   `genby` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `gendate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `usedon` int(10) DEFAULT NULL,
-  `usedby` varchar(70) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
+  `usedby` varchar(70) COLLATE utf8_unicode_ci DEFAULT NULL,
   `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `banned` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -164,10 +222,22 @@ CREATE TABLE `keys` (
 CREATE TABLE `logs` (
   `logdate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `logdata` varchar(275) COLLATE utf8_unicode_ci NOT NULL,
-  `credential` varchar(70) COLLATE utf8_unicode_ci NOT NULL,
+  `credential` varchar(70) COLLATE utf8_unicode_ci DEFAULT NULL,
   `pcuser` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
   `logapp` varchar(64) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `resets`
+--
+
+CREATE TABLE `resets` (
+  `secret` char(32) NOT NULL,
+  `email` varchar(65) NOT NULL,
+  `time` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -181,7 +251,7 @@ CREATE TABLE `sessions` (
   `app` varchar(64) NOT NULL,
   `expiry` int(10) NOT NULL,
   `enckey` varchar(64) NOT NULL,
-  `validated` varchar(5) NOT NULL DEFAULT 'false'
+  `validated` int(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -191,11 +261,13 @@ CREATE TABLE `sessions` (
 --
 
 CREATE TABLE `subs` (
+  `id` int(255) NOT NULL,
   `user` varchar(49) NOT NULL,
   `subscription` varchar(49) NOT NULL,
   `expiry` varchar(49) NOT NULL,
   `app` varchar(64) NOT NULL,
-  `key` varchar(49) DEFAULT NULL
+  `key` varchar(49) DEFAULT NULL,
+  `paused` int(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -218,13 +290,29 @@ CREATE TABLE `subscriptions` (
 
 CREATE TABLE `users` (
   `username` varchar(70) NOT NULL,
-  `password` varchar(70) NOT NULL,
+  `password` varchar(70) DEFAULT NULL,
   `hwid` varchar(70) DEFAULT NULL,
   `app` varchar(64) NOT NULL,
+  `owner` varchar(65) DEFAULT NULL,
+  `createdate` int(10) DEFAULT NULL,
+  `lastlogin` int(10) DEFAULT NULL,
   `banned` varchar(99) DEFAULT NULL,
   `ip` varchar(49) DEFAULT NULL,
   `cooldown` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `uservars`
+--
+
+CREATE TABLE `uservars` (
+  `name` varchar(99) NOT NULL,
+  `data` varchar(500) NOT NULL,
+  `user` varchar(70) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -235,7 +323,8 @@ CREATE TABLE `users` (
 CREATE TABLE `vars` (
   `varid` varchar(49) NOT NULL,
   `msg` varchar(99) NOT NULL,
-  `app` varchar(64) NOT NULL
+  `app` varchar(64) NOT NULL,
+  `authed` int(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -248,7 +337,8 @@ CREATE TABLE `webhooks` (
   `webid` varchar(10) NOT NULL,
   `baselink` varchar(200) NOT NULL,
   `useragent` varchar(49) NOT NULL DEFAULT 'KeyAuth',
-  `app` varchar(64) NOT NULL
+  `app` varchar(64) NOT NULL,
+  `authed` int(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -262,10 +352,56 @@ ALTER TABLE `accounts`
   ADD PRIMARY KEY (`username`);
 
 --
+-- Indexes for table `chatmsgs`
+--
+ALTER TABLE `chatmsgs`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `keys`
+--
+ALTER TABLE `keys`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `subs`
+--
+ALTER TABLE `subs`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `uservars`
+--
+ALTER TABLE `uservars`
+  ADD UNIQUE KEY `user vars` (`name`,`user`,`app`);
+
+--
 -- Indexes for table `webhooks`
 --
 ALTER TABLE `webhooks`
   ADD KEY `baselink` (`baselink`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `chatmsgs`
+--
+ALTER TABLE `chatmsgs`
+  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `keys`
+--
+ALTER TABLE `keys`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `subs`
+--
+ALTER TABLE `subs`
+  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

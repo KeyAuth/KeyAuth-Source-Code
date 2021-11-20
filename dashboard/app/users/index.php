@@ -6,6 +6,10 @@ include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 if (!isset($_SESSION['username'])) {
          header("Location: ../../../login/");
         exit();
@@ -17,7 +21,8 @@ if (!isset($_SESSION['username'])) {
             $row = mysqli_fetch_array($result);
             
             $banned = $row['banned'];
-			if (!is_null($banned))
+			$lastreset = $row['lastreset'];
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 			{
 				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
 				session_destroy();
@@ -26,6 +31,13 @@ if (!isset($_SESSION['username'])) {
         
             $role = $row['role'];
             $_SESSION['role'] = $role;
+			
+			$expires = $row['expires'];
+			$timeleft = false;
+if(in_array($role,array("developer", "seller")))
+{
+	$timeleft = expire_check($username, $expires);
+}
 			
 			    if($role == "Reseller")
 {
@@ -47,21 +59,30 @@ if (!isset($_SESSION['username'])) {
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Users</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
+	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/dist/css/style.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 	
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-	<script src="https://cdn.keyauth.com/dashboard/unixtolocal.js"></script>
+	<script src="https://cdn.keyauth.uk/dashboard/unixtolocal.js"></script>
 
-	                    
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	
+	});
+	</script>                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -171,17 +192,17 @@ else
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                              <!-- dark Logo text -->
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                              <!-- Light Logo text -->    
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -384,14 +405,19 @@ $(document).ready(function(){
                 <!-- File export -->
                 <div class="row">
                     <div class="col-12">
+					<div class="card"> <div class="card-body">
 					<?php heador($role, $link); ?>
+					</div></div>
+					<?php if($timeleft) { ?>
+					<div class="alert alert-warning alert-rounded">Your account subscription expires, in less than a month, check account details for exact date.</div>
+					<?php } ?>
 					<form method="POST">
-					<button data-toggle="modal" type="button" data-target="#create-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create User</button>  <button data-toggle="modal" type="button" data-target="#extend-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Extend User</button>  <button name="delusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Users</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all users?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Users</button>
+					<button data-toggle="modal" type="button" id="modal" data-target="#create-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create User</button>  <button data-toggle="modal" type="button" id="modal" data-target="#set-user-var" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Set Variable</button>  <button data-toggle="modal" type="button" data-target="#import-users" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import users</button>  <button data-toggle="modal" type="button" data-target="#extend-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Extend User(s)</button>  <button name="delusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Users</button>  <button name="delexpusers" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete expired users?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete Expired Users</button>  <button name="resetall" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to reset HWID for all users?')"><i class="fas fa-redo-alt fa-sm text-white-50"></i> HWID Reset All Users</button>
                             </form>
 							<br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=oLj04x0k1RI" target="tutorial">https://youtube.com/watch?v=oLj04x0k1RI</a> You may also join Discord and ask for help!
                                         </div>
-<div id="create-user" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="create-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -409,10 +435,10 @@ $(document).ready(function(){
                                                         <input type="password" class="form-control" name="password" placeholder="Password for user" required>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Subscription:</label>
+                                                        <label for="recipient-name" class="control-label">Subscription: </label>
                                                         <select name="sub" class="form-control">
 														<?php
-														($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+														($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '".$_SESSION['app']."' ORDER BY CHAR_LENGTH(`name`) DESC")) or die(mysqli_error($link));
 														if (mysqli_num_rows($result) > 0)
 															{
 																while ($row = mysqli_fetch_array($result))
@@ -439,25 +465,102 @@ $(document).ready(function(){
                                         </div>
                                     </div>
 									</div>
-									<div id="extend-user" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+									<div id="set-user-var" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Extend User</h4>
+												<h4 class="modal-title">Set Variable</h4>
                                                 <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">User:</label>
-                                                        <select name="user" class="form-control">
+                                                        <select name="user" class="form-control"><option value="all">All</option>
 														<?php
-														($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+														($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' ORDER BY CHAR_LENGTH(`username`) DESC")) or die(mysqli_error($link));
 														if (mysqli_num_rows($result) > 0)
 															{
 																while ($row = mysqli_fetch_array($result))
 																{
-																	echo "  <option>". $row["username"]. "</option>";
+																	echo "<option value=\"". $row["username"]. "\">". $row["username"]. "</option>";
+																}
+															}
+														
+														?>
+														</select>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Variable:</label>
+														<input type="text" class="form-control" name="var" placeholder="Variable name (enter one if creating new one)" list="vars" required>
+                                                        <datalist id="vars">
+														<?php
+														($result = mysqli_query($link, "SELECT * FROM `uservars` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+														if (mysqli_num_rows($result) > 0)
+															{
+																while ($row = mysqli_fetch_array($result))
+																{
+																	echo "  <option>". $row["name"]. "</option>";
+																}
+															}
+														
+														?>
+														</datalist>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Variable Data: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Assigns variable to selected user(s) which you can get and set from loader"></i></label>
+                                                        <input type="text" class="form-control" name="data" placeholder="User variable data" required>
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="setvar">Add</button>
+												</form>
+                                            </div>
+                                        </div>
+                                    </div>
+									</div>
+									<div id="import-users" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex align-items-center">
+												<h4 class="modal-title">Import Users</h4>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="post">
+                                                    <div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Users: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="No password is imported since passwords could be hashed in different formats or inaccessible to you when trying to export your users from another service. KeyAuth will use the password the user first signs in with."></i></label>
+                                                        <input class="form-control" name="users" placeholder="Format: username,hwid,days|username,hwid,days">
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="importusers">Add</button>
+												</form>
+                                            </div>
+                                        </div>
+                                    </div>
+									</div>
+									<div id="extend-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex align-items-center">
+												<h4 class="modal-title">Extend User(s)</h4>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="post">
+                                                    <div class="form-group">
+                                                        <label for="recipient-name" class="control-label">User:</label>
+                                                        <select name="user" class="form-control"><option value="all">All</option>
+														<?php
+														($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."' ORDER BY CHAR_LENGTH(`username`) DESC")) or die(mysqli_error($link));
+														if (mysqli_num_rows($result) > 0)
+															{
+																while ($row = mysqli_fetch_array($result))
+																{
+																	echo "<option value=\"". $row["username"]. "\">". $row["username"]. "</option>";
 																}
 															}
 														
@@ -468,7 +571,7 @@ $(document).ready(function(){
                                                         <label for="recipient-name" class="control-label">Subscription:</label>
                                                         <select name="sub" class="form-control">
 														<?php
-														($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+														($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '".$_SESSION['app']."' ORDER BY CHAR_LENGTH(`name`) DESC")) or die(mysqli_error($link));
 														if (mysqli_num_rows($result) > 0)
 															{
 																while ($row = mysqli_fetch_array($result))
@@ -495,12 +598,12 @@ $(document).ready(function(){
                                         </div>
                                     </div>
 									</div>
-										<div id="rename-app" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+										<div id="rename-app" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Rename Application</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
@@ -534,7 +637,7 @@ $(document).ready(function(){
 
 
 </script>
-<div id="ban-user" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="ban-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -566,6 +669,9 @@ $(document).ready(function(){
 <th>Username</th>
 <th>HWID</th>
 <th>IP</th>
+<th>Creation Date</th>
+<th>Last Login Date</th>
+<th>Banned</th>
 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -592,6 +698,12 @@ $(document).ready(function(){
                                                     <td><?php echo $row["hwid"] ?? "N/A"; ?></td>
 													
                                                     <td><?php echo $row["ip"] ?? "N/A"; ?></td>
+													
+                                                    <td><script>document.write(convertTimestamp(<?php echo $row["createdate"]; ?>));</script></td>
+													
+                                                    <td><script>document.write(convertTimestamp(<?php echo $row["lastlogin"]; ?>));</script></td>
+													
+                                                    <td><?php echo $row["banned"] ?? "N/A"; ?></td>
 
                                                     <td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
@@ -617,6 +729,9 @@ $(document).ready(function(){
 <th>Username</th>
 <th>HWID</th>
 <th>IP</th>
+<th>Creation Date</th>
+<th>Last Login Date</th>
+<th>Banned</th>
 <th>Action</th>
                                             </tr>
                                         </tfoot>
@@ -676,6 +791,52 @@ $(document).ready(function(){
 						error("Failed To Reset User");
 					}
 				}
+				if(isset($_POST['setvar']))
+				{
+					$user = sanitize($_POST['user']);
+					$var = sanitize($_POST['var']);
+					$data = sanitize($_POST['data']);
+					
+					if($user == "all")
+					{
+						$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."'");
+						if(mysqli_num_rows($result) == 0)
+						{
+							mysqli_close($link);
+							error("You have no users!");
+							echo "<meta http-equiv='Refresh' Content='2'>";
+							return;
+						}
+						
+						$rows = array();
+						while ($r = mysqli_fetch_assoc($result))
+						{
+							$rows[] = $r;
+						}
+				
+						foreach ($rows as $row)
+						{
+							mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '".$row['username']."', '" . $_SESSION['app'] . "')");
+						}
+					}
+					else
+					{
+						mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '$user', '" . $_SESSION['app'] . "')");
+					}
+					
+					if(mysqli_affected_rows($link) != 0)
+					{
+						success("Set variable for selected user(s)");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To set variable for selected user(s)!");
+					}
+				}
+				
+				
 				if(isset($_POST['banuser']))
 				{
 					$un = sanitize($_POST['un']);
@@ -757,11 +918,15 @@ $(document).ready(function(){
                                             <div class="modal-body">
                                                 <form method="post">
 													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Username:</label>
+                                                        <input class="form-control" name="username" placeholder="Set new username">
+                                                    </div>
+													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Password:</label>
                                                         <input type="password" class="form-control" name="pass" placeholder="Set new password, we cannot read old password because it's hashed with BCrypt">
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Active Subscriptions:</label>
+                                                        <label for="recipient-name" class="control-label">Active Subscriptions: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="List of non-expired, non-paused subscriptions. Change selection if you want to delete one of them."></i></label>
                                                         <select class="form-control" name="sub">
 														<?php
 														$result = mysqli_query($link, "SELECT * FROM `subs` WHERE `user` = '$un' AND `app` = '".$_SESSION['app']."' AND `expiry` > '".time()."'");
@@ -784,21 +949,45 @@ $(document).ready(function(){
 														</select>
                                                     </div>
 													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">User Variables: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="List of variables assigned to this user. Change selection if you want to delete one of them."></i></label>
+                                                        <select class="form-control" name="var">
+														<?php
+														$result = mysqli_query($link, "SELECT * FROM `uservars` WHERE `user` = '$un' AND `app` = '".$_SESSION['app']."'");
+														
+														$rows = array();
+														while ($r = mysqli_fetch_assoc($result))
+														{
+															$rows[] = $r;
+														}
+														
+														foreach ($rows as $varrow)
+														{
+														
+														$value = $varrow['name'] . " : " . $varrow["data"];
+														?>
+														<option value="<?php echo $varrow['name']; ?>"><?php echo $value; ?></option>
+														<?php
+														}
+														?>
+														</select>
+                                                    </div>
+													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Additional HWID:</label>
                                                         <input type="text" class="form-control" name="hwid" placeholder="Enter HWID if you want this key to support multiple computers">
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">HWID:</label>
-                                                        <p><?php echo $row['hwid']; ?></p>
+                                                        <p><?php echo $row['hwid'] ?? "N/A"; ?></p>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">IP:</label>
-                                                        <p><?php echo $row['ip']; ?></p>
+                                                        <p><?php echo $row['ip'] ?? "N/A"; ?></p>
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
                                                 <button class="btn btn-warning waves-effect waves-light" value="<?php echo $un; ?>" name="deletesub">Delete Subscription</button>
+                                                <button class="btn btn-primary waves-effect waves-light" value="<?php echo $un; ?>" name="deletevar">Delete Variable</button>
                                                 <button class="btn btn-danger waves-effect waves-light" value="<?php echo $un; ?>" name="saveuser">Save</button>
 												</form>
                                             </div>
@@ -811,6 +1000,8 @@ $(document).ready(function(){
 				if(isset($_POST['saveuser']))
 				{
 					$un = sanitize($_POST['saveuser']);
+					
+					$username = sanitize($_POST['username']);
 					
 					$hwid = sanitize($_POST['hwid']);
 					
@@ -827,6 +1018,12 @@ $(document).ready(function(){
 						mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
 					}
 					
+					if(isset($username) && trim($username) != '')
+					{
+						mysqli_query($link, "UPDATE `users` SET `username` = '$username' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
+						mysqli_query($link, "UPDATE `subs` SET `user` = '$username' WHERE `user` = '$un' AND `app` = '".$_SESSION['app']."'");
+					}
+					
 					if(isset($pass) && trim($pass) != '')
 					{
 						mysqli_query($link, "UPDATE `users` SET `password` = '".password_hash($pass, PASSWORD_BCRYPT)."' WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
@@ -836,6 +1033,24 @@ $(document).ready(function(){
 					echo "<meta http-equiv='Refresh' Content='2'>";
 				}
 				
+				if(isset($_POST['deletevar']))
+				{
+					$un = sanitize($_POST['deletevar']);
+					$var = sanitize($_POST['var']);
+					
+					mysqli_query($link, "DELETE FROM `uservars` WHERE `app` = '".$_SESSION['app']."' AND `user` = '$un' AND `name` = '$var'");
+					if(mysqli_affected_rows($link) != 0)
+					{
+					success("Successfully Deleted User\'s variable");
+					echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("Failed To Delete User\'s variable!");
+					}
+				}
+					
 				if(isset($_POST['deletesub']))
 				{
 					$un = sanitize($_POST['deletesub']);
@@ -866,6 +1081,87 @@ $(document).ready(function(){
 					}
 					
 				}
+
+				if (isset($_POST['importusers']))
+				{
+			
+					$users = sanitize($_POST['users']);
+					$text = explode("|", $users);
+			
+					str_replace('"', "", $text);
+					str_replace("'", "", $text);
+			
+					foreach ($text as $line)
+					{
+			
+						$array = explode(',', $line);
+						$first = $array[0];
+						if (!isset($first) || $first == '')
+						{
+							mysqli_close($link);
+							echo '
+										<script type=\'text/javascript\'>
+										
+										const notyf = new Notyf();
+										notyf
+										.error({
+											message: \'Invalid Format!\',
+											duration: 3500,
+											dismissible: true
+										});                
+										
+										</script>
+										';
+							echo "<meta http-equiv='Refresh' Content='2;'>";
+							return;
+						}
+						$second = $array[1];
+						if (!isset($second) || $second == '')
+						{
+							mysqli_close($link);
+							echo '
+										<script type=\'text/javascript\'>
+										
+										const notyf = new Notyf();
+										notyf
+										.error({
+											message: \'Invalid Format!\',
+											duration: 3500,
+											dismissible: true
+										});                
+										
+										</script>
+										';
+							echo "<meta http-equiv='Refresh' Content='2;'>";
+							return;
+						}
+						$third = $array[2];
+						if (!isset($third) || $third == '')
+						{
+							mysqli_close($link);
+							echo '
+										<script type=\'text/javascript\'>
+										
+										const notyf = new Notyf();
+										notyf
+										.error({
+											message: \'Invalid Format!\',
+											duration: 3500,
+											dismissible: true
+										});                
+										
+										</script>
+										';
+							echo "<meta http-equiv='Refresh' Content='2;'>";
+							return;
+						}
+						$expiry = $third * 86400;
+						mysqli_query($link, "INSERT INTO `users` (`username`, `hwid`, `app`,`owner`) VALUES ('$first','$second','" . $_SESSION['app'] . "','" . $_SESSION['username'] . "','".time()."')");
+						mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$first','default','$expiry','" . $_SESSION['app'] . "')");
+					}
+					success("Successfully imported users!");
+					echo "<meta http-equiv='Refresh' Content='3'>";
+				}
 				
 				if(isset($_POST['extenduser']))
 				{
@@ -889,16 +1185,43 @@ $(document).ready(function(){
 						return;						
 					}
 					
-					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
-					if(mysqli_num_rows($result) == 0)
+					if($un == "all")
 					{
-						mysqli_close($link);
-						error("User doesn\'t exist!");
-						echo "<meta http-equiv='Refresh' Content='2'>";
-						return;
+						$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."'");
+						if(mysqli_num_rows($result) == 0)
+						{
+							mysqli_close($link);
+							error("You have no users!");
+							echo "<meta http-equiv='Refresh' Content='2'>";
+							return;
+						}
+						
+						$rows = array();
+						while ($r = mysqli_fetch_assoc($result))
+						{
+							$rows[] = $r;
+						}
+				
+						foreach ($rows as $row)
+						{
+							mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('".$row['username']."','$sub', '$expiry', '".$_SESSION['app']."')");
+						}
+						
+					}
+					else 
+					{
+						$result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '".$_SESSION['app']."'");
+						if(mysqli_num_rows($result) == 0)
+						{
+							mysqli_close($link);
+							error("User doesn\'t exist!");
+							echo "<meta http-equiv='Refresh' Content='2'>";
+							return;
+						}
+						
+						mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$un','$sub', '$expiry', '".$_SESSION['app']."')");
 					}
 					
-					mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$un','$sub', '$expiry', '".$_SESSION['app']."')");
 					if(mysqli_affected_rows($link) != 0)
 					{
 						success("User Successfully Extended!");
@@ -936,7 +1259,7 @@ $(document).ready(function(){
 					}
 					
 					mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$un','$sub', '$expiry', '".$_SESSION['app']."')");
-					mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`) VALUES ('$un','$pw', '', '".$_SESSION['app']."')");
+					mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`,`owner`,`createdate`) VALUES ('$un','$pw', NULL, '".$_SESSION['app']."','" . $_SESSION['username'] . "','".time()."')");
 					if(mysqli_affected_rows($link) != 0)
 					{
 						success("User Successfully Created!");
@@ -949,6 +1272,47 @@ $(document).ready(function(){
 					}
 					
 				}
+				
+				if(isset($_POST['delexpusers']))
+				{
+					$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '".$_SESSION['app']."'");
+					if(mysqli_num_rows($result) == 0)
+					{
+						mysqli_close($link);
+						error("You have no users!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+						return;
+					}
+					
+					$rows = array();
+					while ($r = mysqli_fetch_assoc($result))
+					{
+						$rows[] = $r;
+					}
+				
+					$success = 0;
+					foreach ($rows as $row)
+					{
+						$result = mysqli_query($link, "SELECT * FROM `subs` WHERE `user` = '".$row['username']."' AND `app` = '".$_SESSION['app']."' AND `expiry` > '".time()."'");
+						if(mysqli_num_rows($result) == 0)
+						{
+							$success = 1;
+							mysqli_query($link, "DELETE FROM `users` WHERE `app` = '".$_SESSION['app']."' AND `username` = '".$row['username']."'");
+						}
+					}
+
+					if($success)
+					{
+						success("Expired Users Successfully Deleted!");
+						echo "<meta http-equiv='Refresh' Content='2'>";
+					}
+					else
+					{
+						mysqli_close($link);
+						error("No users are expired!");
+					}
+				}
+					
 				
 				if(isset($_POST['delusers']))
 				{
@@ -1020,33 +1384,33 @@ $(document).ready(function(){
     <!-- ============================================================== -->
     
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.init.dark.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app-style-switcher.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.init.dark.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/waves.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/sidebarmenu.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="https://cdn.keyauth.com/dashboard/dist/js/feather.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/custom.min.js"></script>
+   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-		<script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
+		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -1058,7 +1422,7 @@ $(document).ready(function(){
   
 					
 
-<script src="https://cdn.keyauth.com/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 <script>
                         

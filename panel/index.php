@@ -14,13 +14,12 @@ function htmlEncode($s)
     return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 }
 
-// Administrator/Not Discord says don't use 'link' var it's already been defined in connection.php, use something like 'requrl'
 $requrl = $_SERVER['REQUEST_URI'];
 
 $uri = trim($_SERVER['REQUEST_URI'], '/');
 $pieces = explode('/', $uri);
-$owner = sanitize($pieces[1]);
-$username = sanitize($pieces[2]);
+$owner = urldecode(sanitize($pieces[1]));
+$username = urldecode(sanitize($pieces[2]));
 
 if (!strip_tags(htmlEncode($requrl)) || substr_count($requrl, '/') != 3)
 {
@@ -29,7 +28,7 @@ if (!strip_tags(htmlEncode($requrl)) || substr_count($requrl, '/') != 3)
 
 $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$username' AND `owner` = '$owner'");
 
-if (mysqli_num_rows($result) < 1)
+if (mysqli_num_rows($result) == 0)
 {
     die("Panel does not exist.");
 }
@@ -38,6 +37,14 @@ while ($row = mysqli_fetch_array($result))
 {
     $secret = $row['secret'];
 }
+
+$result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$owner' AND `role` = 'seller'");
+
+if (mysqli_num_rows($result) == 0)
+{
+    die("Tell the application owner they need to upgrade to seller to utilize customer panel!");
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,8 +52,8 @@ while ($row = mysqli_fetch_array($result))
 	<?php
 echo '
 	    <title>KeyAuth - Login to ' . $username . ' Panel</title>
-	    <meta name="og:image" content="https://keyauth.com/assets/img/favicon.png">
-        <meta name="description" content="Login to Reset your key or download ' . $username . '">
+	    <meta name="og:image" content="https://cdn.keyauth.com/front/assets/img/favicon.png">
+        <meta name="description" content="Login to reset your HWID or download ' . $username . '">
         ';
 ?>
 	<meta charset="UTF-8">

@@ -13,15 +13,23 @@ $username = $_SESSION['username'];
 ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 $row = mysqli_fetch_array($result);
 
-            $banned = $row['banned'];
-			if (!is_null($banned))
-			{
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
-				session_destroy();
-				exit();
-			}
+$banned = $row['banned'];
+$lastreset = $row['lastreset'];
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
+{
+    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+    session_destroy();
+    exit();
+}
 $role = $row['role'];
 $_SESSION['role'] = $role;
+
+$expires = $row['expires'];
+$timeleft = false;
+if(in_array($role,array("developer", "seller")))
+{
+	$timeleft = expire_check($username, $expires);
+}
 
 if ($role == "Reseller")
 {
@@ -49,20 +57,28 @@ $dur = $row['duration'];
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Licenses</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/images/favicon.png">
-	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
+	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/dist/css/style.min.css" rel="stylesheet">
-	
+    <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-	<script src="https://cdn.keyauth.com/dashboard/unixtolocal.js"></script>
+	<script src="https://cdn.keyauth.uk/dashboard/unixtolocal.js"></script>
 
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	<script>
+	$(document).ready(function () {
+	//change selectboxes to selectize mode to be searchable
+	$("select").select2();
+	});
+	</script>
 	                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -71,7 +87,6 @@ $dur = $row['duration'];
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
 <?php
-
 if (!$_SESSION['app']) // no app selected yet
 
 {
@@ -173,17 +188,17 @@ else
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                              <!-- dark Logo text -->
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                              <!-- Light Logo text -->    
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -390,14 +405,31 @@ if (isset($_POST['change']))
                 <!-- File export -->
                 <div class="row">
                     <div class="col-12">
+					<div class="card"> <div class="card-body">
 					<?php heador($role, $link); ?>
+					</div></div>
+					<?php if($timeleft) { ?>
+					<div class="alert alert-warning alert-rounded">Your account subscription expires, in less than a month, check account details for exact date.</div>
+					<?php } ?>
 					<form method="POST">
-					<button data-toggle="modal" type="button" data-target="#create-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create keys</button>  <button data-toggle="modal" type="button" data-target="#import-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import keys</button>  <button data-toggle="modal" type="button" data-target="#comp-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Compensate</button><br><br><button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-download fa-sm text-white-50"></i> Download All keys</button>  <button name="delkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All keys</button>  <button name="delexpkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all expired keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Expired keys</button>  <button name="deleteallunused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all unused keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Unused Keys</button>  <button name="deleteallused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all used keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Used Keys</button>
+					<button data-toggle="modal" type="button" data-target="#create-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create keys</button>  <button data-toggle="modal" type="button" data-target="#import-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import keys</button>  <button data-toggle="modal" type="button" data-target="#comp-keys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Add Time</button><br><br><button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-download fa-sm text-white-50"></i> Download All keys</button>  <button name="delkeys" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All keys</button>  <button name="deleteallunused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all unused keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Unused Keys</button>  <button name="deleteallused" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to delete all used keys?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Used Keys</button>
                             </form>
 							<br>
-							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=oLj04x0k1RI" target="tutorial">https://youtube.com/watch?v=oLj04x0k1RI</a> You may also join Discord and ask for help!
-                                        </div>
-<div id="create-keys" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=oLj04x0k1RI" target="tutorial">https://youtube.com/watch?v=oLj04x0k1RI</a> You may also join Discord and ask for help!</div>
+							<?php
+							if (isset($_SESSION['keys_array']))
+							{							
+								$list = $_SESSION['keys_array'];
+								$keys = NULL;
+								for ($i = 0; $i < count($list); $i++)
+								{
+									$keys.="".$list[$i]."<br>";
+								}
+								echo "<div class=\"card\"> <div class=\"card-body\"> $keys </div> </div>";
+								unset($_SESSION['keys_array']);
+							}
+							?>
+<div id="create-keys" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -414,7 +446,7 @@ if (isset($_POST['change']))
 } ?>">
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Key Mask:</label>
+                                                        <label for="recipient-name" class="control-label">Key Mask: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Format keys are in. You can do custom by putting whatever, or do capital X or lowercase X for random character"></i></label>
                                                         <input type="text" class="form-control" value="<?php if (!is_null($format))
 {
     echo $format;
@@ -425,11 +457,22 @@ else
 } ?>" placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required maxlength="49">
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License Level:</label>
-                                                        <input type="text" class="form-control" name="level" placeholder="Default 1" value="<?php if (!is_null($lvl))
-{
-    echo $lvl;
-} ?>" >
+                                                        <label for="recipient-name" class="control-label">License Level: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="This needs to coordinate to the level of subscription you want to give to user when they redeem license. If it's blank, go to subscriptions tab and create subscription"></i></label>
+                                                        <select name="level" class="form-control">
+														<?php
+														($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+														if (mysqli_num_rows($result) > 0)
+															{
+																while ($row = mysqli_fetch_array($result))
+																{
+																	?>
+																	<option <?=$lvl == $row["level"] ? ' selected="selected"' : '';?>><?php echo $row["level"]; ?></option>
+																	<?php
+																}
+															}
+														
+														?>
+														</select>
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Note:</label>
@@ -440,11 +483,11 @@ else
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Expiry Unit:</label>
-                                                        <select name="unit" class="form-control"><option>Days</option><option>Minutes</option><option>Hours</option><option>Seconds</option><option>Weeks</option><option>Months</option><option>Years</option><option>Lifetime</option></select>
+                                                        <select name="expiry" class="form-control"><option value="86400">Days</option><option value="60">Minutes</option><option value="3600">Hours</option><option value="1">Seconds</option><option value="604800">Weeks</option><option value="2629743">Months</option><option value="31556926">Years</option><option value="315569260">Lifetime</option></select>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License Expiry Duration:</label>
-                                                        <input name="expiry" type="number" class="form-control" placeholder="Multiplied by selected Expiry unit" value="<?php if (!is_null($dur))
+                                                        <label for="recipient-name" class="control-label">License Duration: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="When the key is redeemed, a subscription with the duration of the key will be added to the user who redeemed the key."></i></label>
+                                                        <input name="duration" type="number" class="form-control" placeholder="Multiplied by selected Expiry unit" value="<?php if (!is_null($dur))
 {
     echo $dur;
 } ?>" required>
@@ -459,7 +502,7 @@ else
                                     </div>
 									</div>
 									
-									<div id="rename-app" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+									<div id="rename-app" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -475,14 +518,14 @@ else
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="renameapp">Add</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="renameapp">Rename</button>
 												</form>
                                             </div>
                                         </div>
                                     </div>
 									</div>
 					
-<div id="import-keys" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="import-keys" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -492,47 +535,46 @@ else
                                             <div class="modal-body">
                                                 <form method="post">
                                                     <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Keys:</label>
-                                                        <input class="form-control" name="keys" placeholder="Enter Keys In Format: key,level,days|key,level,days">
+                                                        <label for="recipient-name" class="control-label">Keys: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Make sure you have a subscription created that matches each level of the keys you're importing."></i></label>
+                                                        <input class="form-control" name="keys" placeholder="Format: KEYHERE,LVLHERE,DAYSHERE|KEYHERE,LVLHERE,DAYSHERE">
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="importkeys">Add</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="importkeys">Import</button>
 												</form>
                                             </div>
                                         </div>
                                     </div>
 									</div>
 									
-<div id="comp-keys" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="comp-keys" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Compensate Licenses</h4>
+												<h4 class="modal-title">Add Time</h4>
                                                 <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">Unit Of Time To Add:</label>
-                                                        <select name="unit" class="form-control"><option>Days</option><option>Minutes</option><option>Hours</option><option>Seconds</option><option>Weeks</option><option>Months</option><option>Years</option></select>
+                                                        <select name="expiry" class="form-control"><option value="86400">Days</option><option value="60">Minutes</option><option value="3600">Hours</option><option value="1">Seconds</option><option value="604800">Weeks</option><option value="2629743">Months</option><option value="31556926">Years</option><option value="315569260">Lifetime</option></select>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Time To Add:</label>
+                                                        <label for="recipient-name" class="control-label">Time To Add: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If the key is used, this will do nothing. Used keys are turned into users so if you want to add time to a user, go to users tab and click extend user(s)"></i></label>
                                                         <input class="form-control" name="time" placeholder="Multiplied by selected unit of time">
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="compp">Add</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="addtime">Add</button>
 												</form>
                                             </div>
                                         </div>
                                     </div>
 									</div>
                     <?php
-
 function license_masking($mask)
 {
     $mask_arr = str_split($mask);
@@ -599,138 +641,69 @@ if (isset($_POST['genkeys']))
     }
     $expiry = sanitize($_POST['expiry']);
 
-    if (!isset($expiry) || trim($expiry) == '')
+    if ($role == "tester")
     {
-        mysqli_close($link);
-        error("No Expiry Set!");
-        echo "<meta http-equiv='Refresh' Content='2;'>";
-        return;
-    }
-    else
-    {
-
-        if (!is_numeric($expiry))
+        $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `genby` = '" . $_SESSION['username'] . "'");
+        $currkeys = mysqli_num_rows($result);
+        if ($currkeys == 0 && $amount > 50)
         {
             mysqli_close($link);
-            error("Only Numbers Allowed For Expiry!");
+            error("Tester Plan Only Allows For One Key, please upgrade!");
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
+        else if ($currkeys == 0)
+        {
+            goto a;
+        }
+
+        if ($currkeys + $amount > 50)
+        {
+            mysqli_close($link);
+            error("Tester Plan Only Allows For One Key, please upgrade!");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+            return;
+        }
+        a:
+        }
+
+        $duration = sanitize($_POST['duration']);
+
+        $duration = $duration * $expiry;
+        $mask = sanitize($_POST['mask']);
+
+        // mask instead of format
+        // check if amount is over one and mask does not contain any Xs
+        if ($amount > 1 && strpos($mask, 'X') === false && strpos($mask, 'x') === false)
+        {
+            mysqli_close($link);
+            error("Can\'t do custom key with amount greater than one");
+            echo "<meta http-equiv='Refresh' Content='4;'>";
+            return;
+        }
+
+        $time = time();
+
+        $key = license($amount, $mask, $duration, $level, $link, $note);
+
+		if(!empty($logwebhook))
+		{
+        wh_log($logwebhook, "{$username} has created {$amount} keys", $webhookun);
+		}
+		
+        mysqli_query($link, "UPDATE `accounts` SET `format` = '$mask',`amount` = '$amount',`lvl` = '$level',`note` = '$note',`duration` = '" . sanitize($_POST['duration']) . "' WHERE `username` = '" . $_SESSION['username'] . "'");
+
+        if ($amount > 1)
+        {
+			$_SESSION['keys_array'] = $key;
+            echo "<meta http-equiv='Refresh' Content='0;'>";
+        }
         else
         {
-            if ($role == "tester")
-            {
-                $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `genby` = '" . $_SESSION['username'] . "'");
-                $currkeys = mysqli_num_rows($result);
-                if ($currkeys == 0 && $amount > 50)
-                {
-                    mysqli_close($link);
-                    error("Tester Plan Only Allows For One Key, please upgrade!");
-                    echo "<meta http-equiv='Refresh' Content='2;'>";
-                    return;
-                }
-                else if ($currkeys == 0)
-                {
-                    goto a;
-                }
-
-                if ($currkeys + $amount > 50)
-                {
-                    mysqli_close($link);
-                    error("Tester Plan Only Allows For One Key, please upgrade!");
-                    echo "<meta http-equiv='Refresh' Content='2;'>";
-                    return;
-                }
-                a:
-                }
-
-                $unit = sanitize($_POST['unit']);
-                switch($unit)
-		        {
-                case "Days":
-                    $multiplier = 86400;
-		        	break;
-                case "Minutes":
-                    $multiplier = 60;
-		        	break;
-                case "Hours":
-                    $multiplier = 3600;
-		        	break;
-                case "Seconds":
-                    $multiplier = 1;
-		        	break;
-                case "Weeks":
-                    $multiplier = 604800;
-		        	break;
-                case "Months":
-                    $multiplier = 2.628e+6;
-		        	break;
-                case "Years":
-                    $multiplier = 31535965.4396976;
-		        	break;
-				case "Lifetime":
-					$multiplier = 8.6391e+8;
-					break;
-		        }
-
-                $expiry = $expiry * $multiplier;
-                $mask = sanitize($_POST['mask']);
-
-                // mask instead of format
-                // check if amount is over one and mask does not contain any Xs
-                if ($amount > 1 && strpos($mask, 'X') === false && strpos($mask, 'x') === false)
-                {
-                    mysqli_close($link);
-                    error("Can\'t do custom key with amount greater than one");
-                    echo "<meta http-equiv='Refresh' Content='4;'>";
-                    return;
-                }
-
-                $time = time();
-
-                $key = license($amount, $mask, $expiry, $level, $link, $note);
-
-                if ($result) // change to affected rows
-                
-                {
-
-                    // webhook start
-                    $timestamp = date("c", strtotime("now"));
-
-                    $json_data = json_encode([
-                    // Message
-                    "content" => "" . $_SESSION['username'] . " has created {$amount} keys",
-
-                    // Username
-                    "username" => "KeyAuth Logs",
-
-                    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-                    $ch = curl_init("webhook_link_here");
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                        'Content-type: application/json'
-                    ));
-                    curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
-                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-                    curl_setopt($ch, CURLOPT_HEADER, 0);
-
-                    curl_exec($ch);
-                    curl_close($ch);
-                    // webhook end
-                    mysqli_query($link, "UPDATE `accounts` SET `format` = '$mask',`amount` = '$amount',`lvl` = '$level',`note` = '$note',`duration` = '".sanitize($_POST['expiry'])."' WHERE `username` = '" . $_SESSION['username'] . "'");
-
-                    if ($amount > 1)
-                    {
-                        echo "<meta http-equiv='Refresh' Content='0; url=downloadbulk.php?time=" . $time . "'>";
-                    }
-                    else
-                    {
-                        echo "<script>
+            echo "<script>
 navigator.clipboard.writeText('" . array_values($key) [0] . "');
 </script>";
-                        echo "<meta http-equiv='Refresh' Content='4;'>";
-                        echo '
+            echo '
             <script type=\'text/javascript\'>
                 
             const notyf = new Notyf();
@@ -743,33 +716,11 @@ navigator.clipboard.writeText('" . array_values($key) [0] . "');
                 
         </script>
         ';
-                    }
-                }
-            }
         }
     }
 
     if (isset($_POST['importkeys']))
     {
-        if ($role == "tester")
-        {
-            mysqli_close($link);
-            echo '
-                            <script type=\'text/javascript\'>
-                            
-                            const notyf = new Notyf();
-                            notyf
-                              .error({
-                                message: \'Cant import keys with tester account! Must upgrade.\',
-                                duration: 3500,
-                                dismissible: true
-                              });                
-                            
-                            </script>
-                            ';
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
 
         $keys = sanitize($_POST['keys']);
         // die($keys);
@@ -845,77 +796,31 @@ navigator.clipboard.writeText('" . array_values($key) [0] . "');
             $expiry = $third * 86400;
             mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$first','$expiry','Not Used','$second','" . $_SESSION['username'] . "','" . time() . "','" . $_SESSION['app'] . "')");
         }
+		success("Successfully imported licenses!");
+		echo "<meta http-equiv='Refresh' Content='3'>";
     }
 
-    if (isset($_POST['compp']))
+    if (isset($_POST['addtime']))
     {
 
         $time = sanitize($_POST['time']);
 
-        if (!is_numeric($time))
-        {
-            mysqli_close($link);
-            echo '
-                            <script type=\'text/javascript\'>
-                            
-                            const notyf = new Notyf();
-                            notyf
-                              .error({
-                                message: \'Numeric Value Only.\',
-                                duration: 3500,
-                                dismissible: true
-                              });                
-                            
-                            </script>
-                            ';
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
+        $expiry = sanitize($_POST['expiry']);
 
-        $unit = sanitize($_POST['unit']);
-        if ($unit == "Days")
-        {
-            $multiplier = 86400;
-        }
-        else if ($unit == "Minutes")
-        {
-            $multiplier = 60;
-        }
-        else if ($unit == "Hours")
-        {
-            $multiplier = 3600;
-        }
-        else if ($unit == "Seconds")
-        {
-            $multiplier = 1;
-        }
-        else if ($unit == "Weeks")
-        {
-            $multiplier = 604800;
-        }
-        else if ($unit == "Months")
-        {
-            $multiplier = 2.628e+6;
-        }
-        else if ($unit == "Years")
-        {
-            $multiplier = 31535965.4396976;
-        }
+        $time = $time * $expiry;
 
-        $time = $time * $multiplier;
-
-        mysqli_query($link, "UPDATE `keys` SET `expires` = `expires`+$time WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Used'");
+        mysqli_query($link, "UPDATE `keys` SET `expires` = `expires`+$time WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Not Used'");
 
         if (mysqli_affected_rows($link) != 0)
         {
             mysqli_close($link);
-            success("Compensated All Used Licenses!");
+            success("Added time to unused licenses!");
             echo "<meta http-equiv='Refresh' Content='2;'>";
         }
         else
         {
             mysqli_close($link);
-            error("Didn\'t find any used Licenses To Compenate!");
+            error("Failed to add time!");
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
@@ -981,21 +886,6 @@ navigator.clipboard.writeText('" . array_values($key) [0] . "');
         }
     }
 
-    if (isset($_POST['delexpkeys']))
-    {
-        $result = mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` != 'Not Used' AND `expires` < " . time() . "");
-        if (mysqli_affected_rows($link) != 0)
-        {
-            success("Deleted All Expired Keys!");
-        }
-        else
-        {
-            mysqli_close($link);
-            error("Didn\'t find any expired keys!");
-        }
-
-    }
-
     if (isset($_POST['deleteallunused']))
     {
         mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Not Used'");
@@ -1009,19 +899,19 @@ navigator.clipboard.writeText('" . array_values($key) [0] . "');
             error("Didn\'t find any used keys!");
         }
     }
-	
-	if (isset($_POST['deleteallused']))	
-    {	
-        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Used'");	
-        if (mysqli_affected_rows($link) != 0)	
-        {	
-            success("Deleted All Unused Keys!");	
-        }	
-        else	
-        {	
-            mysqli_close($link);	
-            error("Didn\'t find any used keys!");	
-        }	
+
+    if (isset($_POST['deleteallused']))
+    {
+        mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `status` = 'Used'");
+        if (mysqli_affected_rows($link) != 0)
+        {
+            success("Deleted All Unused Keys!");
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Didn\'t find any used keys!");
+        }
     }
 ?>
 
@@ -1041,7 +931,7 @@ $(document).ready(function(){
 
 
 </script>
-<div id="ban-key" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="ban-key" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -1097,8 +987,8 @@ $(document).ready(function(){
         foreach ($rows as $row)
         {
 
-        $key = $row['key'];
-		$badge = $row['status'] == "Not Used" ? 'badge badge-success' : 'badge badge-danger';
+            $key = $row['key'];
+            $badge = $row['status'] == "Not Used" ? 'badge badge-success' : 'badge badge-danger';
 ?>
 
 													<tr>
@@ -1113,7 +1003,7 @@ $(document).ready(function(){
                                                     <td><?php echo $row["note"] ?? "N/A"; ?></td>
 													
 													<td><script>document.write(convertTimestamp(<?php echo $row["usedon"]; ?>));</script></td>
-													<td><?php echo $row["usedby"]; ?></td>
+													<td><?php echo $row["usedby"] ?? "N/A"; ?></td>
                                                     <td><label class="<?php echo $badge; ?>"><?php echo $row['status']; ?></label></td>
 
                                             <form method="POST"><td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -1126,7 +1016,6 @@ $(document).ready(function(){
                                                 <div class="dropdown-divider"></div>
 												<button class="dropdown-item" name="editkey" value="<?php echo $key; ?>">Edit</button></div></td></tr></form>
 <?php
-
         }
     }
 
@@ -1173,9 +1062,10 @@ $(document).ready(function(){
     if (isset($_POST['deletekey']))
     {
         $key = sanitize($_POST['deletekey']);
-		mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // delete any subscriptions created with key
+        mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // delete any subscriptions created with key
         mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // delete key
         if (mysqli_affected_rows($link) != 0) // check query impacted something, else show error
+        
         {
             success("Key Successfully Deleted!");
             echo "<meta http-equiv='Refresh' Content='2'>";
@@ -1198,22 +1088,10 @@ $(document).ready(function(){
             echo "<meta http-equiv='Refresh' Content='2'>";
             return;
         }
-
-        $row = mysqli_fetch_array($result);
-        $hwid = $row["hwid"];
-        $ip = $row["ip"];
+		
         $reason = sanitize($_POST['reason']);
 
         mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // set key to banned
-
-        if ($hwid != NULL) // if hwid paramater not blank, blacklist it
-        {
-            mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','" . $_SESSION['app'] . "')");
-        }
-        if ($ip != NULL) // if ip paramater not blank, blacklist it
-        {
-            mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','" . $_SESSION['app'] . "')");
-        }
         success("Key Successfully Banned!");
         echo "<meta http-equiv='Refresh' Content='2'>";
     }
@@ -1224,6 +1102,7 @@ $(document).ready(function(){
 
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'");
         if (mysqli_num_rows($result) == 0) // check if key exists
+        
         {
             mysqli_close($link);
             error("Key not Found!");
@@ -1232,12 +1111,15 @@ $(document).ready(function(){
         }
 
         $row = mysqli_fetch_array($result);
-        $hwid = $row["hwid"];
-        $ip = $row["ip"];
+        $usedby = $row["usedby"];
+		
+		$status = "Used";
+		if(is_null($usedby))
+		{
+			$status = "Not Used";
+		}
 
-        mysqli_query($link, "UPDATE `keys` SET `banned` = NULL, `status` = 'Used' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // update key from banned to used
-        mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '" . $_SESSION['app'] . "'"); // remove any possible blacklists
-
+        mysqli_query($link, "UPDATE `keys` SET `banned` = NULL, `status` = '$status' WHERE `app` = '" . $_SESSION['app'] . "' AND `key` = '$key'"); // update key from banned to used
         success("Key Successfully Unbanned!");
         echo "<meta http-equiv='Refresh' Content='2'>";
     }
@@ -1256,8 +1138,8 @@ $(document).ready(function(){
         }
 
         $row = mysqli_fetch_array($result);
-		?>
-        <div id="edit-key" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
+?>
+        <div id="edit-key" class="modal show" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
@@ -1273,10 +1155,10 @@ $(document).ready(function(){
                                                     </div>
 													<div class="form-group">
                                                         <label for="recipient-name" class="control-label">License Duration Unit:</label>
-                                                        <select name="unit" class="form-control"><option>Days</option><option>Minutes</option><option>Hours</option><option>Seconds</option><option>Weeks</option><option>Months</option><option>Years</option><option>Lifetime</option></select>
+                                                        <select name="expiry" class="form-control"><option value="86400">Days</option><option value="60">Minutes</option><option value="3600">Hours</option><option value="1">Seconds</option><option value="604800">Weeks</option><option value="2629743">Months</option><option value="31556926">Years</option><option value="315569260">Lifetime</option></select>
                                                     </div>
 													<div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License Duration:</label>
+                                                        <label for="recipient-name" class="control-label">License Duration: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Editing license duration after the license has been used will do nothing. Used licenses become users so you need to go to users tab and click extend user(s) instead"></i></label>
                                                         <input name="duration" type="number" class="form-control" placeholder="Multiplied by selected Expiry unit">
                                                     </div>
                                             </div>
@@ -1292,43 +1174,19 @@ $(document).ready(function(){
     }
 
     if (isset($_POST['savekey']))
-    {	
+    {
         $key = sanitize($_POST['key']);
         $level = sanitize($_POST['level']);
-		$duration = sanitize($_POST['duration']);
-		
-		if(!empty($duration))
-		{
-		$unit = sanitize($_POST['unit']);
-		switch($unit)
-		{
-        case "Days":
-            $multiplier = 86400;
-			break;
-        case "Minutes":
-            $multiplier = 60;
-			break;
-        case "Hours":
-            $multiplier = 3600;
-			break;
-        case "Seconds":
-            $multiplier = 1;
-			break;
-        case "Weeks":
-            $multiplier = 604800;
-			break;
-        case "Months":
-            $multiplier = 2.628e+6;
-			break;
-        case "Years":
-            $multiplier = 31535965.4396976;
-			break;
-		}
+        $duration = sanitize($_POST['duration']);
 
-        $duration = $duration * $multiplier;
-		
-		mysqli_query($link, "UPDATE `keys` SET `expires` = '$duration' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
-		}
+        if (!empty($duration))
+        {
+            $expiry = sanitize($_POST['expiry']);
+
+            $duration = $duration * $expiry;
+
+            mysqli_query($link, "UPDATE `keys` SET `expires` = '$duration' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+        }
 
         mysqli_query($link, "UPDATE `keys` SET `level` = '$level' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
 
@@ -1376,33 +1234,33 @@ $(document).ready(function(){
     <!-- ============================================================== -->
     
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.init.dark.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app-style-switcher.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.init.dark.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/waves.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/sidebarmenu.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="https://cdn.keyauth.com/dashboard/dist/js/feather.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/custom.min.js"></script>
+   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-		<script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
+		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -1414,7 +1272,7 @@ $(document).ready(function(){
   
 					
 
-<script src="https://cdn.keyauth.com/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 <script>
                         

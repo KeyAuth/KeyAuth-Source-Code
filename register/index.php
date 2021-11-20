@@ -20,6 +20,15 @@ if (isset($_SESSION['username']))
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/util.css">
 	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/main.css">
+	<script src="https://www.google.com/recaptcha/api.js?render=6LdW_eAbAAAAACfb-xQmGOsinqox3Up0R4cFbSRj"></script>
+    <script>
+        grecaptcha.ready(function () {
+            grecaptcha.execute('6LdW_eAbAAAAACfb-xQmGOsinqox3Up0R4cFbSRj', { action: 'contact' }).then(function (token) {
+                var recaptchaResponse = document.getElementById('recaptchaResponse');
+                recaptchaResponse.value = token;
+            });
+        });
+    </script>
 </head>
 <body>
 	<div class="limiter">
@@ -43,9 +52,11 @@ if (isset($_SESSION['username']))
 					
 					
 					<div class="wrap-input100 validate-input m-b-16">
-						<input class="input100" type="password" name="password" minlength="5" placeholder="Password" required>
+						<input class="input100" type="password" name="password" pattern='^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&?,.-_~` "]).*$' title="Please increase your password strength." placeholder="Password" required>
 						<span class="focus-input100"></span>
 					</div>
+					
+					<input type="hidden" name="recaptcha_response" id="recaptchaResponse">
 					
 					<div class="flex-sb-m w-full p-t-3 p-b-24">
 
@@ -72,6 +83,17 @@ if (isset($_SESSION['username']))
   <?php
 if (isset($_POST['register']))
 {
+	// you can leave captcha, I've allowed any hostname
+    $recaptcha_response = sanitize($_POST['recaptcha_response']);
+    $recaptcha = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=6LdW_eAbAAAAALg8QLx524hDcnYOkZYIaCSmqH_x&response=' . $recaptcha_response);
+    $recaptcha = json_decode($recaptcha);
+    
+    // Take action based on the score returned:
+    if ($recaptcha->score < 0.5)
+    {
+        error("Human Check Failed!");
+        return;
+    }
 
     $username = sanitize($_POST['username']);
 
@@ -89,19 +111,19 @@ if (isset($_POST['register']))
 
     $email_check = mysqli_query($link, "SELECT * FROM `accounts` WHERE `email` = '$email'") or die(mysqli_error($link));
     $do_email_check = mysqli_num_rows($email_check);
-    // $row = mysqli_fetch_array($email_check);
     if ($do_email_check > 0)
     {
         error('Email already used by username: ' . mysqli_fetch_array($email_check) ['username'] . '');
         return;
     }
+	
     $pass_encrypted = password_hash($password, PASSWORD_BCRYPT);
 
     $ownerid = generateRandomString();
 
-    $expires = time() + 3.154e+7; // set expiry to year in advance
-    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `img`,`balance`, `expires`, `registrationip`) VALUES ('$username', '$email', '$pass_encrypted', '$ownerid','tester','','','https://i.imgur.com/TrwYFBa.png','1', '$expires', '$ip')") or die(mysqli_error($link));
+    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `img`,`balance`, `expires`, `registrationip`) VALUES ('$username', '$email', '$pass_encrypted', '$ownerid','tester','','','https://i.imgur.com/TrwYFBa.png','1', NULL, '$ip')") or die(mysqli_error($link));
 
+	$_SESSION['logindate'] = time();
     $_SESSION['username'] = $username;
     $_SESSION['email'] = $email;
     $_SESSION['ownerid'] = $ownerid;

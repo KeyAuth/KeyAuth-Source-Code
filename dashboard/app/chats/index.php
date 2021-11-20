@@ -1,49 +1,49 @@
 <?php
-
-ob_start();
-
 include '../../../includes/connection.php';
 include '../../../includes/functions.php';
 session_start();
 
-if (!isset($_SESSION['username'])) {
-         header("Location: ../../../login/");
-        exit();
+if (!isset($_SESSION['username']))
+{
+    header("Location: ../../../login/");
+    exit();
 }
 
+$username = $_SESSION['username'];
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+$row = mysqli_fetch_array($result);
 
-	        $username = $_SESSION['username'];
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-            $row = mysqli_fetch_array($result);
-            
-            $banned = $row['banned'];
-			$lastreset = $row['lastreset'];
+$banned = $row['banned'];
+$lastreset = $row['lastreset'];
 if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
-			{
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
-				session_destroy();
-				exit();
-			}
-        
-            $role = $row['role'];
-            $_SESSION['role'] = $role;
-			
-			$expires = $row['expires'];
-			$timeleft = false;
+{
+    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+    session_destroy();
+    exit();
+}
+$role = $row['role'];
+$_SESSION['role'] = $role;
+
+$expires = $row['expires'];
+$timeleft = false;
 if(in_array($role,array("developer", "seller")))
 {
 	$timeleft = expire_check($username, $expires);
 }
-			
-			    if($role == "Reseller")
+
+if ($role == "Reseller")
 {
     die('Resellers Not Allowed Here');
 }
-			
-			$darkmode = $row['darkmode'];
 
-			
-                            
+$darkmode = $row['darkmode'];
+
+$format = $row['format'];
+$amt = $row['amount'];
+$lvl = $row['lvl'];
+$note = $row['note'];
+$dur = $row['duration'];
+
 ?>
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -55,7 +55,7 @@ if(in_array($role,array("developer", "seller")))
     <meta name="keywords" content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 4 admin, bootstrap 4, css3 dashboard, bootstrap 4 dashboard, xtreme admin bootstrap 4 dashboard, frontend, responsive bootstrap 4 admin template, material design, material dashboard bootstrap 4 dashboard template">
     <meta name="description" content="Xtreme is powerful and clean admin dashboard template, inpired from Google's Material Design">
     <meta name="robots" content="noindex,nofollow">
-    <title>KeyAuth - Logs</title>
+    <title>KeyAuth - Chats</title>
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
 	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
@@ -65,7 +65,6 @@ if(in_array($role,array("developer", "seller")))
     <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
-	
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
@@ -79,7 +78,8 @@ if(in_array($role,array("developer", "seller")))
 	//change selectboxes to selectize mode to be searchable
 	$("select").select2();
 	});
-	</script>						
+	</script>
+	                    
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -87,24 +87,24 @@ if(in_array($role,array("developer", "seller")))
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
 <?php
-
-
 if (!$_SESSION['app']) // no app selected yet
+
 {
-    
 
     $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "'"); // select all apps where owner is current user
     if (mysqli_num_rows($result) > 0) // if the user already owns an app, proceed to change app or load only app
+    
     {
 
         if (mysqli_num_rows($result) == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
+        
         {
             $row = mysqli_fetch_array($result);
             $_SESSION['name'] = $row["name"];
             $_SESSION['app'] = $row["secret"];
             $_SESSION['secret'] = $row["secret"];
-            echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#content").fadeIn(1900);
@@ -112,41 +112,45 @@ if (!$_SESSION['app']) // no app selected yet
         });             
                 
                 </script>
-                ';
+                <?php
         }
-        else // otherwise if the user has more than one app, choose which app to load
+        else
+        // otherwise if the user has more than one app, choose which app to load
+        
         {
-            echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#changeapp").fadeIn(1900);
         });             
                 
                 </script>
-                ';
+                <?php
         }
     }
-    else // if user doesnt have any apps created, take them to the screen to create an app
+    else
+    // if user doesnt have any apps created, take them to the screen to create an app
     
     {
-        echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#createapp").fadeIn(1900);
         });             
                 
                 </script>
-                ';
+                <?php
     }
 
 }
-else // app already selected, load page like normal
+else
+// app already selected, load page like normal
 
 {
-    echo '
-                <script type=\'text/javascript\'>
+?>
+                <script type='text/javascript'>
                 
                         $(document).ready(function(){
         $("#content").fadeIn(1900);
@@ -154,12 +158,12 @@ else // app already selected, load page like normal
         });             
                 
                 </script>
-                ';
+                <?php
 }
 
 ?>
 </head>
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php echo (($darkmode ? 1 : 0) ? 'light' : 'dark'); ?>">
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -269,29 +273,8 @@ else // app already selected, load page like normal
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
                         <?php
-						sidebar($role);
-		
-		if (isset($_POST['dellogs']))
-        {
-            $result = mysqli_query($link, "DELETE FROM `logs` WHERE `logapp` = '".$_SESSION['app']."'");
-            if($result)
-            {
-                                                    echo '
-                            <script type=\'text/javascript\'>
-                            
-                            const notyf = new Notyf();
-                            notyf
-                              .success({
-                                message: \'Deleted All Logs!\',
-                                duration: 3500,
-                                dismissible: true
-                              });                
-                            
-                            </script>
-                            ';      
-            }
-        }
-						?>
+sidebar($role);
+?>
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -311,7 +294,7 @@ else // app already selected, load page like normal
             <div class="page-breadcrumb">
                 <div class="row">
                     <div class="col-5 align-self-center">
-                        <h4 class="page-title">Logs</h4>
+                        <h4 class="page-title">Chats</h4>
                     </div>
                 </div>
             </div>
@@ -345,20 +328,24 @@ else // app already selected, load page like normal
                     <form class="text-left" method="POST" action="">
 <select class="form-control" name="taskOption">
         <?php
-        $username = $_SESSION['username'];
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    echo "  <option>". $row["name"]. "</option>";
-                }
-            }
-        
-        ?>
-</select>    
-    <!-- Do SQL query and print them out -->
+$result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '$username'");
 
+$rows = array();
+while ($r = mysqli_fetch_assoc($result))
+{
+    $rows[] = $r;
+}
+
+foreach ($rows as $row)
+{
+
+    $appname = $row['name'];
+?>
+        <option><?php echo $appname; ?></option>
+        <?php
+}
+?>
+</select>
   <br>
   <br>
    <button type="submit" name="change" class="btn btn-primary" style="color:white;">Submit</button><a style="padding-left:5px;color:#4e73df;" id="createe">Create Application</a>
@@ -380,34 +367,34 @@ $(document).ready(function(){
 
 </script>
    <?php
-           if (isset($_POST['change']))
+if (isset($_POST['change']))
+{
+    $selectOption = sanitize($_POST['taskOption']);
+    ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
+    if (mysqli_num_rows($result) > 0)
+    {
+        while ($row = mysqli_fetch_array($result))
         {
-            $selectOption = sanitize($_POST['taskOption']);
-        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$selectOption' AND `owner` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
-                    $secret = $row["secret"];
-                    $sellerkey = $row["sellerkey"];
-                }
-            }
-            else
-            {
-							mysqli_close($link);
-							error("You dont own application!");
-                            echo "<meta http-equiv='Refresh' Content='2'>";
-							return;
-            }
-            $_SESSION['secret'] = $secret;
-            $_SESSION['app'] = $secret;
-            $_SESSION['name'] = $selectOption;
-            $_SESSION['sellerkey'] = $sellerkey;
-			
-            success("You have changed Applications!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
+            $secret = $row["secret"];
+            $sellerkey = $row["sellerkey"];
         }
-   ?>
+    }
+    else
+    {
+        mysqli_close($link);
+        error("You don\'t own application!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
+    $_SESSION['secret'] = $secret;
+    $_SESSION['app'] = $secret;
+    $_SESSION['name'] = $selectOption;
+    $_SESSION['sellerkey'] = $sellerkey;
+
+    success("You have changed Applications!");
+    echo "<meta http-equiv='Refresh' Content='2;'>";
+}
+?>
    </div>
    
             <!-- ============================================================== -->
@@ -424,35 +411,141 @@ $(document).ready(function(){
 					<?php if($timeleft) { ?>
 					<div class="alert alert-warning alert-rounded">Your account subscription expires, in less than a month, check account details for exact date.</div>
 					<?php } ?>
-					<form method="post">
-					<button name="dellogs" onclick="return confirm('Are you sure you want to delete all logs?')" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Logs</button></form>
+					<form method="POST">
+					<button data-toggle="modal" type="button" data-target="#create-channel" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Channel</button>  <button data-toggle="modal" type="button" data-target="#clear-channel" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Clear channel</button>  <button data-toggle="modal" type="button" data-target="#unmute-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-undo fa-sm text-white-50"></i> Unmute User</button>
+                            </form>
 							<br>
-							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=uJ0Umy_C6Fg" target="tutorial">https://youtube.com/watch?v=uJ0Umy_C6Fg</a> You may also join Discord and ask for help!
-                                        </div>
-										
-										<div id="rename-app" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=oLj04x0k1RI" target="tutorial">https://youtube.com/watch?v=oLj04x0k1RI</a> You may also join Discord and ask for help!</div>
+<div id="create-channel" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Rename Application</h4>
+												<h4 class="modal-title">Add Channels</h4>
                                                 <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Name:</label>
-                                                        <input type="text" class="form-control" name="name" placeholder="New Application Name">
+                                                        <input class="form-control" name="name" placeholder="Chat channel name">
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Chat cooldown Unit:</label>
+                                                        <select name="unit" class="form-control"><option value="1">Seconds</option><option value="60">Minutes</option><option value="3600">Hours</option><option value="86400">Days</option><option value="604800">Weeks</option><option value="2629743">Months</option><option value="31556926">Years</option><option value="315569260">Lifetime</option></select>
+                                                    </div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Chat cooldown: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Delay users will have to wait to send their next message"></i></label>
+                                                        <input name="delay" type="number" class="form-control" placeholder="Multiplied by selected delay unit" required>
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="renameapp">Add</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="addchannel">Add</button>
 												</form>
                                             </div>
                                         </div>
                                     </div>
 									</div>
-                    
+									
+									<div id="unmute-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex align-items-center">
+												<h4 class="modal-title">Unmute User</h4>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="post">
+                                                    <div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Name:</label>
+                                                        <select class="form-control" name="user">
+														<?php
+														($result = mysqli_query($link, "SELECT * FROM `chatmutes` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
+
+														$rows = array();
+														while ($r = mysqli_fetch_assoc($result))
+														{
+															$rows[] = $r;
+														}
+												
+														foreach ($rows as $row)
+														{
+														?>
+														<option><?php echo $row["user"]; ?></option>
+														<?php } ?>
+														</select>
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="unmuteuser">Unmute</button>
+												</form>
+                                            </div>
+                                        </div>
+                                    </div>
+									</div>
+					
+<div id="clear-channel" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex align-items-center">
+												<h4 class="modal-title">Clear Channel</h4>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="post">
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Channel name:</label>
+                                                        <select class="form-control" name="channel">
+														<?php
+														($result = mysqli_query($link, "SELECT * FROM `chats` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
+
+														$rows = array();
+														while ($r = mysqli_fetch_assoc($result))
+														{
+															$rows[] = $r;
+														}
+												
+														foreach ($rows as $row)
+														{
+														?>
+														<option><?php echo $row["name"]; ?></option>
+														<?php } ?>
+														</select>
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="clearchannel">Clear</button>
+												</form>
+                                            </div>
+                                        </div>
+                                    </div>
+									</div>
+                    <?php
+
+	if (isset($_POST['addchannel']))
+	{
+		if($role != "seller")
+		{
+			error("You must upgrade to seller to create chat channels");
+			echo "<meta http-equiv='Refresh' Content='3'>";
+			return;
+		}
+
+		$name = sanitize($_POST['name']);
+		$unit = sanitize($_POST['unit']);
+		$delay = sanitize($_POST['delay']);
+	
+		$delay = $delay * $unit;
+		
+		mysqli_query($link, "INSERT INTO `chats` (`name`, `delay`, `app`) VALUES ('$name','$delay','" . $_SESSION['app'] . "')");
+		
+		success("Successfully created channel!");
+		echo "<meta http-equiv='Refresh' Content='3'>";
+    
+	}
+?>
 
 <script type="text/javascript">
 
@@ -470,52 +563,94 @@ $(document).ready(function(){
 
 
 </script>
+<div id="mute-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex align-items-center">
+												<h4 class="modal-title">Mute User</h4>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="post"> 
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Unit Of Time Muted:</label>
+                                                        <select name="muted" class="form-control"><option value="86400">Days</option><option value="60">Minutes</option><option value="3600">Hours</option><option value="1">Seconds</option><option value="604800">Weeks</option><option value="2629743">Months</option><option value="31556926">Years</option><option value="315569260">Lifetime</option></select>
+														<input type="hidden" class="muteuser" name="user">
+													</div>
+                                                    <div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Time Muted:</label>
+                                                        <input class="form-control" name="time" placeholder="Multiplied by selected unit of time muted">
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="muteuser">Ban</button>
+												</form>
+                                            </div>
+                                        </div>
+                                    </div>
+									</div>
                         <div class="card">
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table id="file_export" class="table table-striped table-bordered display">
                                         <thead>
                                             <tr>
-<th>Log Date</th>
-<th>Log Data</th>
-<th>Credential</th>
-<th>Device Name</th>
+<th>Author</th>
+<th>Message</th>
+<th>Time Sent</th>
+<th>Channel</th>
+<th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
+
 <?php
-		if($_SESSION['app']) {
-        ($result = mysqli_query($link, "SELECT * FROM `logs` WHERE `logapp` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
-        if (mysqli_num_rows($result) > 0)
-            {
-                while ($row = mysqli_fetch_array($result))
-                {
+    if ($_SESSION['app'])
+    {
+        ($result = mysqli_query($link, "SELECT * FROM `chatmsgs` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
+
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result))
+        {
+            $rows[] = $r;
+        }
+
+        foreach ($rows as $row)
+        {
+
+            $user = $row['author'];
+?>
+
+													<tr>
+
+                                                    <td><?php echo $user; ?></td>
+													
+													<td><?php echo $row["message"]; ?></td>
+													
+													<td><script>document.write(convertTimestamp(<?php echo $row["timestamp"]; ?>));</script></td>
+                                                    
+                                                    <td><?php echo $row["channel"]; ?></td>
+													
+                                            <form method="POST"><td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Manage
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <button class="dropdown-item" name="deletemsg" value="<?php echo $row["message"]; ?>">Delete</button>
+                                                <a class="dropdown-item" data-toggle="modal" data-target="#mute-user" onclick="muteuser('<?php echo $user; ?>')">Mute</a></div></td></tr></form>
+<?php
+        }
+    }
 
 ?>
-                                                    <tr>
-													
-													<td><script>document.write(convertTimestamp(<?php echo $row["logdate"]; ?>));</script></td>
-                                                    <td><?php echo $row["logdata"]; ?></td>
-													
-                                                    <td><?php echo $row["credential"] ?? "N/A"; ?></td>
-													
-													<td><?php echo $row["pcuser"] ?? "N/A"; ?></td>
-                                                    </tr></form>
-												<?php
-                                                }
-
-                                            }
-                                            
-		}
-
-                                        ?>
                                         </tbody>
                                         <tfoot>
                                             <tr>
-<th>Log Date</th>
-<th>Log Data</th>
-<th>Credential</th>
-<th>Device Name</th>
+<th>Author</th>
+<th>Message</th>
+<th>Time Sent</th>
+<th>Channel</th>
+<th>Action</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -541,6 +676,80 @@ $(document).ready(function(){
                 <!-- Setting defaults -->
                 
                 <!-- Footer callback -->
+                
+                <?php
+    if (isset($_POST['deletemsg']))
+    {
+        $msg = sanitize($_POST['deletemsg']);
+        mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '" . $_SESSION['app'] . "' AND `message` = '$msg'");
+        if (mysqli_affected_rows($link) != 0) // check query impacted something, else show error
+        
+        {
+            success("Message Successfully Deleted!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Failed To Delete Message!");
+        }
+    }
+    if (isset($_POST['muteuser']))
+    {
+        $user = sanitize($_POST['user']);
+
+        $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '" . $_SESSION['app'] . "' AND `username` = '$user'");
+        if (mysqli_num_rows($result) == 0) // check if key exists
+        {
+            mysqli_close($link);
+            error("User not Found!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+            return;
+        }
+		
+		$muted = sanitize($_POST['muted']);
+        $time = sanitize($_POST['time']);
+		$time = $time * $muted + time();
+
+        mysqli_query($link, "INSERT INTO `chatmutes` (`user`, `time`, `app`) VALUES ('$user','$time','" . $_SESSION['app'] . "')");
+        success("Key Successfully Banned!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+    }
+	
+	if (isset($_POST['unmuteuser']))
+    {
+        $user = sanitize($_POST['user']);
+        mysqli_query($link, "DELETE FROM `chatmutes` WHERE `app` = '" . $_SESSION['app'] . "' AND `user` = '$user'"); // delete any subscriptions created with key
+        if (mysqli_affected_rows($link) != 0) // check query impacted something, else show error
+        
+        {
+            success("User Successfully Unmuted!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Failed To Unmute User!");
+        }
+    }
+	
+	if (isset($_POST['clearchannel']))
+    {
+        $channel = sanitize($_POST['channel']);
+        mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '" . $_SESSION['app'] . "' AND `channel` = '$channel'"); // delete any subscriptions created with key
+        if (mysqli_affected_rows($link) != 0) // check query impacted something, else show error
+        
+        {
+            success("Channel Successfully Cleared!");
+            echo "<meta http-equiv='Refresh' Content='2'>";
+        }
+        else
+        {
+            mysqli_close($link);
+            error("Failed To Clear Channel!");
+        }
+    }
+?>
                 
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->
@@ -620,5 +829,13 @@ $(document).ready(function(){
 					
 
 <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+
+<script>
+                        
+		function muteuser(key) {
+		 var muteuser = $('.muteuser');
+		 muteuser.attr('value', key);
+      }
+                    </script>
 </body>
 </html>

@@ -16,6 +16,7 @@ $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '".$_SESSIO
 			
 			$name = $row["name"];
 			$download = $row["download"];
+			$appcooldown = $row["cooldown"];
 
     
 
@@ -279,12 +280,12 @@ $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '".$_SESSIO
 
         $today = time();
 
-        $cooldown = $today + 604800;
+        $cooldown = $today + $appcooldown;
 
         mysqli_query($link, "UPDATE `users` SET `hwid` = '', `cooldown` = '$cooldown' WHERE `app` = '".$_SESSION['panelapp']."' AND `username` = '".$_SESSION['un']."'");
 
-                            success("Reset HWID!");
-                            echo "<meta http-equiv='Refresh' Content='2;'>";   
+        success("Reset HWID!");
+        echo "<meta http-equiv='Refresh' Content='2;'>";   
 
         }
 
