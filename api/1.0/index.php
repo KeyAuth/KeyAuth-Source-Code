@@ -655,7 +655,7 @@ switch (hex2bin($_POST['type']))
 		
 		$message = sanitize(Decrypt($_POST['message'], $enckey));
 		mysqli_query($link, "INSERT INTO `chatmsgs` (`author`, `message`, `timestamp`, `channel`,`app`) VALUES ('$credential','$message','".time()."','$channel','$secret')");
-		mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = 'testing' AND `app` = '171a43c3e76d9e6163880bc54c7078b1c045aefd94fad652a89868c0c1845dc3' ORDER BY `id` DESC LIMIT 20) foo );");
+		mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '$secret' AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = 'testing' AND `app` = '$secret' ORDER BY `id` DESC LIMIT 20) foo );");
         die(Encrypt(json_encode(array(
             "success" => true,
             "message" => "Successfully sent chat message"
