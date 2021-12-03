@@ -634,18 +634,38 @@ switch ($type)
         }
 	case 'resetpw':
         mysqli_query($link, "UPDATE `users` SET `password` = NULL WHERE `username` = '$user' AND `app` = '$secret'");
-        mysqli_close($link);
+
+	if (mysqli_affected_rows($link) != 0)
+	{
+		mysqli_close($link);
+        if ($format == "text")
+		{
+			die("Password reset successful");
+		}
+		else
+		{
+			die(json_encode(array(
+				"success" => true,
+				"message" => "Password reset successful"
+			)));
+		}
+	}
+	else
+	{
+		http_response_code(500);
+		mysqli_close($link);
         if ($format == "text")
         {
-            die("Password reset successful");
+            die("Failed To reset password");
         }
         else
         {
             die(json_encode(array(
-                "success" => true,
-                "message" => "Password reset successful"
+                "success" => false,
+                "message" => "Failed To reset password"
             )));
         }
+	}	
     case 'editvar':
         $varid = strip_tags(trim(mysqli_real_escape_string($link, $_GET['varid'])));
         $data = strip_tags(trim(mysqli_real_escape_string($link, $_GET['data'])));
