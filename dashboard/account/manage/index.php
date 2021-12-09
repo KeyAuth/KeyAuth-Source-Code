@@ -611,7 +611,7 @@ if (isset($_POST['saveacc']))
     $keylevels = sanitize($_POST['keylevels']) ?? "N/A";
 	
 	$email = sanitize($_POST['email']);
-	$pw = password_hash(sanitize($_POST['pw']), PASSWORD_BCRYPT);
+	$pw = sanitize($_POST['pw']);
 	
 	if(!empty($email))
 	{
@@ -627,6 +627,7 @@ if (isset($_POST['saveacc']))
 	}
 	if(!empty($pw))
 	{
+		$pw = password_hash($pw, PASSWORD_BCRYPT);
 		mysqli_query($link, "UPDATE `accounts` SET password = '$pw' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
 	}
 
