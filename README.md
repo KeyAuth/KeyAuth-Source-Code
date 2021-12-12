@@ -5,7 +5,7 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 
 Credits to https://github.com/fingu/c_auth for his client examples he gave me permission to use. Much appreciated <3
 You can use the changes.sql file to modify your current database if you had KeyAuth source setup before an update.
-# Donate
+## Donate ##
 |BTC|ETH|LTC|
 |---|---|---|
 |1PnYzj5AsP14MvLAeBpnpGQS4C3Md1sWin|Lc3KhDNNr65HzYGzQajfYCprJRLaGkKiHz|0xC4ED0251eC83Ab95cd634D0aaAE79942720A1F4d|
