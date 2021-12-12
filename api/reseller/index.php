@@ -1,6 +1,14 @@
 <?php
 
 include '../../includes/connection.php';
+include '../../includes/functions.php';
+
+
+
+if (!isset($_SERVER["HTTP_X_SELLIX_SIGNATURE"]) && !isset($_SERVER["HTTP_X_SHOPPY_SIGNATURE"]))
+{
+	die("Request isn't coming from Sellix or Shoppy.");
+}
 
 if (isset($_SERVER["HTTP_X_SELLIX_SIGNATURE"]))
 {
@@ -20,7 +28,7 @@ if (isset($_SERVER["HTTP_X_SELLIX_SIGNATURE"]))
 	$lifetimeproduct = $row["sellixlifetimeproduct"];
 
     $payload = file_get_contents('php://input');
-    $header_signature = $_SERVER["HTTP_X_SELLIX_SIGNATURE"];
+    $header_signature = sanitize($_SERVER["HTTP_X_SELLIX_SIGNATURE"]);
     $signature = hash_hmac('sha512', $payload, $secret);
     if (!hash_equals($signature, $header_signature))
     { // if the sellix webhook secret the request was sent from didn't match the one set in the database
@@ -30,7 +38,7 @@ if (isset($_SERVER["HTTP_X_SELLIX_SIGNATURE"]))
     $json = json_decode($payload);
     $data = $json->data;
     $custom = $data->custom_fields; // getting custom fields, the hidden fields on KeyAuth sellix embed which provide sellix the KeyAuth username
-    $result = mysqli_query($link, "SELECT `balance` FROM `accounts` WHERE `username` = '" . $custom->username . "' AND `app` = '$name'");
+    $result = mysqli_query($link, "SELECT `balance` FROM `accounts` WHERE `username` = '" . sanitize($custom->username) . "' AND `app` = '$name'");
 
     if (mysqli_num_rows($result) == 0)
     { // if reseller not found
@@ -47,9 +55,9 @@ if (isset($_SERVER["HTTP_X_SELLIX_SIGNATURE"]))
     $sixmonth = $balance[4];
     $lifetime = $balance[5];
 
-    $amount = $data->quantity; // find quantity of keys purchased
+    $amount = sanitize($data->quantity); // find quantity of keys purchased
     // then given the duration of keys they purchased, add to their balance
-    switch ($data->product_id)
+    switch (sanitize($data->product_id))
     {
 		case $dayproduct:
 			$day = $day + $amount;
@@ -69,7 +77,7 @@ if (isset($_SERVER["HTTP_X_SELLIX_SIGNATURE"]))
 
     $balance = $day . '|' . $week . '|' . $month . '|' . $threemonth . '|' . $sixmonth . '|' . $lifetime;
     // set balance
-    mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '" . $custom->username . "'");
+    mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '" . sanitize($custom->username) . "'");
     die("Success: Reseller Balance Increased");
 }
 
@@ -92,18 +100,17 @@ $monthproduct = $row["shoppymonthproduct"];
 $lifetimeproduct = $row["shoppylifetimeproduct"];
 
 $payload = file_get_contents('php://input');
-$header_signature = $_SERVER["HTTP_X_SHOPPY_SIGNATURE"];
+$header_signature = sanitize($_SERVER["HTTP_X_SHOPPY_SIGNATURE"]);
 $signature = hash_hmac('sha512', $payload, $secret);
 if (!hash_equals($signature, $header_signature))
 { 
 	// if the shoppy webhook secret the request was sent from didn't match the one set in the database
     die("Failure: authentication with shoppy secret failed");
 }
-
 $json = json_decode($payload);
+$un = sanitize($json->data->order->custom_fields[0]->value);
 
-$un = $json->data->order->custom_fields[0]->value;
-$productid = $json->data->order->product_id;
+$productid = sanitize($json->data->order->product_id);
 
 $result = mysqli_query($link, "SELECT `balance` FROM `accounts` WHERE `username` = '$un' AND `app` = '$name'");
 
@@ -123,7 +130,7 @@ $threemonth = $balance[3];
 $sixmonth = $balance[4];
 $lifetime = $balance[5];
 
-$amount = $json->data->order->quantity; // find quantity of keys purchased
+$amount = sanitize($json->data->order->quantity); // find quantity of keys purchased
 // then given the duration of keys they purchased, add to their balance
 switch ($productid)
 {
