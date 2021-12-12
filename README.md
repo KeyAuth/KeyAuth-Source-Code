@@ -1,11 +1,12 @@
 # KeyAuth-Source-Code
 KeyAuth is an open source authentication system with cloud-hosted subscriptions available aswell, view at https://keyauth.com
 <br>
-*You're not allowed to sell KeyAuth. source made avaliable only for personal use.*
+*You're not allowed to sell KeyAuth. source made avaliable only for you to use*
 
 Credits to https://github.com/fingu/c_auth for his client examples he gave me permission to use. Much appreciated <3
+<br>
 You can use the changes.sql file to modify your current database if you had KeyAuth source setup before an update.
-# Donate
+## Donate ##
 |BTC|ETH|LTC|
 |---|---|---|
 |1PnYzj5AsP14MvLAeBpnpGQS4C3Md1sWin|Lc3KhDNNr65HzYGzQajfYCprJRLaGkKiHz|0xC4ED0251eC83Ab95cd634D0aaAE79942720A1F4d|
@@ -15,7 +16,7 @@ _Donations of all sizes welcome - Show proof of donation for exclusive role in D
 You may purchase a subscription for cheaper than the cost of hosting this yourself at https://keyauth.com/
 You may also use our tester subscription which is completley free with less features.
 
-No support is given towards setup of self-hosted KeyAuth. You may recieve support if you have an active cloud-hosted subscription of KeyAuth though, https://keyauth.com/discord
+No support is given towards setup of this. Feel free to create issue though if code is broken https://github.com/KeyAuth/KeyAuth-Source-Code/issues/new
 
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/KeyAuth/KeyAuth-Source-Code?label=CodeFactor&cacheSeconds=3600)](https://www.codefactor.io/repository/github/KeyAuth/KeyAuth-Source-Code)
 [![Release](https://img.shields.io/github/v/release/KeyAuth/KeyAuth-Source-Code?label=Release&color=brightgreen&cacheSeconds=3600)](https://github.com/KeyAuth/KeyAuth-Source-Code/releases/latest)
