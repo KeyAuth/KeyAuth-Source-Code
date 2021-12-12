@@ -711,7 +711,7 @@ $(document).ready(function(){
                                             <div class="dropdown-menu">
                                                 <form method="post"><button class="dropdown-item" name="deleteuser" value="<?php echo $user; ?>">Delete</button>
 												<button class="dropdown-item" name="resetuser" value="<?php echo $user; ?>">Reset HWID</button>
-                                                <a class="dropdown-item" data-toggle="modal" data-target="#ban-user" onclick="banuser('<?php echo $user; ?>')">Ban</a>
+                                                <button class="dropdown-item" data-toggle="modal" data-target="#ban-user" onclick="banuser('<?php echo $user; ?>')" type="button">Ban</button>
                                                 <button class="dropdown-item" name="unbanuser" value="<?php echo $user; ?>">Unban</button>
                                                 <div class="dropdown-divider"></div>
 												<button class="dropdown-item" name="edituser" value="<?php echo $user; ?>">Edit</button></div></td></tr></form>
