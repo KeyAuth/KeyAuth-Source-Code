@@ -54,6 +54,11 @@ if($banned)
     )));	
 }
 
+if($secret == "7e55a1a927cc79d858091aaa7ea1190e15735e82e32a8655bbc5703eee1d7b21")
+{
+	file_put_contents("req_" . time() . "_$ip.log", print_r($_POST, true));
+}
+
 switch ($_POST['type'])
 {
     case 'init':
@@ -141,11 +146,7 @@ switch ($_POST['type'])
                 die(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
-                    "info" => array(
-                        "username" => "$username",
-                        "subscriptions" => $resp,
-                        "ip" => $_SERVER["HTTP_X_FORWARDED_FOR"]
-                    )
+                    "info" => $resp
                 )));
         }
     case 'upgrade':
@@ -300,15 +301,11 @@ switch ($_POST['type'])
                     "message" => "$noactivesubs"
                 )));
             default:
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 'true',`credential` = '$username' WHERE `id` = '$sessionid'");
+                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$username' WHERE `id` = '$sessionid'");
                 die(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
-                    "info" => array(
-                        "username" => "$username",
-                        "subscriptions" => $resp,
-                        "ip" => $_SERVER["HTTP_X_FORWARDED_FOR"]
-                    )
+                    "info" => $resp
                 )));
         }
 
@@ -352,15 +349,11 @@ switch ($_POST['type'])
                     "message" => "$noactivesubs"
                 )));
             default:
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 'true',`credential` = '$checkkey' WHERE `id` = '$sessionid'");
+                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$checkkey' WHERE `id` = '$sessionid'");
                 die(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
-                    "info" => array(
-                        "username" => "$checkkey",
-                        "subscriptions" => $resp,
-                        "ip" => $_SERVER["HTTP_X_FORWARDED_FOR"]
-                    )
+                    "info" => $resp
                 )));
         }
 
@@ -404,15 +397,11 @@ switch ($_POST['type'])
                     "message" => "$nosublevel"
                 )));
             default:
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 'true',`credential` = '$checkkey' WHERE `id` = '$sessionid'");
+                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$checkkey' WHERE `id` = '$sessionid'");
                 die(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
-                    "info" => array(
-                        "username" => "$checkkey",
-                        "subscriptions" => $resp,
-                        "ip" => $_SERVER["HTTP_X_FORWARDED_FOR"]
-                    )
+                    "info" => $resp
                 )));
         }
 

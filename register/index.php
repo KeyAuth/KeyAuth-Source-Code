@@ -66,6 +66,8 @@ if (isset($_SESSION['username']))
 							</a>
 						</div>
 					</div>
+					
+					<h>All registered users are bound by the <a href="../terms" class="txt1" target="_blank">Terms of Service and Privacy Policy</a></h>
 
 					<div class="container-login100-form-btn m-t-17">
 						<button name="register" class="login100-form-btn">
