@@ -5,7 +5,8 @@ $role = $_SESSION['role']; // user role
 $ip = fetchip(); // ip address
 function vpn_check($ipaddr)
 {
-    $url = "https://proxycheck.io/v2/{$ipaddr}?key={$proxycheckapikey}?vpn=1";
+	global $proxycheckapikey;
+    	$url = "https://proxycheck.io/v2/{$ipaddr}?key={$proxycheckapikey}?vpn=1";
 	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	$result = curl_exec($ch);
