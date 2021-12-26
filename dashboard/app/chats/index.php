@@ -637,7 +637,7 @@ $(document).ready(function(){
                                             </button>
                                             <div class="dropdown-menu">
                                                 <button class="dropdown-item" name="deletemsg" value="<?php echo $row["message"]; ?>">Delete</button>
-                                                <a class="dropdown-item" data-toggle="modal" data-target="#mute-user" onclick="muteuser('<?php echo $user; ?>')">Mute</a></div></td></tr></form>
+                                                <button class="dropdown-item" data-toggle="modal" data-target="#mute-user" onclick="muteuser('<?php echo $user; ?>')" type="button">Mute</button></div></td></tr></form>
 <?php
         }
     }

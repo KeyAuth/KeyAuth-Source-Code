@@ -1011,7 +1011,7 @@ $(document).ready(function(){
                                             </button>
                                             <div class="dropdown-menu">
                                                 <button class="dropdown-item" name="deletekey" value="<?php echo $key; ?>">Delete</button>
-                                                <a class="dropdown-item" data-toggle="modal" data-target="#ban-key" onclick="bankey('<?php echo $key; ?>')">Ban</a>
+                                                <button class="dropdown-item" data-toggle="modal" data-target="#ban-key" onclick="bankey('<?php echo $key; ?>')" type="button">Ban</button>
                                                 <button class="dropdown-item" name="unbankey" value="<?php echo $key; ?>">Unban</button>
                                                 <div class="dropdown-divider"></div>
 												<button class="dropdown-item" name="editkey" value="<?php echo $key; ?>">Edit</button></div></td></tr></form>

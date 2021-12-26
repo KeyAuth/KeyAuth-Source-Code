@@ -352,7 +352,7 @@ if (isset($_POST['searchusername']))
                                                 Manage
                                             </button>
                                             <div class="dropdown-menu">
-                                                <a class="dropdown-item" data-toggle="modal" data-target="#ban-acc" onclick="banacc('<?php echo $un; ?>')">Ban</a>
+                                                <button class="dropdown-item" data-toggle="modal" data-target="#ban-acc" onclick="banacc('<?php echo $un; ?>')" type="button">Ban</button>
                                                 <button class="dropdown-item" name="unbanacc" value="<?php echo $un; ?>">Unban</button>
                                                 <div class="dropdown-divider"></div>
 												<button class="dropdown-item" name="editacc" value="<?php echo $un; ?>">Edit</button></div></td></tr></form>
