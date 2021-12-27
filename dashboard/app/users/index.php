@@ -1156,7 +1156,7 @@ $(document).ready(function(){
 							return;
 						}
 						$expiry = $third * 86400;
-						mysqli_query($link, "INSERT INTO `users` (`username`, `hwid`, `app`,`owner`) VALUES ('$first','$second','" . $_SESSION['app'] . "','" . $_SESSION['username'] . "','".time()."')");
+						mysqli_query($link, "INSERT INTO `users` (`username`, `hwid`, `app`,`owner`, `createdate`) VALUES ('$first','$second','" . $_SESSION['app'] . "','" . $_SESSION['username'] . "','".time()."')");
 						mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$first','default','$expiry','" . $_SESSION['app'] . "')");
 					}
 					success("Successfully imported users!");
