@@ -35,9 +35,8 @@ $json = json_decode($resp);
 
 $discord = $json->psp->monitors[0]->{'30dRatio'}->ratio;
 $website = $json->psp->monitors[1]->{'30dRatio'}->ratio;
-$api = $json->psp->monitors[2]->{'30dRatio'}->ratio;
 
-$avgUptime = number_format(array_sum(array($discord, $website, $api)) / 3,2, '.', '');
+$avgUptime = number_format(array_sum(array($discord, $website)) / 2,2, '.', '');
 
 // output JSON
 die(json_encode(array(
