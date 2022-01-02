@@ -4,7 +4,7 @@ include '../../includes/misc/autoload.phtml';
 
 $key = misc\etc\sanitize($_GET['key']);
 $user = misc\etc\sanitize($_GET['user']);
-$passwd = misc\etc\sanitize($_POST['passwd']);
+$passwd = misc\etc\sanitize($_GET['passwd']);
 $sellerkey = misc\etc\sanitize($_GET['sellerkey']);
 $format = misc\etc\sanitize($_GET['format']);
 
