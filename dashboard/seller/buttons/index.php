@@ -3,7 +3,12 @@ include '../../../includes/connection.php';
 include '../../../includes/misc/autoload.phtml';
 include '../../../includes/dashboard/autoload.phtml';
 dashboard\primary\head();
-?>
+if ($_SESSION['role'] != "seller")
+{
+    header("Location: ../../app/licenses/");
+    exit();
+}
+?> 
             <!-- ============================================================== -->
             <div class="container-fluid" id="content" style="display:none;">
                 <!-- ============================================================== -->
@@ -18,35 +23,32 @@ dashboard\primary\head();
 					<div class="alert alert-warning alert-rounded">Your account subscription expires, in less than a month, check account details for exact date.</div>
 					<?php
 } ?>
-					<form method="POST">
-					<button data-toggle="modal" type="button" data-target="#create-files" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Files</button>  <button name="delfiles" class="dt-button buttons-print btn btn-primary mr-1" onclick="return confirm('Are you sure you want to add all files?')"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Files</button>
-                            </form>
+					<button data-toggle="modal" type="button" data-target="#create-button" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Button</button>
+							<br>
 							<br>
 							<div class="alert alert-info alert-rounded">Please watch tutorial video if confused <a href="https://youtube.com/watch?v=1lHjDeB3dA0" target="tutorial">https://youtube.com/watch?v=1lHjDeB3dA0</a> You may also join Discord and ask for help!
                                         </div>
-<div id="create-files" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div id="create-button" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Add Files</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+												<h4 class="modal-title">Add Button</h4>
+                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
                                                     <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">File URL: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="We recommend sending the file in a Discord DM where it won't get deleted. Then copy link and put here. Make sure the link has the file extension at the end, .exe or whatever. If it doesn't, the download will not work."></i></label>
-                                                        <input type="text" class="form-control" name="url" placeholder="Link to file">
+                                                        <label for="recipient-name" class="control-label">Button Text: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="This is the text that will appear to your users after they connect to web loader"></i></label>
+                                                        <input type="text" class="form-control" name="text" placeholder="e.g. Close Loader" required>
                                                     </div>
-													<div class="form-check">
-													<input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
-													<label class="form-check-label" for="flexCheckChecked">
-														Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
-													</label>
-													</div>
+													<div class="form-group">
+                                                        <label for="recipient-name" class="control-label">Button value: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Button value must match the string you're using in the web loader. So if you're using the string 'close' in the web loader, you need to have the button value as 'close'."></i></label>
+                                                        <input type="text" class="form-control" placeholder="e.g. close" name="value">
+                                                    </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="addfile">Add</button>
+                                                <button class="btn btn-danger waves-effect waves-light" name="addButton">Add</button>
 												</form>
                                             </div>
                                         </div>
@@ -75,6 +77,7 @@ dashboard\primary\head();
                                         </div>
                                     </div>
 									</div>
+                    
 
 <script type="text/javascript">
 
@@ -98,11 +101,8 @@ $(document).ready(function(){
                                     <table id="file_export" class="table table-striped table-bordered display">
                                         <thead>
                                             <tr>
-<th>Filename</th>
-<th>File ID</th>
-<th>Filesize</th>
-<th>Upload Date</th>
-<th>Authenticated</th>
+<th>Button Text</th>
+<th>Button Value</th>
 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -110,7 +110,7 @@ $(document).ready(function(){
 <?php
 if ($_SESSION['app'])
 {
-    ($result = mysqli_query($link, "SELECT * FROM `files` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
+    ($result = mysqli_query($link, "SELECT * FROM `buttons` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
     if (mysqli_num_rows($result) > 0)
     {
         while ($row = mysqli_fetch_array($result))
@@ -118,24 +118,16 @@ if ($_SESSION['app'])
 
             echo "<tr>";
 
-            echo "  <td>" . $row["name"] . "</td>";
+            echo "  <td>" . $row["text"] . "</td>";
 
-            echo "  <td>" . $row["id"] . "</td>";
+            echo "  <td>" . $row["value"] . "</td>";
 
-            echo "  <td>" . $row["size"] . "</td>";
-
-            echo "  <td><script>document.write(convertTimestamp(" . $row["uploaddate"] . "));</script></td>";
-
-            echo "  <td>" . (($row["authed"] ? 1 : 0) ? 'True' : 'False') . "</td>";
-
+            // echo "  <td>". $row["status"]. "</td>";
             echo '<td><button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 Manage
-												</button>
-												<div class="dropdown-menu"><form method="post">
-												<button class="dropdown-item" name="editfile" value="' . $row['id'] . '">Edit</button>
-                                                <button class="dropdown-item" name="deletefile" value="' . $row['id'] . '">Delete</button>
-												<a class="dropdown-item" href="' . $row['url'] . '">Download</a>
-												</div></td></tr></form>';
+                                            </button>
+                                            <div class="dropdown-menu"><form method="post">
+                                                <button class="dropdown-item" name="delButton" value="' . $row['value'] . '">Delete</button></div></td></tr></form>';
 
         }
 
@@ -147,11 +139,8 @@ if ($_SESSION['app'])
                                         </tbody>
                                         <tfoot>
                                             <tr>
-<th>Filename</th>
-<th>File ID</th>
-<th>Filesize</th>
-<th>Upload Date</th>
-<th>Authenticated</th>
+<th>Button Text</th>
+<th>Button Value</th>
 <th>Action</th>
                                             </tr>
                                         </tfoot>
@@ -180,138 +169,35 @@ if ($_SESSION['app'])
                 <!-- Footer callback -->
                 
                 <?php
-if (isset($_POST['addfile']))
+if (isset($_POST['addButton']))
 {
-	$authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
-	$resp = misc\upload\add($_POST['url'], $authed);
-    switch ($resp)
-    {
-		case 'invalid':
-			dashboard\primary\error("URL not valid!");
-			break;
-        case 'failure':
-			dashboard\primary\error("Failed to add file!");
-			break;
-		case 'success':
-			dashboard\primary\success("Successfully added file!");
-			break;
-		default:
-			dashboard\primary\error("Unhandled Error! Contact us if you need help");
-			break;
+	$text = misc\etc\sanitize($_POST['text']);
+	$value = misc\etc\sanitize($_POST['value']);
+	mysqli_query($link, "INSERT INTO `buttons` (`text`, `value`, `app`) VALUES ('$text','$value', '" . $_SESSION['app'] . "')");
+	if(mysqli_affected_rows($link) > 0)
+	{
+		dashboard\primary\success("Successfully added button!");
+	}
+	else
+	{
+		dashboard\primary\error("Failed to add button! You can\'t have two buttons with the same value.");
 	}
 }
 
-if (isset($_POST['delfiles']))
+if (isset($_POST['delButton']))
 {
-	$resp = misc\upload\deleteAll();
-    switch ($resp)
-    {
-        case 'failure':
-			dashboard\primary\error("Failed to delete all files!");
-			break;
-		case 'success':
-			dashboard\primary\success("Successfully deleted all files!");
-			break;
-		default:
-			dashboard\primary\error("Unhandled Error! Contact us if you need help");
-			break;
+	$value = misc\etc\sanitize($_POST['delButton']);
+	mysqli_query($link, "DELETE FROM `buttons` WHERE `value` = '$value' AND `app` = '" . $_SESSION['app'] . "'");
+	if(mysqli_affected_rows($link) > 0)
+	{
+		dashboard\primary\success("Successfully deleted button!");
+	}
+	else
+	{
+		dashboard\primary\error("Failed to delete button!");
 	}
 }
 
-if (isset($_POST['deletefile']))
-{
-	$resp = misc\upload\deleteSingular($_POST['deletefile']);
-    switch ($resp)
-    {
-        case 'failure':
-			dashboard\primary\error("Failed to delete all files!");
-			break;
-		case 'success':
-			dashboard\primary\success("Successfully deleted all files!");
-			break;
-		default:
-			dashboard\primary\error("Unhandled Error! Contact us if you need help");
-			break;
-	}
-}
-
-if (isset($_POST['editfile']))
-{
-    $file = misc\etc\sanitize($_POST['editfile']);
-
-    echo '<div id="edit-file" class="modal show" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Edit File</h4>
-                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="post">
-                                                    <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">File URL: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="We recommend sending the file in a Discord DM where it won\'t get deleted. Then copy link and put here. Make sure the link has the file extension at the end, .exe or whatever. If it doesn\'t, the download will not work."></i></label>
-                                                        <input type="text" class="form-control" name="url" placeholder="Link to file">
-                                                    </div>
-													<div class="form-check">
-													<input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
-													<label class="form-check-label" for="flexCheckChecked">
-														Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
-													</label>
-													</div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" value="' . $file . '" name="savefile">Save</button>
-												</form>
-                                            </div>
-                                        </div>
-                                    </div>
-									</div>';
-}
-
-if (isset($_POST['savefile']))
-{
-    $fileid = misc\etc\sanitize($_POST['savefile']);
-    $url = misc\etc\sanitize($_POST['url']);
-
-    if (!filter_var($url, FILTER_VALIDATE_URL))
-    {
-        dashboard\primary\error("Invalid Url!");
-        return;
-    }
-
-    $file = file_get_contents($url);
-
-    $filesize = strlen($file);
-
-    if ($filesize > 10000000 && $role == "tester")
-    {
-        dashboard\primary\error("Users with tester plan may only upload files up to 10MB. Paid plans may upload up to 50MB.");
-        return;
-    }
-    else if ($filesize > 50000000)
-    {
-        dashboard\primary\error("File size limit is 50 MB.");
-        return;
-    }
-
-    $fn = basename($url);
-    $fs = misc\etc\formatBytes($filesize);
-
-    $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
-
-    mysqli_query($link, "UPDATE `files` SET `name` = '$fn',`size` = '$fs',`url` = '$url', `uploaddate` = '" . time() . "', `authed` = '$authed' WHERE `app` = '" . $_SESSION['app'] . "' AND `id` = '$fileid'");
-
-    if (mysqli_affected_rows($link) != 0)
-    {
-        dashboard\primary\success("Successfully Updated File!");
-        echo "<meta http-equiv='Refresh' Content='2;'>";
-    }
-    else
-    {
-        dashboard\primary\error("Failed to update file");
-    }
-}
 ?>
                 
                 <!-- ============================================================== -->
@@ -379,11 +265,6 @@ if (isset($_POST['savefile']))
     <!--chartjs -->
     <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
     <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-	
-    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/email/email.js"></script>
-    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/summernote/dist/summernote-bs4.min.js"></script>
-    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/dropzone/dist/min/dropzone.min.js"></script>
-	
 		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>

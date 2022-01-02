@@ -1,7 +1,11 @@
 <?php
 include '../includes/connection.php';
-include '../includes/functions.php';
-session_start();
+require '../includes/misc/autoload.phtml';
+require '../includes/dashboard/autoload.phtml';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (isset($_SESSION['username']))
 {
@@ -16,10 +20,10 @@ if (isset($_SESSION['username']))
 	<title>KeyAuth - Register</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="https://cdn.keyauth.com/assets/img/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn.keyauth.uk/assets/img/favicon.png" type="image/x-icon">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/util.css">
-	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/main.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.uk/auth/css/util.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.uk/auth/css/main.css">
 	<script src="https://www.google.com/recaptcha/api.js?render=6LdW_eAbAAAAACfb-xQmGOsinqox3Up0R4cFbSRj"></script>
     <script>
         grecaptcha.ready(function () {
@@ -66,8 +70,6 @@ if (isset($_SESSION['username']))
 							</a>
 						</div>
 					</div>
-					
-					<h>All registered users are bound by the <a href="../terms" class="txt1" target="_blank">Terms of Service and Privacy Policy</a></h>
 
 					<div class="container-login100-form-btn m-t-17">
 						<button name="register" class="login100-form-btn">
@@ -85,29 +87,28 @@ if (isset($_SESSION['username']))
   <?php
 if (isset($_POST['register']))
 {
-	// you can leave captcha, I've allowed any hostname
-    $recaptcha_response = sanitize($_POST['recaptcha_response']);
-    $recaptcha = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=6LdW_eAbAAAAALg8QLx524hDcnYOkZYIaCSmqH_x&response=' . $recaptcha_response);
-    $recaptcha = json_decode($recaptcha);
-    
-    // Take action based on the score returned:
-    if ($recaptcha->score < 0.5)
-    {
-        error("Human Check Failed!");
-        return;
-    }
+    // $recaptcha_response = misc\etc\sanitize($_POST['recaptcha_response']);
+    // $recaptcha = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=6LdW_eAbAAAAALg8QLx524hDcnYOkZYIaCSmqH_x&response=' . $recaptcha_response);
+	// $recaptcha = json_decode($recaptcha);
+    // 
+    // // Take action based on the score returned:
+    // if ($recaptcha->score < 0.5)
+    // {
+    //     dashboard\primary\error("Human Check Failed!");
+    //     return;
+    // }
 
-    $username = sanitize($_POST['username']);
+    $username = misc\etc\sanitize($_POST['username']);
 
-    $password = sanitize($_POST['password']);
+    $password = misc\etc\sanitize($_POST['password']);
 
-    $email = sanitize($_POST['email']);
+    $email = misc\etc\sanitize($_POST['email']);
 
     $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'") or die(mysqli_error($link));
 
     if (mysqli_num_rows($result) == 1)
     {
-        error("Username already taken!");
+        dashboard\primary\error("Username already taken!");
         return;
     }
 
@@ -115,22 +116,22 @@ if (isset($_POST['register']))
     $do_email_check = mysqli_num_rows($email_check);
     if ($do_email_check > 0)
     {
-        error('Email already used by username: ' . mysqli_fetch_array($email_check) ['username'] . '');
+        dashboard\primary\error('Email already used by username: ' . mysqli_fetch_array($email_check) ['username'] . '');
         return;
     }
 	
     $pass_encrypted = password_hash($password, PASSWORD_BCRYPT);
 
-    $ownerid = generateRandomString();
+    $ownerid = misc\etc\generateRandomString();
 
-    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `img`,`balance`, `expires`, `registrationip`) VALUES ('$username', '$email', '$pass_encrypted', '$ownerid','tester','','','https://i.imgur.com/TrwYFBa.png','1', NULL, '$ip')") or die(mysqli_error($link));
+    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `img`,`balance`, `expires`, `registrationip`) VALUES ('$username', '$email', '$pass_encrypted', '$ownerid','tester','https://i.imgur.com/TrwYFBa.png','1', NULL, '$ip')") or die(mysqli_error($link));
 
 	$_SESSION['logindate'] = time();
     $_SESSION['username'] = $username;
     $_SESSION['email'] = $email;
     $_SESSION['ownerid'] = $ownerid;
     $_SESSION['role'] = 'tester';
-    $_SESSION['img'] = 'https://cdn.keyauth.com/front/assets/img/favicon.png';
+    $_SESSION['img'] = 'https://cdn.keyauth.uk/front/assets/img/favicon.png';
     mysqli_close($link);
     header("location: ../dashboard/");
 }

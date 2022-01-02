@@ -2,8 +2,12 @@
 ob_start();
 
 include '../../../includes/connection.php';
-include '../../../includes/functions.php';
-session_start();
+include '../../../includes/misc/autoload.phtml';
+include '../../../includes/dashboard/autoload.phtml';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isset($_SESSION['username']))
 {
@@ -31,7 +35,7 @@ $expires = $row['expires'];
 $timeleft = false;
 if(in_array($role,array("developer", "seller")))
 {
-	$timeleft = expire_check($username, $expires);
+	$timeleft = dashboard\primary\expireCheck($username, $expires);
 }
 
 if ($role != "developer" && $role != "seller")
@@ -54,14 +58,14 @@ $darkmode = $row['darkmode'];
     <meta name="robots" content="noindex,nofollow">
     <title>KeyAuth - Manage Accounts</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.com/static/images/favicon.png">
-	<script src="https://cdn.keyauth.com/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
+	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Custom CSS -->
-	<link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-    <link href="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="https://cdn.keyauth.com/dashboard/dist/css/style.min.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 	
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
@@ -116,17 +120,17 @@ else
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                             <!-- Dark Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
                             <!-- Light Logo icon -->
-                            <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                         </b>
                         <!--End Logo icon -->
                         <!-- Logo text -->
                         <span class="logo-text">
                              <!-- dark Logo text -->
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
                              <!-- Light Logo text -->    
-                             <img src="https://cdn.keyauth.com/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
                         </span>
                     </a>
                     <!-- ============================================================== -->
@@ -201,7 +205,7 @@ else
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
                         <?php
-sidebar($role);
+dashboard\primary\sidebar($role);
 ?>
                     </ul>
                 </nav>
@@ -309,13 +313,13 @@ if (mysqli_num_rows($result) > 0)
 
 if (isset($_POST['createacc']))
 {
-    $role = sanitize($_POST['role']);
+    $role = misc\etc\sanitize($_POST['role']);
 
-    $app = sanitize($_POST['app']);
-    $username = sanitize($_POST['username']);
-    $email = sanitize($_POST['email']);
-    $password = sanitize($_POST['pw']);
-    $keylevels = sanitize($_POST['keylevels']) ?? "N/A";
+    $app = misc\etc\sanitize($_POST['app']);
+    $username = misc\etc\sanitize($_POST['username']);
+    $email = misc\etc\sanitize($_POST['email']);
+    $password = misc\etc\sanitize($_POST['pw']);
+    $keylevels = misc\etc\sanitize($_POST['keylevels']) ?? "N/A";
 
 
     $pass_encrypted = password_hash($password, PASSWORD_BCRYPT);
@@ -326,62 +330,21 @@ if (isset($_POST['createacc']))
 
     if ($do_user_check > 0)
     {
-        echo '
-                    <script type=\'text/javascript\'>
-                    
-                    const notyf = new Notyf();
-                    notyf
-                      .error({
-                        message: \'Username already taken!\',
-                        duration: 3500,
-                        dismissible: true
-                      });                
-                    
-                    </script>
-                    ';
-        echo '<meta http-equiv="refresh" content="5">';
+        dashboard\primary\error("Username already taken!");
+        echo '<meta http-equiv="refresh" content="2">';
         return;
     }
     $email_check = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `email` = '$email'") or die(mysqli_error($link));
     $do_email_check = mysqli_num_rows($email_check);
     if ($do_email_check > 0)
     {
-        echo '                    <script type=\'text/javascript\'>                                        const notyf = new Notyf();                    notyf                      .error({                        message: \'Email already taken!\',                        duration: 3500,                        dismissible: true                      });                                                        </script>                    ';
-        echo '<meta http-equiv="refresh" content="5">';
+        dashboard\primary\error("Email already taken!");
+        echo '<meta http-equiv="refresh" content="2">';
         return;
     }
 
     mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `app`, `owner`, `img`, `balance`, `keylevels`) VALUES ('$username','$email','$pass_encrypted','','$role','$app','$owner','https://i.imgur.com/TrwYFBa.png', '0|0|0|0|0|0', '$keylevels')") or die(mysqli_error($link));
-    echo '
-                        <script type=\'text/javascript\'>
-                        
-                        const notyf = new Notyf();
-                        notyf
-                          .success({
-                            message: \'Created Account!\',
-                            duration: 3500,
-                            dismissible: true
-                          });                
-                        
-                        </script>
-                        ';
-}
-
-if (isset($_POST['deleteapp']))
-{
-    $app = $_SESSION['app'];
-    $owner = $_SESSION['username'];
-
-    mysqli_query($link, "DELETE FROM `files` WHERE `uploader` = '$owner' AND `app` = '$app'") or die(mysqli_error($link)); // delete files
-    mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '$app'") or die(mysqli_error($link)); // delete keys
-    mysqli_query($link, "DELETE FROM `logs` WHERE `logowner` = '$owner' AND `logapp` = '$app'") or die(mysqli_error($link)); // delete logs
-    $result = mysqli_query($link, "DELETE FROM `apps` WHERE `secret` = '$app'") or die(mysqli_error($link));
-    if ($result)
-    {
-        $_SESSION['app'] = NULL;
-        success("Successfully deleted App!");
-        echo "<meta http-equiv='Refresh' Content='2;'>";
-    }
+    dashboard\primary\success("Successfully created account!");
 }
 
 ?>
@@ -492,29 +455,27 @@ if (mysqli_num_rows($result) > 0)
                 <?php
 if (isset($_POST['deleteacc']))
 {
-    $account = sanitize($_POST['deleteacc']);
+    $account = misc\etc\sanitize($_POST['deleteacc']);
     mysqli_query($link, "DELETE FROM `accounts` WHERE `owner` = '" . $_SESSION['username'] . "' AND `username` = '$account'");
-    if (mysqli_affected_rows($link) != 0)
+    if (mysqli_affected_rows($link) > 0)
     {
-        success("Account Successfully Deleted!");
+        dashboard\primary\success("Username already taken!");("Account Successfully Deleted!");
         echo "<meta http-equiv='Refresh' Content='2'>";
     }
     else
     {
-        mysqli_close($link);
-        error("Failed To Delete Account!");
+        dashboard\primary\error("Failed To Delete Account!");
     }
 }
 
 if (isset($_POST['editacc']))
 {
-    $account = sanitize($_POST['editacc']);
+    $account = misc\etc\sanitize($_POST['editacc']);
 
     $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
     if (mysqli_num_rows($result) == 0)
     {
-        mysqli_close($link);
-        error("Account not Found!");
+        dashboard\primary\error("Account not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";
         return;
     }
@@ -546,7 +507,7 @@ if (isset($_POST['editacc']))
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Edit Account</h4>
-                                                <button type="button" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post"> 
@@ -600,18 +561,18 @@ if (isset($_POST['editacc']))
 
 if (isset($_POST['saveacc']))
 {
-    $account = sanitize($_POST['account']);
+    $account = misc\etc\sanitize($_POST['account']);
 
-    $day = sanitize($_POST['daybalance']);
-    $week = sanitize($_POST['weekbalance']);
-    $month = sanitize($_POST['monthbalance']);
-    $threemonth = sanitize($_POST['threemonthbalance']);
-    $sixmonth = sanitize($_POST['sixmonthbalance']);
-    $lifetime = sanitize($_POST['lifebalance']);
-    $keylevels = sanitize($_POST['keylevels']) ?? "N/A";
+    $day = misc\etc\sanitize($_POST['daybalance']);
+    $week = misc\etc\sanitize($_POST['weekbalance']);
+    $month = misc\etc\sanitize($_POST['monthbalance']);
+    $threemonth = misc\etc\sanitize($_POST['threemonthbalance']);
+    $sixmonth = misc\etc\sanitize($_POST['sixmonthbalance']);
+    $lifetime = misc\etc\sanitize($_POST['lifebalance']);
+    $keylevels = misc\etc\sanitize($_POST['keylevels']) ?? "N/A";
 	
-	$email = sanitize($_POST['email']);
-	$pw = sanitize($_POST['pw']);
+	$email = misc\etc\sanitize($_POST['email']);
+	$pw = misc\etc\sanitize($_POST['pw']);
 	
 	if(!empty($email))
 	{
@@ -619,14 +580,14 @@ if (isset($_POST['saveacc']))
 		$do_email_check = mysqli_num_rows($email_check);
 		if ($do_email_check > 0)
 		{
-			error("Email already taken!");
+			dashboard\primary\error("Email already taken!");
 			echo '<meta http-equiv="refresh" content="5">';
 			return;
 		}
 		mysqli_query($link, "UPDATE `accounts` SET email = '$email' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
 	}
 	if(!empty($pw))
-	{
+	{	
 		$pw = password_hash($pw, PASSWORD_BCRYPT);
 		mysqli_query($link, "UPDATE `accounts` SET password = '$pw' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
 	}
@@ -635,7 +596,7 @@ if (isset($_POST['saveacc']))
 
     mysqli_query($link, "UPDATE `accounts` SET balance = '$balance', keylevels = '$keylevels' WHERE `username` = '$account' AND `owner` = '" . $_SESSION['username'] . "'");
 
-    success("Successfully Updated Settings!");
+    dashboard\primary\success("Successfully Updated Settings!");
     echo "<meta http-equiv='Refresh' Content='2'>";
 }
 ?>
@@ -679,33 +640,33 @@ if (isset($_POST['saveacc']))
     <!-- ============================================================== -->
     
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app.init.dark.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/app-style-switcher.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app.init.dark.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/app-style-switcher.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/waves.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/waves.js"></script>
     <!--Menu sidebar -->
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/sidebarmenu.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/sidebarmenu.js"></script>
     <!--Custom JavaScript -->
-   <script src="https://cdn.keyauth.com/dashboard/dist/js/feather.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/custom.min.js"></script>
+   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
     <!--c3 charts -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/d3.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/c3/c3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/d3.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/c3/c3.min.js"></script>
     <!--chartjs -->
-    <script src="https://cdn.keyauth.com/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
-    <script src="https://cdn.keyauth.com/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
-		<script src="https://cdn.keyauth.com/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/chart-js/dist/chart.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
+		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 	    <!-- start - This is for export functionality only -->
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
@@ -717,5 +678,5 @@ if (isset($_POST['saveacc']))
   
 					
 
-<script src="https://cdn.keyauth.com/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 </html>

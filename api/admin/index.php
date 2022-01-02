@@ -1,10 +1,8 @@
 <?php
-ini_set('display_errors', 'Off');
-error_reporting(0);
 include '../../includes/connection.php';
-include '../../includes/functions.php';
+include '../../includes/misc/autoload.phtml';
 
-$apikey = sanitize($_GET['apikey']);
+$apikey = misc\etc\sanitize($_GET['apikey']);
 if($apikey != $adminapikey)
 {
 	die(json_encode(array(
@@ -13,11 +11,11 @@ if($apikey != $adminapikey)
         )));
 }
 
-$type = sanitize($_GET['type']);
+$type = misc\etc\sanitize($_GET['type']);
 switch ($type)
 {
     case 'checkorder':
-        $orderid = sanitize($_GET['orderid']);
+        $orderid = misc\etc\sanitize($_GET['orderid']);
 		$url = "https://shoppy.gg/api/v1/orders/{$orderid}";
 	
 		$curl = curl_init($url);
@@ -54,7 +52,7 @@ switch ($type)
 			)));
 		}
 	case 'checkemail':
-		$email = sanitize($_GET['email']);
+		$email = misc\etc\sanitize($_GET['email']);
 		$result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `email` = '$email'");
 
 		if(mysqli_num_rows($result) == 0)
@@ -79,7 +77,7 @@ switch ($type)
 						"totp" => "$totp"
 		)));
 	case 'checkun':
-		$username = sanitize($_GET['username']);
+		$username = misc\etc\sanitize($_GET['username']);
 		$result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'");
 
 		if(mysqli_num_rows($result) == 0)
@@ -104,8 +102,8 @@ switch ($type)
 						"totp" => "$totp"
 		)));
 	case 'banacc':
-		$un = sanitize($_GET['username']);
-        $reason = sanitize($_GET['reason']);
+		$un = misc\etc\sanitize($_GET['username']);
+        $reason = misc\etc\sanitize($_GET['reason']);
 
         mysqli_query($link, "UPDATE `accounts` SET `banned` = '$reason' WHERE `username` = '$un'"); // set account to banned
         mysqli_query($link, "UPDATE `apps` SET `banned` = '1' WHERE `owner` = '$un'"); // ban all apps owned by account
@@ -115,8 +113,8 @@ switch ($type)
 						"message" => "Account successfully banned"
 		)));
 	case 'unbanacc':
-        $un = sanitize($_GET['username']);
-        $reason = sanitize($_GET['reason']);
+        $un = misc\etc\sanitize($_GET['username']);
+        $reason = misc\etc\sanitize($_GET['reason']);
 
         mysqli_query($link, "UPDATE `accounts` SET `banned` = NULL WHERE `username` = '$un'"); // set account to not banned
         mysqli_query($link, "UPDATE `apps` SET `banned` = '0' WHERE `owner` = '$un'"); // unban all apps owned by account
@@ -126,8 +124,8 @@ switch ($type)
 						"message" => "Account successfully unbanned"
 		)));
 	case 'saveemail':
-        $un = sanitize($_GET['username']);
-        $email = sanitize($_GET['email']);
+        $un = misc\etc\sanitize($_GET['username']);
+        $email = misc\etc\sanitize($_GET['email']);
 
         mysqli_query($link, "UPDATE `accounts` SET `email` = '$email' WHERE `username` = '$un'");
 		
@@ -136,8 +134,8 @@ switch ($type)
 						"message" => "Account email updated"
 		)));
     case 'upgrade':
-        $un = sanitize($_GET['username']);
-        $role = sanitize($_GET['role']);
+        $un = misc\etc\sanitize($_GET['username']);
+        $role = misc\etc\sanitize($_GET['role']);
 		
 		switch($role)
 		{
@@ -161,7 +159,7 @@ switch ($type)
 						"message" => "Account successfully upgraded"
 		)));
     case 'enabletotp':
-        $un = sanitize($_GET['username']);
+        $un = misc\etc\sanitize($_GET['username']);
 
         mysqli_query($link, "UPDATE `accounts` SET `twofactor` = 1 WHERE `username` = '$un'");
 		
@@ -170,7 +168,7 @@ switch ($type)
 						"message" => "Two-factor enabled"
 		)));
 	case 'disabletotp':
-		$un = sanitize($_GET['username']);
+		$un = misc\etc\sanitize($_GET['username']);
 
         mysqli_query($link, "UPDATE `accounts` SET `twofactor` = 0 WHERE `username` = '$un'");
 		
@@ -179,8 +177,8 @@ switch ($type)
 						"message" => "Two-factor enabled"
 		)));
 	case 'applookup':
-		$name = sanitize($_GET['name']);
-		$owner = sanitize($_GET['owner']);
+		$name = misc\etc\sanitize($_GET['name']);
+		$owner = misc\etc\sanitize($_GET['owner']);
 
 		$result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$name' AND `owner` = '$owner'");
 		

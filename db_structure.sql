@@ -2,10 +2,10 @@
 -- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Nov 20, 2021 at 10:34 AM
--- Server version: 10.3.31-MariaDB-0ubuntu0.20.04.1
--- PHP Version: 7.3.31-1+focal
+-- Host: 127.0.0.1:3307
+-- Generation Time: Jan 02, 2022 at 07:08 AM
+-- Server version: 10.4.21-MariaDB
+-- PHP Version: 8.0.10
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `keya_main`
+-- Database: `keyauth`
 --
 
 -- --------------------------------------------------------
@@ -44,21 +44,20 @@ CREATE TABLE `accounts` (
   `username` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `email` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `password` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
-  `ownerid` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
+  `ownerid` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL,
   `role` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
-  `app` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
-  `owner` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
+  `app` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `owner` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
   `banned` varchar(69) COLLATE utf8_unicode_ci DEFAULT NULL,
   `admin` int(1) NOT NULL DEFAULT 0,
   `img` varchar(90) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://i.imgur.com/cVPXjIH.jpg',
-  `pp` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `balance` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `keylevels` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
   `expires` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `registrationip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `lastip` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `registrationip` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `lastip` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
   `twofactor` int(1) NOT NULL DEFAULT 0,
-  `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci DEFAULT NULL,
   `darkmode` int(1) NOT NULL DEFAULT 0,
   `acclogs` int(1) NOT NULL DEFAULT 1,
   `format` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -87,15 +86,16 @@ CREATE TABLE `apps` (
   `vpnblock` int(1) NOT NULL DEFAULT 0,
   `sellerkey` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `ver` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT '1.0',
-  `download` varchar(120) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `hash` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `webhook` varchar(130) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `resellerstore` varchar(69) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `download` varchar(120) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `webdownload` varchar(120) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `hash` varchar(2000) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `webhook` varchar(130) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `resellerstore` varchar(69) COLLATE utf8_unicode_ci DEFAULT NULL,
   `appdisabled` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'This application is disabled',
   `usernametaken` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Username Already Exists.',
   `keynotfound` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Key Not Found.',
   `keyused` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Key Already Used.',
-  `nosublevel` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'There is no subscription created for your key level. Contact appplicaton developer.',
+  `nosublevel` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'There is no subscription created for your key level. Contact application developer.',
   `usernamenotfound` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Username not found.',
   `passmismatch` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Password does not match.',
   `hwidmismatch` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'HWID Doesn''t match. Ask for key reset.',
@@ -136,6 +136,19 @@ CREATE TABLE `bans` (
   `type` varchar(5) NOT NULL,
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `buttons`
+--
+
+CREATE TABLE `buttons` (
+  `id` int(11) NOT NULL,
+  `text` varchar(99) NOT NULL,
+  `value` varchar(99) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -210,7 +223,7 @@ CREATE TABLE `keys` (
   `usedon` int(10) DEFAULT NULL,
   `usedby` varchar(70) COLLATE utf8_unicode_ci DEFAULT NULL,
   `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
-  `banned` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT ''
+  `banned` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -291,7 +304,7 @@ CREATE TABLE `subscriptions` (
 CREATE TABLE `users` (
   `username` varchar(70) NOT NULL,
   `password` varchar(70) DEFAULT NULL,
-  `hwid` varchar(70) DEFAULT NULL,
+  `hwid` varchar(2000) DEFAULT NULL,
   `app` varchar(64) NOT NULL,
   `owner` varchar(65) DEFAULT NULL,
   `createdate` int(10) DEFAULT NULL,
@@ -322,7 +335,7 @@ CREATE TABLE `uservars` (
 
 CREATE TABLE `vars` (
   `varid` varchar(49) NOT NULL,
-  `msg` varchar(99) NOT NULL,
+  `msg` varchar(20000) NOT NULL,
   `app` varchar(64) NOT NULL,
   `authed` int(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -352,10 +365,23 @@ ALTER TABLE `accounts`
   ADD PRIMARY KEY (`username`);
 
 --
+-- Indexes for table `buttons`
+--
+ALTER TABLE `buttons`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `value` (`value`,`app`);
+
+--
 -- Indexes for table `chatmsgs`
 --
 ALTER TABLE `chatmsgs`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `chats`
+--
+ALTER TABLE `chats`
+  ADD PRIMARY KEY (`name`,`app`);
 
 --
 -- Indexes for table `keys`
@@ -368,6 +394,12 @@ ALTER TABLE `keys`
 --
 ALTER TABLE `subs`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD UNIQUE KEY `username` (`username`,`app`);
 
 --
 -- Indexes for table `uservars`
@@ -384,6 +416,12 @@ ALTER TABLE `webhooks`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `buttons`
+--
+ALTER TABLE `buttons`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `chatmsgs`

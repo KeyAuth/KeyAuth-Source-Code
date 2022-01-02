@@ -1,8 +1,13 @@
 <?php
 
-include '../includes/connection.php';
-include '../includes/functions.php';
-session_start();
+require '../includes/connection.php';
+require '../includes/misc/autoload.phtml';
+require '../includes/dashboard/autoload.phtml';
+require '../includes/api/shared/autoload.phtml';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (isset($_SESSION['username']))
 {
@@ -17,10 +22,11 @@ if (isset($_SESSION['username']))
 	<title>KeyAuth - Login</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="https://cdn.keyauth.com/assets/img/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn.keyauth.uk/assets/img/favicon.png" type="image/x-icon">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/util.css">
-	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/main.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.uk/auth/css/util.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.uk/auth/css/main.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 <body>
 	<div class="limiter">
@@ -30,8 +36,11 @@ if (isset($_SESSION['username']))
 					<span class="login100-form-title p-b-51">
 						Login
 					</span>
-
 					
+					<div class="alert alert-primary" style="width: 100%;">
+					KeyAuth is for sale, make an offer here <a href="https://keyauth.com/bid/" target="_blank">https://keyauth.com/bid/</a>
+					</div>
+
 					<div class="wrap-input100 validate-input m-b-16">
 						<input class="input100" type="text" name="keyauthusername" placeholder="Username" required>
 						<span class="focus-input100"></span>
@@ -78,14 +87,14 @@ if (isset($_SESSION['username']))
     <?php
 if (isset($_POST['login']))
 {
-    $username = sanitize($_POST['keyauthusername']);
-    $password = sanitize($_POST['keyauthpassword']);
+    $username = misc\etc\sanitize($_POST['keyauthusername']);
+    $password = misc\etc\sanitize($_POST['keyauthpassword']);
 
     ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 
     if (mysqli_num_rows($result) == 0)
     {
-        error("Account doesn\'t exist!");
+        dashboard\primary\error("Account doesn\'t exist!");
         return;
     }
     while ($row = mysqli_fetch_array($result))
@@ -107,23 +116,23 @@ if (isset($_POST['login']))
 
     if (!is_null($banned))
     {
-        error("Banned: Reason: " . sanitize($banned));
+        dashboard\primary\error("Banned: Reason: " . misc\etc\sanitize($banned));
         return;
     }
 
     if (!password_verify($password, $pass))
     {
-        error("Password is invalid!");
+        dashboard\primary\error("Password is invalid!");
         return;
     }
 
     if ($twofactor_optional)
     {
         // keyauthtwofactor
-        $twofactor = sanitize($_POST['keyauthtwofactor']);
+        $twofactor = misc\etc\sanitize($_POST['keyauthtwofactor']);
         if (empty($twofactor))
         {
-            error("Two factor field needed for this acccount!");
+            dashboard\primary\error("Two factor field needed for this acccount!");
             return;
         }
 
@@ -133,7 +142,7 @@ if (isset($_POST['login']))
 
         if (!$checkResult)
         {
-            error("2FA code Invalid!");
+            dashboard\primary\error("2FA code Invalid!");
             return;
         }
     }
@@ -150,7 +159,7 @@ if (isset($_POST['login']))
         ($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `name` = '$app' AND `owner` = '$owner'")) or die(mysqli_error($link));
         if (mysqli_num_rows($result) < 1)
         {
-            error("Application you\'re assigned to no longer exists!");
+            dashboard\primary\error("Application you\'re assigned to no longer exists!");
             return;
         }
         while ($row = mysqli_fetch_array($result))
@@ -165,13 +174,14 @@ if (isset($_POST['login']))
     if ($acclogs) // check if account logs enabled
     
     {
-		$ua = sanitize($_SERVER['HTTP_USER_AGENT']);
+		$ua = misc\etc\sanitize($_SERVER['HTTP_USER_AGENT']);
+		$ip = api\shared\primary\getIp();
         mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('$username','" . time() . "','$ip','$ua')"); // insert ip log
         $ts = time() - 604800;
         mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '$username' AND `date` < '$ts'"); // delete any account logs more than a week old
         
     }
-	wh_log($logwebhook, "{$username} has logged into KeyAuth with IP `{$ip}`", $webhookun);
+	dashboard\primary\wh_log($logwebhook, "{$username} has logged into KeyAuth with IP `{$ip}`", $webhookun);
 	
     mysqli_query($link, "UPDATE `accounts` SET `lastip` = '$ip' WHERE `username` = '$username'");
 

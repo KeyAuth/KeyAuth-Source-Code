@@ -1,10 +1,13 @@
 <?php
 
-ob_start(); 
-session_start();
+ob_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 include '../includes/connection.php';
-include '../includes/functions.php';
+require '../includes/misc/autoload.phtml';
+require '../includes/dashboard/autoload.phtml';
 
 $username = $_SESSION['username'];
 $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'");
@@ -233,7 +236,7 @@ die();
 if (isset($_POST['checkorder']))
 {
 
-    $orderid = sanitize($_POST['orderid']);
+    $orderid = misc\etc\sanitize($_POST['orderid']);
 	$url = "https://shoppy.gg/api/v1/orders/{$orderid}";
 
 	$curl = curl_init($url);
@@ -256,24 +259,24 @@ if (isset($_POST['checkorder']))
 	
 	if($json->message == "Requested resource not found")
 	{
-	error("Order not found");	
+		dashboard\primary\error("Order not found");	
 	}
 	else
 	{
-		success("Order from " . $json->email . " for $" . $json->price . " was found");
+		dashboard\primary\success("Order from " . $json->email . " for $" . $json->price . " was found");
 	}
 }
 
 if (isset($_POST['searchemail']))
 {
-	$email = sanitize($_POST['email']);
+	$email = misc\etc\sanitize($_POST['email']);
     header("Location:./?email=". $email);
 }
 
 if (isset($_POST['searchusername']))
 {
-	$un = sanitize($_POST['un']);
-	header("Location: https://keyauth.com/admin/?username=" . $un);
+	$un = misc\etc\sanitize($_POST['un']);
+	header("Location: ./?username=" . $un);
 	die();
 }
 
@@ -318,8 +321,8 @@ if (isset($_POST['searchusername']))
                                         <tbody>
 
 <?php
-		$un = sanitize($_GET['username']);
-		$email = sanitize($_GET['email']);
+		$un = misc\etc\sanitize($_GET['username']);
+		$email = misc\etc\sanitize($_GET['email']);
         $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$un' OR `email` = '$email'");
 
         $rows = array();
@@ -382,32 +385,32 @@ if (isset($_POST['searchusername']))
     <?php
     if (isset($_POST['banacc']))
     {
-        $un = sanitize($_POST['acc']);
-        $reason = sanitize($_POST['reason']);
+        $un = misc\etc\sanitize($_POST['acc']);
+        $reason = misc\etc\sanitize($_POST['reason']);
 
         mysqli_query($link, "UPDATE `accounts` SET `banned` = '$reason' WHERE `username` = '$un'"); // set account to banned
         mysqli_query($link, "UPDATE `apps` SET `banned` = '1' WHERE `owner` = '$un'"); // ban all apps owned by account
 		
 		wh_log($adminwebhook, "Admin `{$username}` has banned user `{$un}` for reason `{$reason}`", $adminwebhookun);
 		
-        success("Account Banned!");
+        dashboard\primary\success("Account Banned!");
     }
 
     if (isset($_POST['unbanacc']))
     {
-        $un = sanitize($_POST['unbanacc']);
+        $un = misc\etc\sanitize($_POST['unbanacc']);
 
         mysqli_query($link, "UPDATE `accounts` SET `banned` = NULL WHERE `username` = '$un'"); // set account to not banned
         mysqli_query($link, "UPDATE `apps` SET `banned` = '0' WHERE `owner` = '$un'"); // unban all apps owned by account
 		
 		wh_log($adminwebhook, "Admin `{$username}` has unbanned user `{$un}`", $adminwebhookun);
 		
-        success("Account Unbanned!");
+        dashboard\primary\success("Account Unbanned!");
     }
 
     if (isset($_POST['editacc']))
     {
-        $un = sanitize($_POST['editacc']);
+        $un = misc\etc\sanitize($_POST['editacc']);
 
         $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$un'");
         $row = mysqli_fetch_array($result);
@@ -456,10 +459,10 @@ if (isset($_POST['searchusername']))
 
     if (isset($_POST['saveacc']))
     {	
-        $un = sanitize($_POST['saveacc']);
-        $email = sanitize($_POST['email']);
-		$role = sanitize($_POST['role']);
-		$totp = sanitize($_POST['totp']);
+        $un = misc\etc\sanitize($_POST['saveacc']);
+        $email = misc\etc\sanitize($_POST['email']);
+		$role = misc\etc\sanitize($_POST['role']);
+		$totp = misc\etc\sanitize($_POST['totp']);
 		
 		switch($role)
 		{
@@ -482,7 +485,7 @@ if (isset($_POST['searchusername']))
 
 		wh_log($adminwebhook, "Admin `{$username}` has updated user `{$un}` email to `{$email}`, role to `{$role}`, and 2FA status to `{$totp}`", $adminwebhookun);
 		
-        success("Updated Account!");
+        dashboard\primary\success("Updated Account!");
     }
 ?>
             </div>

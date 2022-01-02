@@ -1,7 +1,11 @@
 <?php
-include '../includes/connection.php';
-include '../includes/functions.php';
-session_start();
+require '../includes/connection.php';
+require '../includes/misc/autoload.phtml';
+require '../includes/dashboard/autoload.phtml';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (isset($_SESSION['un']))
 {
@@ -18,8 +22,8 @@ $requrl = $_SERVER['REQUEST_URI'];
 
 $uri = trim($_SERVER['REQUEST_URI'], '/');
 $pieces = explode('/', $uri);
-$owner = urldecode(sanitize($pieces[1]));
-$username = urldecode(sanitize($pieces[2]));
+$owner = urldecode(misc\etc\sanitize($pieces[1]));
+$username = urldecode(misc\etc\sanitize($pieces[2]));
 
 if (!strip_tags(htmlEncode($requrl)) || substr_count($requrl, '/') != 3)
 {
@@ -36,6 +40,7 @@ if (mysqli_num_rows($result) == 0)
 while ($row = mysqli_fetch_array($result))
 {
     $secret = $row['secret'];
+	$_SESSION['panelapp'] = $secret;
 }
 
 $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$owner' AND `role` = 'seller'");
@@ -52,16 +57,16 @@ if (mysqli_num_rows($result) == 0)
 	<?php
 echo '
 	    <title>KeyAuth - Login to ' . $username . ' Panel</title>
-	    <meta name="og:image" content="https://cdn.keyauth.com/front/assets/img/favicon.png">
+	    <meta name="og:image" content="https://cdn.keyauth.uk/front/assets/img/favicon.png">
         <meta name="description" content="Login to reset your HWID or download ' . $username . '">
         ';
 ?>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="https://cdn.keyauth.com/assets/img/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn.keyauth.uk/assets/img/favicon.png" type="image/x-icon">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/util.css">
-	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.com/auth/css/main.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.uk/auth/css/util.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.uk/auth/css/main.css">
 </head>
 <body>
 	<div class="limiter">
@@ -83,6 +88,20 @@ echo '
 						<input class="input100" type="password" name="keyauthpassword" placeholder="Password">
 						<span class="focus-input100"></span>
 					</div>
+					
+					<div class="flex-sb-m w-full p-t-3 p-b-24">
+						<div>
+							<a href="../register/" class="txt1">
+								Register
+							</a>
+						</div>
+
+						<div>
+							<a href="../upgrade/" class="txt1">
+								Upgrade
+							</a>
+						</div>
+					</div>
 
 					<div class="container-login100-form-btn m-t-17">
 						<button name="login" class="login100-form-btn">
@@ -103,19 +122,18 @@ if (isset($_POST['login']))
     if (empty($_POST['keyauthusername']) || empty($_POST['keyauthpassword']))
     {
 
-        error("You must fill in all the fields!");
+        dashboard\primary\error("You must fill in all the fields!");
         return;
     }
 
-    $un = sanitize($_POST['keyauthusername']);
-    $password = sanitize($_POST['keyauthpassword']);
+    $un = misc\etc\sanitize($_POST['keyauthusername']);
+    $password = misc\etc\sanitize($_POST['keyauthpassword']);
 
-    $result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un'");
+    $result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '$secret'");
 
     if (mysqli_num_rows($result) < 1)
     {
-        error("User not found!");
-        return;
+        dashboard\primary\error("User not found!");
     }
     else if (mysqli_num_rows($result) > 0)
     {
@@ -127,20 +145,27 @@ if (isset($_POST['login']))
 
         if (!is_null($banned))
         {
-            error("Banned: Reason: " . sanitize($banned));
+            dashboard\primary\error("Banned: Reason: " . misc\etc\sanitize($banned));
             return;
         }
 
         if (!password_verify($password, $pass))
         {
-            error("Password is invalid!");
+            dashboard\primary\error("Password is invalid!");
             return;
         }
-
+		
+		$result = mysqli_query($link, "SELECT `id` FROM `subs` WHERE `user` = '$un' AND `expiry` > '".time()."' AND `app` = '$secret'");
+		if (mysqli_num_rows($result) === 0)
+		{
+			dashboard\primary\error("You have no active subscriptions! You you change this by clicking upgrade");
+		}
+		else
+		{
         $_SESSION['un'] = $un;
-        $_SESSION['panelapp'] = $secret;
         header("location: ../dashboard/");
-    }
+		}
+	}
 }
 ?>
 </body>
