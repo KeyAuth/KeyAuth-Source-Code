@@ -4,6 +4,7 @@ include '../../includes/misc/autoload.phtml';
 
 $key = misc\etc\sanitize($_GET['key']);
 $user = misc\etc\sanitize($_GET['user']);
+$passwd = misc\etc\sanitize($_GET['passwd']);
 $sellerkey = misc\etc\sanitize($_GET['sellerkey']);
 $format = misc\etc\sanitize($_GET['format']);
 
@@ -653,7 +654,7 @@ switch ($type)
         )));
 }
 case 'resetpw':
-    mysqli_query($link, "UPDATE `users` SET `password` = NULL WHERE `username` = '$user' AND `app` = '$secret'");
+    mysqli_query($link, "UPDATE `users` SET `password` = '" . password_hash($passwd, PASSWORD_BCRYPT) . "' WHERE `username` = '$user' AND `app` = '$secret'");
 
     if (mysqli_affected_rows($link) != 0)
     {
