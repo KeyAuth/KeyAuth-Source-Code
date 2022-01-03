@@ -124,8 +124,6 @@ switch (hex2bin($_POST['type']))
         $time = time() + $sessionexpiry;
         mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`) VALUES ('$sessionid','$secret', '$time', '$enckey')");
 
-        $result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `ownerid` = '$ownerid' AND `name` = '$name'");
-
         $result = mysqli_query($link, "select count(1) FROM `users` WHERE `app` = '$secret'");
         $row = mysqli_fetch_array($result);
         $numUsers = number_format($row[0]);
