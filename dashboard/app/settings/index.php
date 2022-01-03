@@ -478,7 +478,7 @@ if(isset($_POST['updatesettings']))
 	$sessionduration = misc\etc\sanitize($_POST['sessionduration']);
 	$sessionexpiry = misc\etc\sanitize($_POST['sessionexpiry']);
  
-    ($result = mysqli_query($link, "UPDATE `apps` SET `enabled` = '$status',`hashcheck` = '$hash', `hwidcheck` = '$hwid',`vpnblock` = '$vpn', `ver` = '$ver', `download` = NULLIF('$dl', ''),`webdownload` = NULLIF('$webdl', ''), `webhook` = NULLIF('$webhooker', ''), `resellerstore` = NULLIF('$resellerstorelink', ''),`panelstatus` = '$panel' WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+    ($result = mysqli_query($link, "UPDATE `apps` SET `enabled` = '$status',`hashcheck` = '$hashstatus', `hwidcheck` = '$hwid',`vpnblock` = '$vpn', `ver` = '$ver', `download` = NULLIF('$dl', ''),`webdownload` = NULLIF('$webdl', ''), `webhook` = NULLIF('$webhooker', ''), `resellerstore` = NULLIF('$resellerstorelink', ''),`panelstatus` = '$panelstatus' WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
 	
 	
 	$appdisabledpost = misc\etc\sanitize($_POST['appdisabled']);
