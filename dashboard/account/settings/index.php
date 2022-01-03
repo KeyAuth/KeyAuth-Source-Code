@@ -983,7 +983,7 @@ if (!isset($_SESSION['username'])) {
 
 							{	
 
-								wh_log($logwebhook,"".$_SESSION['username']." with email " . $_SESSION['email'] . " has changed email to `{$email}`", $webhookun);
+								dashboard\primary\wh_log($logwebhook,"".$_SESSION['username']." with email " . $_SESSION['email'] . " has changed email to `{$email}`", $webhookun);
 
 								
 
