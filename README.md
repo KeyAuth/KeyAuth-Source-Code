@@ -13,7 +13,7 @@ You can use the changes.sql file to modify your current database if you had KeyA
 
 _Donations of all sizes welcome - Show proof of donation for exclusive role in Discord https://keyauth.com/discord_
 
-You may purchase a subscription for cheaper than the cost of hosting this yourself at https://keyauth.com/
+You may purchase a subscription for cheaper than the cost of hosting this yourself at https://keyauth.win/
 You may also use our tester subscription which is completley free with less features.
 
 No support is given towards setup of this. Feel free to create issue though if code is broken https://github.com/KeyAuth/KeyAuth-Source-Code/issues/new
