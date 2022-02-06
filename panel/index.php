@@ -44,7 +44,6 @@ while ($row = mysqli_fetch_array($result))
 	$panelStatus = $row['panelstatus'];
 }
 
-``php
 if(!$panelStatus)
 {
       die(“Panel was disabled by the application owner”);
