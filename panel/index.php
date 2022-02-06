@@ -41,8 +41,13 @@ while ($row = mysqli_fetch_array($result))
 {
     $secret = $row['secret'];
 	$_SESSION['panelapp'] = $secret;
+	$panelStatus = $row['panelstatus'];
 }
 
+``php
+if(!$panelStatus)
+{
+      die(“Panel was disabled by the application owner”);
 $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$owner' AND `role` = 'seller'");
 
 if (mysqli_num_rows($result) == 0)
