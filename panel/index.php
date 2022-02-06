@@ -46,7 +46,7 @@ while ($row = mysqli_fetch_array($result))
 
 if(!$panelStatus)
 {
-      die(“Panel was disabled by the application owner”);
+      die("Panel was disabled by the application owner");
 }
 
 $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$owner' AND `role` = 'seller'");
