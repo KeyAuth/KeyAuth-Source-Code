@@ -48,6 +48,7 @@ if(!$panelStatus)
 {
       die(“Panel was disabled by the application owner”);
 $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$owner' AND `role` = 'seller'");
+}
 
 if (mysqli_num_rows($result) == 0)
 {
