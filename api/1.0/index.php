@@ -283,9 +283,9 @@ switch (hex2bin($_POST['type']))
                 )) , $enckey));
 
             }
-
-            // set key to used
-            mysqli_query($link, "UPDATE `keys` SET `status` = 'Used' WHERE `key` = '$checkkey'");
+		
+	    // set key to used, and set usedby
+            mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `usedby` = '$username' WHERE `key` = '$checkkey'");
 
             // add current time to key time
             $expiry = $expires + time();
