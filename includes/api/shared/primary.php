@@ -31,7 +31,10 @@ function getSession($sessionid, $secret)
     $num = mysqli_num_rows($result);
     if ($num === 0)
     {
-        die("no active session");
+        die(json_encode(array(
+                    "success" => false,
+                    "message" => "Invalid SessionID. Your program either failed to initialize, or never attempted to."
+                )) );
     }
     $row = mysqli_fetch_array($result);
     return array(
