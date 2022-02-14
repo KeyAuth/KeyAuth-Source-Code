@@ -91,7 +91,11 @@ switch ($type)
     case 'add':
         $expiry = misc\etc\sanitize($_GET['expiry']);
         $level = misc\etc\sanitize($_GET['level']);
-        $amount = misc\etc\sanitize($_GET['amount']);
+        
+        $payload = file_get_contents('php://input');
+		$json = json_decode($payload);
+		$data = $json->data;
+        $amount = misc\etc\sanitize($data->quantity) ?? misc\etc\sanitize($json->data->order->quantity) ?? misc\etc\sanitize($_GET['amount']);
 
         if (is_null($expiry))
         {
