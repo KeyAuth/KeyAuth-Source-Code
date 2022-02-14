@@ -19,6 +19,7 @@ while ($row = mysqli_fetch_array($result))
     $hwidenabled = $row['hwidcheck'];
     $vpnblock = $row['vpnblock'];
     $status = $row['enabled'];
+    $paused = $row['paused'];
     $currentver = $row['ver'];
     $download = $row['download'];
     $webhook = $row['webhook'];
@@ -84,6 +85,14 @@ switch (hex2bin($_POST['type']))
             )) , $secret));
 
         }
+		
+	if($paused)
+		{
+			die(api\v1_0\Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "Application is currently paused, please wait for the developer to say otherwise."
+            )) , $secret));
+	}
 
         $ver = misc\etc\sanitize(api\v1_0\Decrypt($_POST['ver'], $secret));
 
