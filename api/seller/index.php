@@ -4,6 +4,12 @@ include '../../includes/misc/autoload.phtml';
 include '../../includes/api/1.0/autoload.phtml';
 include '../../includes/api/shared/autoload.phtml';
 
+if(strlen($_GET['sellerkey']) != 32)
+{
+    http_response_code(404);
+    error("Invalid seller key length. Seller key is located in seller settings of dashboard.");
+}
+
 $key = misc\etc\sanitize($_GET['key']);
 $user = misc\etc\sanitize($_GET['user']);
 $sellerkey = misc\etc\sanitize($_GET['sellerkey']);
