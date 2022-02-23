@@ -192,10 +192,15 @@ switch ($type)
 		
 		$row = mysqli_fetch_array($result);
 		die(json_encode(array(
-					"success" => false,
+					"success" => true,
 					"message" => "Application successfully retrieved",
 					"secret" => "".$row["secret"]."",
 					"ownerid" => "".$row["ownerid"].""
+		)));
+	default:
+		die(json_encode(array(
+					"success" => false,
+					"message" => "Invalid type"
 		)));
     }
 ?>
