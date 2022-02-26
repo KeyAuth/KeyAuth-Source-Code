@@ -1417,7 +1417,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Seller Key Successfully Found"
             )));
         }
