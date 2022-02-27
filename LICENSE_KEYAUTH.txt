@@ -1,5 +1,5 @@
 KEYAUTH LICENSE AGREEMENT
-Version 1, 23 June 2021
+Version 1.1, 27 February 2022
 
 PLEASE CAREFULLY READ THIS KEYAUTH LICENSE AGREEMENT ("AGREEMENT"). THIS
 AGREEMENT CONSTITUTES A LEGALLY BINDING AGREEMENT BETWEEN YOU AND NELSON 
@@ -113,10 +113,10 @@ waiver of one breach or default or any delay in exercising any rights will not
 constitute a waiver of any subsequent breach or default.
 
 5.3   Governing Law. This Agreement will in all respects be governed by the laws
-of the State of California without reference to its principles of conflicts of
+of the State of Florida without reference to its principles of conflicts of
 laws. The parties hereby agree that all disputes arising out of this Agreement
 will be subject to the exclusive jurisdiction of and venue in the federal and
-state courts within Los Angeles County, California. You hereby consent to the
+state courts within Orange County, Florida. You hereby consent to the
 personal and exclusive jurisdiction and venue of these courts. The parties
 hereby disclaim and exclude the application hereto of the United Nations
 Convention on Contracts for the International Sale of Goods.
