@@ -14,6 +14,8 @@ $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$use
 $row = mysqli_fetch_array($result);
 
 $banned = $row['banned'];
+$twofactor = $row['twofactor'];
+
 if (!is_null($banned))
 {
 	echo "<meta http-equiv='Refresh' Content='0; url=../login/'>";
@@ -70,6 +72,11 @@ display:block;
 </html>
 <?php
 die();
+}
+
+if(!$twofactor)
+{
+	die("Admin accounts must have 2FA enabled");
 }
 ?>
 <!DOCTYPE html>
@@ -390,8 +397,10 @@ if (isset($_POST['searchusername']))
 
         mysqli_query($link, "UPDATE `accounts` SET `banned` = '$reason' WHERE `username` = '$un'"); // set account to banned
         mysqli_query($link, "UPDATE `apps` SET `banned` = '1' WHERE `owner` = '$un'"); // ban all apps owned by account
+
+	mysqli_query($link, "DELETE FROM `bids` WHERE `username` = '$un'");
 		
-		dashboard\primary\wh_log($adminwebhook, "Admin `{$username}` has banned user `{$un}` for reason `{$reason}`", $adminwebhookun);
+	dashboard\primary\wh_log($adminwebhook, "Admin `{$username}` has banned user `{$un}` for reason `{$reason}`", $adminwebhookun);
 		
         dashboard\primary\success("Account Banned!");
     }
@@ -403,7 +412,7 @@ if (isset($_POST['searchusername']))
         mysqli_query($link, "UPDATE `accounts` SET `banned` = NULL WHERE `username` = '$un'"); // set account to not banned
         mysqli_query($link, "UPDATE `apps` SET `banned` = '0' WHERE `owner` = '$un'"); // unban all apps owned by account
 		
-		dashboard\primary\wh_log($adminwebhook, "Admin `{$username}` has unbanned user `{$un}`", $adminwebhookun);
+	dashboard\primary\wh_log($adminwebhook, "Admin `{$username}` has unbanned user `{$un}`", $adminwebhookun);
 		
         dashboard\primary\success("Account Unbanned!");
     }
@@ -463,7 +472,6 @@ if (isset($_POST['searchusername']))
         $email = misc\etc\sanitize($_POST['email']);
 		$role = misc\etc\sanitize($_POST['role']);
 		$totp = misc\etc\sanitize($_POST['totp']);
-		
 		switch($role)
 		{
 			case 'seller':
@@ -483,7 +491,7 @@ if (isset($_POST['searchusername']))
 
         mysqli_query($link, "UPDATE `accounts` SET `email` = '$email',`role` = '$role', `expires` = NULLIF('$expires', ''), `twofactor` = '$totp' WHERE `username` = '$un'");
 
-		dashboard\primary\wh_log($adminwebhook, "Admin `{$username}` has updated user `{$un}` email to `{$email}`, role to `{$role}`, and 2FA status to `{$totp}`", $adminwebhookun);
+	dashboard\primary\wh_log($adminwebhook, "Admin `{$username}` has updated user `{$un}` email to `{$email}`, role to `{$role}`, and 2FA status to `{$totp}`", $adminwebhookun);
 		
         dashboard\primary\success("Updated Account!");
     }
