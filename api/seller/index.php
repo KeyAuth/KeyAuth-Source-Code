@@ -2,7 +2,7 @@
 
 if(strlen($_GET['sellerkey']) != 32)
 {
-    http_response_code(404);
+	http_response_code(404);
     error("Invalid seller key length. Seller key is located in seller settings of dashboard.");
 }
 
@@ -98,8 +98,8 @@ switch ($type)
     case 'add':
         $expiry = misc\etc\sanitize($_GET['expiry']);
         $level = misc\etc\sanitize($_GET['level']);
-        
-        $payload = file_get_contents('php://input');
+		
+		$payload = file_get_contents('php://input');
 		$json = json_decode($payload);
 		$data = $json->data;
         $amount = misc\etc\sanitize($data->quantity) ?? misc\etc\sanitize($json->data->order->quantity) ?? misc\etc\sanitize($_GET['amount']);
@@ -110,7 +110,7 @@ switch ($type)
             error("Expiry not set");
         }
 
-        if (!isset($amount))
+	    if (!isset($amount))
         {
             $amount = "1";
         }
@@ -661,7 +661,10 @@ switch ($type)
                 )));
         }
     case 'resetpw':
-        mysqli_query($link, "UPDATE `users` SET `password` = NULL WHERE `username` = '$user' AND `app` = '$secret'");
+        $passwd = misc\etc\sanitize($_GET['passwd']);
+		if(!is_null($passwd))
+			$passwd = password_hash($passwd, PASSWORD_BCRYPT);
+        mysqli_query($link, "UPDATE `users` SET `password` = NULLIF('$passwd','') WHERE `username` = '$user' AND `app` = '$secret'");
 
         if (mysqli_affected_rows($link) != 0)
         {
