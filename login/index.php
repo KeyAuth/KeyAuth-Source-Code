@@ -36,10 +36,6 @@ if (isset($_SESSION['username']))
 					<span class="login100-form-title p-b-51">
 						Login
 					</span>
-					
-					<div class="alert alert-primary" style="width: 100%;">
-					KeyAuth is for sale, make an offer here <a href="https://keyauth.com/bid/" target="_blank">https://keyauth.com/bid/</a>
-					</div>
 
 					<div class="wrap-input100 validate-input m-b-16">
 						<input class="input100" type="text" name="keyauthusername" placeholder="Username" required>
