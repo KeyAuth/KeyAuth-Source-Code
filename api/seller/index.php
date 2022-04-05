@@ -2,7 +2,7 @@
 
 if(strlen($_GET['sellerkey']) != 32)
 {
-    http_response_code(404);
+	http_response_code(404);
     error("Invalid seller key length. Seller key is located in seller settings of dashboard.");
 }
 
@@ -98,8 +98,8 @@ switch ($type)
     case 'add':
         $expiry = misc\etc\sanitize($_GET['expiry']);
         $level = misc\etc\sanitize($_GET['level']);
-        
-        $payload = file_get_contents('php://input');
+		
+		$payload = file_get_contents('php://input');
 		$json = json_decode($payload);
 		$data = $json->data;
         $amount = misc\etc\sanitize($data->quantity) ?? misc\etc\sanitize($json->data->order->quantity) ?? misc\etc\sanitize($_GET['amount']);
@@ -110,7 +110,7 @@ switch ($type)
             error("Expiry not set");
         }
 
-        if (!isset($amount))
+	    if (!isset($amount))
         {
             $amount = "1";
         }
@@ -661,7 +661,10 @@ switch ($type)
                 )));
         }
     case 'resetpw':
-        mysqli_query($link, "UPDATE `users` SET `password` = NULL WHERE `username` = '$user' AND `app` = '$secret'");
+        $passwd = misc\etc\sanitize($_GET['passwd']);
+		if(!is_null($passwd))
+			$passwd = password_hash($passwd, PASSWORD_BCRYPT);
+        mysqli_query($link, "UPDATE `users` SET `password` = NULLIF('$passwd','') WHERE `username` = '$user' AND `app` = '$secret'");
 
         if (mysqli_affected_rows($link) != 0)
         {
@@ -707,6 +710,36 @@ switch ($type)
         {
             error("Failed to edit subscription");
         }
+    case 'setnote':
+        $note = misc\etc\sanitize($_GET['note']);
+        mysqli_query($link, "UPDATE `keys` SET `note` = '$note' WHERE `key` = '$key' AND `app` = '$secret'");
+
+        if (mysqli_affected_rows($link) > 0)
+        {
+            success("Successfully set note");
+        }
+        else
+        {
+            error("Failed to set note");
+        }
+	case 'countsubs':
+		$name = misc\etc\sanitize($_GET['name']);
+
+        $result = mysqli_query($link, "SELECT `id` FROM `subscriptions` WHERE `name` = '$name' AND `app` = '$secret'");
+        // if not found
+        if (mysqli_num_rows($result) === 0)
+        {
+            error("You haven't created a subscription with that name");
+        }
+		
+		$result = mysqli_query($link, "SELECT COUNT(`id`) FROM `subs` WHERE `subscription` = '$name' AND `expiry` > '". time() ."'AND `app` = '$secret'");
+		$row = mysqli_fetch_array($result);
+		$count = $row[0];
+		die(json_encode(array(
+            "success" => true,
+            "message" => "Subscription count found successfully",
+			"count" => $count
+        )));
     case 'editvar':
         $varid = misc\etc\sanitize($_GET['varid']);
         $data = misc\etc\sanitize($_GET['data']);
@@ -757,6 +790,40 @@ switch ($type)
                 error("Unhandled Error! Contact us if you need help");
             break;
         }
+	case 'pauseapp':
+            $result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `expiry` > '" . time() . "'");
+            while ($row = mysqli_fetch_array($result))
+            {
+                $expires = $row['expiry'];
+                $exp = $expires - time();
+                mysqli_query($link, "UPDATE `subs` SET `paused` = 1, `expiry` = '$exp' WHERE `app` = '$secret' AND `id` = '" . $row['id'] . "'");
+            }
+            mysqli_query($link, "UPDATE `apps` SET `paused` = 1 WHERE `secret` = '$secret'");
+			if (mysqli_affected_rows($link) > 0)
+			{
+				success("Subscription paused application");
+			}
+			else
+			{
+				error("Failed to pause application");
+			}
+	case 'unpauseapp':
+            $result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `paused` = 1");
+            while ($row = mysqli_fetch_array($result))
+            {
+                $expires = $row['expiry'];
+                $exp = $expires + time();
+                mysqli_query($link, "UPDATE `subs` SET `paused` = 0, `expiry` = '$exp' WHERE `app` = '$secret' AND `id` = '" . $row['id'] . "'");
+            }
+            mysqli_query($link, "UPDATE `apps` SET `paused` = 0 WHERE `secret` = '$secret'");
+			if (mysqli_affected_rows($link) > 0)
+			{
+				success("Subscription unpaused application");
+			}
+			else
+			{
+				error("Failed to unpause application");
+			}
     case 'stats':
         $unusedquery = mysqli_query($link, "SELECT count(1) FROM `keys` WHERE `app` = '$secret' AND `status` = 'Not Used'");
         $row = mysqli_fetch_array($unusedquery);
@@ -1343,8 +1410,6 @@ switch ($type)
 
         if ($format == "text")
         {
-            $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret'");
-
             while ($row = mysqli_fetch_array($result))
             {
                 $stringData .= "" . $row['key'] . "\n";
@@ -1367,8 +1432,139 @@ switch ($type)
                 "keys" => $rows
             )));
         }
+	case 'fetchallchats':
+		$result = mysqli_query($link, "SELECT `name`, `delay` FROM `chats` WHERE `app` = '$secret'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "No chat channels found"
+            )));
+        }
+
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		mysqli_close($link);
+		die(json_encode(array(
+			"success" => true,
+			"message" => "Successfully retrieved chats",
+			"chats" => $rows
+		)));
+	case 'fetchallsessions':
+		$result = mysqli_query($link, "SELECT `id`, `credential`, `expiry`, `validated` FROM `sessions` WHERE `app` = '$secret'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "No sessions found"
+            )));
+        }
+
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		mysqli_close($link);
+		die(json_encode(array(
+			"success" => true,
+			"message" => "Successfully retrieved sessions",
+			"sessions" => $rows
+		)));
+	case 'fetchallmutes':
+		$result = mysqli_query($link, "SELECT `user`, `time` FROM `chatmutes` WHERE `app` = '$secret'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "No mutes found"
+            )));
+        }
+
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		mysqli_close($link);
+		die(json_encode(array(
+			"success" => true,
+			"message" => "Successfully retrieved mutes",
+			"mutes" => $rows
+		)));
+	case 'editchan':
+		$name = misc\etc\sanitize($_GET['name']);
+		$delay = misc\etc\sanitize($_GET['delay']);
+		$delay = $delay * 60; // making it such that the delay is in the unit of minutes
+		
+		mysqli_query($link, "UPDATE `chats` SET `delay` = '$delay' WHERE `app` = '$secret' AND `name` = '$name'");
+		if (mysqli_affected_rows($link) > 0) // check query impacted something, else show error
+		{
+			success("Successfully updated channel!");
+		}
+		else
+		{
+			error("Failed To update channel!");
+		}
+    case 'fetchallusernames':
+        $result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `app` = '$secret'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "No users found"
+            )));
+        }
+
+        if ($format == "text")
+        {
+            while ($row = mysqli_fetch_array($result))
+            {
+                $stringData .= "" . $row['username'] . "\n";
+            }
+            $remove = substr($stringData, 0, -2);
+            echo $remove;
+            break;
+        }
+        else
+        {
+            $rows = array();
+            while ($r = mysqli_fetch_array($result))
+            {
+                $rows[] = $r['username'];
+            }
+            mysqli_close($link);
+            die(json_encode(array(
+                "success" => true,
+                "message" => "Successfully Retrieved Usernames",
+                "usernames" => $rows
+            )));
+        }
     case 'fetchallusers':
-        $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret'");
+        $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret' LIMIT 520");
 
         $num = mysqli_num_rows($result);
 
@@ -1382,32 +1578,18 @@ switch ($type)
             )));
         }
 
-        if ($format == "text")
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result))
         {
-            $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret'");
-
-            while ($row = mysqli_fetch_array($result))
-            {
-                $stringData .= "" . $row['username'] . "\n";
-            }
-            $remove = substr($stringData, 0, -2);
-            echo $remove;
-            break;
+            $rows[] = $r;
         }
-        else
-        {
-            $rows = array();
-            while ($r = mysqli_fetch_assoc($result))
-            {
-                $rows[] = $r;
-            }
-            mysqli_close($link);
-            die(json_encode(array(
-                "success" => true,
-                "message" => "Successfully Retrieved Users",
-                "users" => $rows
-            )));
-        }
+		
+        mysqli_close($link);
+        die(json_encode(array(
+            "success" => true,
+            "message" => "Successfully Retrieved Users",
+            "users" => $rows
+        )));
     case 'setseller':
         mysqli_close($link);
         if ($format == "text")
@@ -1417,7 +1599,7 @@ switch ($type)
         else
         {
             die(json_encode(array(
-                "success" => false,
+                "success" => true,
                 "message" => "Seller Key Successfully Found"
             )));
         }
@@ -1674,9 +1856,9 @@ switch ($type)
         }
     case 'info':
         $resultt = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
-        $numm = mysqli_num_rows($resultt);
+        $num = mysqli_num_rows($resultt);
 
-        if ($numm == 0)
+        if ($num == 0)
         {
             mysqli_close($link);
             Die(json_encode(array(
@@ -1685,40 +1867,30 @@ switch ($type)
             )));
         }
 
-        while ($roww = mysqli_fetch_array($resultt))
+        while ($row = mysqli_fetch_array($resultt))
         {
-
-            if ($roww["status"] == "Not Used")
-            {
-                mysqli_close($link);
-                Die(json_encode(array(
-                    "success" => false,
-                    "message" => "Key Not Used"
-                )));
-            }
-            $expiry = date('jS F Y h:i:s A (T)', $roww["expires"]);
-            $lastlogin = date('jS F Y h:i:s A (T)', $roww["lastlogin"]);
-            $hwid = $roww["hwid"];
-            $status = $roww["status"];
-            $level = $roww["level"];
-            $genby = $roww["genby"];
-            $usedby = $roww["usedby"];
-            $gendate = date('jS F Y h:i:s A (T)', $roww["gendate"]);
-            $ip = $roww["ip"];
-            Die(json_encode(array(
+            $expiry = $row["expires"];
+            $hwid = $row["hwid"];
+            $status = $row["status"];
+            $note = $row["note"];
+            $level = $row["level"];
+            $genby = $row["genby"];
+            $usedby = $row["usedby"];
+            $usedon = $row["usedon"];
+            $gendate = $row["gendate"];
+            die(json_encode(array(
                 "success" => true,
-                "expiry" => "$expiry",
-                "lastlogin" => "$lastlogin",
+                "duration" => "$expiry",
                 "hwid" => "$hwid",
+				"note" => "$note",
                 "status" => "$status",
                 "level" => "$level",
                 "createdby" => "$genby",
                 "usedby" => "$usedby",
-                "creationdate" => "$gendate",
-                "ip" => "$ip"
+                "usedon" => "$usedon",
+                "creationdate" => "$gendate"
             )));
         }
-
     case 'updatesettings':
         $enabled = misc\etc\sanitize($_GET['enabled']);
         $hwidcheck = misc\etc\sanitize($_GET['hwidcheck']);

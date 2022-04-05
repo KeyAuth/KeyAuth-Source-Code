@@ -1,4 +1,5 @@
 <?php
+
 include '../../includes/connection.php'; // mysql conn
 include '../../includes/misc/autoload.phtml';
 include '../../includes/api/shared/autoload.phtml';
@@ -19,7 +20,7 @@ while ($row = mysqli_fetch_array($result))
     $hwidenabled = $row['hwidcheck'];
     $vpnblock = $row['vpnblock'];
     $status = $row['enabled'];
-    $paused = $row['paused'];
+	$paused = $row['paused'];
     $currentver = $row['ver'];
     $download = $row['download'];
     $webhook = $row['webhook'];
@@ -86,13 +87,13 @@ switch ($_POST['type'] ?? $_GET['type'])
 
         }
 		
-	if($paused)
+		if($paused)
 		{
 			die(json_encode(array(
                 "success" => false,
                 "message" => "Application is currently paused, please wait for the developer to say otherwise."
             )));
-	}
+		}
 
         $ver = misc\etc\sanitize($_POST['ver'] ?? $_GET['ver']);
 		if(is_numeric($ver))
@@ -196,7 +197,12 @@ switch ($_POST['type'] ?? $_GET['type'])
                     "message" => "$keyused"
                 )) );
             case 'key_banned':
-                global $banned;
+                if (strpos($keybanned, '{reason}') !== false) {
+					$result = mysqli_query($link, "SELECT `banned` FROM `keys` WHERE `app` = '$secret' AND `key` = '$checkkey'");
+					$row = mysqli_fetch_array($result);
+					$reason = $row['banned'];
+					$keybanned = str_replace("{reason}",$reason,$keybanned);
+				}
                 die(json_encode(array(
                     "success" => false,
                     "message" => "$keybanned"
@@ -292,7 +298,7 @@ switch ($_POST['type'] ?? $_GET['type'])
 
             }
 
-            // set key to used, and set usedby
+            // set key to used
             mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `usedby` = '$username' WHERE `key` = '$checkkey'");
 
             // add current time to key time
@@ -358,6 +364,12 @@ switch ($_POST['type'] ?? $_GET['type'])
                     "message" => "$passmismatch"
                 )) );
             case 'user_banned':
+				if (strpos($userbanned, '{reason}') !== false) {
+					$result = mysqli_query($link, "SELECT `banned` FROM `users` WHERE `app` = '$secret' AND `username` = '$username'");
+					$row = mysqli_fetch_array($result);
+					$reason = $row['banned'];
+					$userbanned = str_replace("{reason}",$reason,$userbanned);
+				}
                 die(json_encode(array(
                     "success" => false,
                     "message" => "$userbanned"
@@ -412,6 +424,12 @@ switch ($_POST['type'] ?? $_GET['type'])
                     "message" => "$hwidmismatch"
                 )) );
             case 'user_banned':
+				if (strpos($userbanned, '{reason}') !== false) {
+					$result = mysqli_query($link, "SELECT `banned` FROM `users` WHERE `app` = '$secret' AND `username` = '$username'");
+					$row = mysqli_fetch_array($result);
+					$reason = $row['banned'];
+					$userbanned = str_replace("{reason}",$reason,$userbanned);
+				}
                 die(json_encode(array(
                     "success" => false,
                     "message" => "$userbanned"
@@ -465,6 +483,12 @@ switch ($_POST['type'] ?? $_GET['type'])
                     "message" => "$keyused"
                 )) );
             case 'key_banned':
+				if (strpos($keybanned, '{reason}') !== false) {
+					$result = mysqli_query($link, "SELECT `banned` FROM `keys` WHERE `app` = '$secret' AND `key` = '$checkkey'");
+					$row = mysqli_fetch_array($result);
+					$reason = $row['banned'];
+					$keybanned = str_replace("{reason}",$reason,$keybanned);
+				}
                 die(json_encode(array(
                     "success" => false,
                     "message" => "$keybanned"
@@ -715,14 +739,18 @@ switch ($_POST['type'] ?? $_GET['type'])
 
         $pcuser = misc\etc\sanitize($_POST['pcuser'] ?? $_GET['pcuser']);
 
-        mysqli_query($link, "INSERT INTO `logs` (`logdate`, `logdata`, `credential`, `pcuser`,`logapp`) VALUES ('$currtime','$msg',NULLIF('$credential', ''),NULLIF('$pcuser', ''),'$secret')");
-
+		if(is_null($webhook))
+		{
+			mysqli_query($link, "INSERT INTO `logs` (`logdate`, `logdata`, `credential`, `pcuser`,`logapp`) VALUES ('$currtime','$msg',NULLIF('$credential', ''),NULLIF('$pcuser', ''),'$secret')");
+			mysqli_close($link);
+			die();
+		}
+		
         $credential = $session["credential"] ?? "N/A";
 
         $msg = "📜 Log: " . $msg;
 		
 		$ip = api\shared\primary\getIp();
-        $url = $webhook;
 
         $timestamp = date("c", strtotime("now"));
 
@@ -787,7 +815,7 @@ switch ($_POST['type'] ?? $_GET['type'])
 
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        $ch = curl_init($url);
+        $ch = curl_init($webhook);
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-type: application/json'

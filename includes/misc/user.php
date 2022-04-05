@@ -190,8 +190,16 @@ function extend($username, $sub, $expiry, $secret = null)
         }
         foreach ($rows as $row)
         {
-            mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('" . $row['username'] . "','$sub', '$expiry', '" . ($secret ?? $_SESSION['app']) . "')");
-        }
+			$result = mysqli_query($link, "SELECT `id` FROM `subs` WHERE `user` = '". $row['username'] ."' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+			if (mysqli_num_rows($result) > 0)
+			{
+				$expiry = $expiry - time();
+				mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`+$expiry WHERE `user` = '". $row['username'] ."' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+			}
+			else {
+				mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('" . $row['username'] . "','$sub', '$expiry', '" . ($secret ?? $_SESSION['app']) . "')");
+			}
+		}
     }
     else
     {
@@ -200,8 +208,17 @@ function extend($username, $sub, $expiry, $secret = null)
         {
             return 'missing';
         }
-        mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$username','$sub', '$expiry', '" . ($secret ?? $_SESSION['app']) . "')");
-    }
+		$result = mysqli_query($link, "SELECT `id` FROM `subs` WHERE `user` = '$username' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		if (mysqli_num_rows($result) > 0)
+		{
+			$expiry = $expiry - time();
+			mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`+$expiry WHERE `user` = '$username' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		}
+        else
+		{
+			mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$username','$sub', '$expiry', '" . ($secret ?? $_SESSION['app']) . "')");
+		}
+	}
     if (mysqli_affected_rows($link) > 0)
     {
 		return 'success';

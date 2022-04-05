@@ -94,7 +94,7 @@ if (mysqli_num_rows($result) > 0)
                                         <label for="example-tel-input" class="col-2 col-form-label">Seller Link <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="You can use this link with Shoppy or Sellix dynamic product type to automatically send key to customer so you never have to restock."></i></label>
                                         <div class="col-10">
                                             <label class="form-control" style="height:auto;"><?php
-echo '<a href="https://'.($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']).'/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text" target="_blank" class="secretlink">https://'.($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']).'/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text</a>';
+echo '<a href="https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text" target="_blank" class="secretlink">https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/api/seller/?sellerkey=' . $sellerkey . '&type=add&expiry=1&mask=XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX&level=1&amount=1&format=text</a>';
 
 ?></label>
                                         </div>
@@ -173,7 +173,7 @@ if (isset($_POST['refreshseller']))
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-       Copyright &copy; <script>document.write(new Date().getFullYear())</script> KeyAuth
+       Copyright &copy; 2020-<script>document.write(new Date().getFullYear())</script> KeyAuth
 </footer>
             <!-- ============================================================== -->
             <!-- End footer -->

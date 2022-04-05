@@ -76,6 +76,15 @@ function head()
 
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
+	<script>
+	// @see https://docs.headwayapp.co/widget for more configuration options.
+	var HW_config = {
+		selector: ".noti", // CSS selector where to inject the badge
+		account:  "yBgPqx"
+	}
+	</script>
+	<script async src="https://cdn.headwayapp.co/widget.js"></script>
+	
 	<script src="https://cdn.keyauth.uk/dashboard/unixtolocal.js"></script>
 
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -234,6 +243,9 @@ function head()
                         <!-- ============================================================== -->
                         <!-- create new -->
                         <!-- ============================================================== -->
+						<li class="nav-item dropdown">
+						<p class="noti" style="padding-top:15px;"></p>
+						</li>
                         <li class="nav-item dropdown">
 						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
 						</a>
@@ -764,7 +776,7 @@ function sidebar($role)
     {
         echo '<li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span class="hide-menu">Seller</span></li>
 		<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../seller/settings/" aria-expanded="false"><i data-feather="settings"></i><span class="hide-menu">Settings</span></a></li>
-		<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../seller/buttons/" aria-expanded="false"><i data-feather="x-circle"></i><span class="hide-menu">Buttons</span></a></li>';
+		<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../seller/buttons/" aria-expanded="false"><i data-feather="x-circle"></i><span class="hide-menu">Web Loader</span></a></li>';
     }
 }
 function error($msg)

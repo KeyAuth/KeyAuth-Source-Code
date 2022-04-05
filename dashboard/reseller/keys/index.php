@@ -553,11 +553,7 @@ if (!isset($_SESSION['username'])) {
 								
                                 if($result)
                                 {
-                                mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '".$_SESSION['username']."'");
-								
-								wh_log($logwebhook, "{$username} has created {$amount} keys", $webhookun);
-								
-                                
+                                mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '".$_SESSION['username']."'");                                
                                 if($amount > 1)
                                 {
                                 echo "<meta http-equiv='Refresh' Content='0; url=downloadbulk.php'>";
@@ -869,7 +865,7 @@ echo '
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-                Copyright &copy; <script>
+                Copyright &copy; 2020-<script>
                 document.write(new Date().getFullYear())
                 </script> KeyAuth
             </footer>

@@ -2,7 +2,7 @@
 include '../includes/connection.php';
 require '../includes/misc/autoload.phtml';
 require '../includes/dashboard/autoload.phtml';
-
+ob_start();
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -124,7 +124,7 @@ if (isset($_POST['register']))
 
     $ownerid = misc\etc\generateRandomString();
 
-    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `img`,`balance`, `expires`, `registrationip`) VALUES ('$username', '$email', '$pass_encrypted', '$ownerid','tester','https://i.imgur.com/TrwYFBa.png','1', NULL, '$ip')") or die(mysqli_error($link));
+    mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `img`,`balance`, `expires`, `registrationip`) VALUES ('$username', '$email', '$pass_encrypted', '$ownerid','tester',' https://cdn.keyauth.win/assets/img/favicon.png','1', NULL, '$ip')") or die(mysqli_error($link));
 
 	$_SESSION['logindate'] = time();
     $_SESSION['username'] = $username;

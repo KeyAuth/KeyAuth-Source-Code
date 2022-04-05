@@ -221,7 +221,7 @@ $(document).ready(function(){
                                         <label for="example-tel-input" class="col-2 col-form-label">Customer panel link</label>
                                         <div class="col-10">
                                             <label class="form-control" style="height:auto;"><?php
-                                            echo '<a href="https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/panel/'.$_SESSION['username'].'/'.$_SESSION['name'].'" target="_blank">https://'.($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']).'/panel/'.$_SESSION['username'].'/'.$_SESSION['name'].'</a>';
+                                            echo '<a href="https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/panel/'.$_SESSION['username'].'/'.$_SESSION['name'].'" target="_blank">https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/panel/'.$_SESSION['username'].'/'.$_SESSION['name'].'</a>';
 											?></label>
                                         </div>
                                     </div>
@@ -352,7 +352,7 @@ $(document).ready(function(){
 									<div class="form-group row">
                                         <label for="example-tel-input" class="col-2 col-form-label">Reseller Webhook Link <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="This is the same if you're using Sellix or Shoppy, create webhook with this link for the event order:paid"></i></label>
                                         <div class="col-10">
-                                            <label class="form-control" style="height:auto;"><?php echo '<a href="https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/api/reseller/?app='.$_SESSION['secret'].'" target="target_" class="secretlink">https://'.($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']).'/api/reseller/?app='.$_SESSION['secret'].'</a>';?></label>
+                                            <label class="form-control" style="height:auto;"><?php echo '<a href="https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/api/reseller/?app='.$_SESSION['secret'].'" target="target_" class="secretlink">https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/api/reseller/?app='.$_SESSION['secret'].'</a>';?></label>
                                         </div>
                                     </div>
 									<div class="form-group row">
@@ -565,7 +565,7 @@ if(isset($_POST['updatesettings']))
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-       Copyright &copy; <script>document.write(new Date().getFullYear())</script> KeyAuth
+       Copyright &copy; 2020-<script>document.write(new Date().getFullYear())</script> KeyAuth
 </footer>
             <!-- ============================================================== -->
             <!-- End footer -->

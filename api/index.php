@@ -1,4 +1,4 @@
 <?php
-        header("Location: https://docs.keyauth.com/");
+        header("Location: https://docs.keyauth.win/");
         exit();
 ?>

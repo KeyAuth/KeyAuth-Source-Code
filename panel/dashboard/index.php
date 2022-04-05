@@ -341,7 +341,7 @@ $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '".$_SESSIO
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-       Copyright &copy; <script>document.write(new Date().getFullYear())</script> KeyAuth
+       Copyright &copy; 2020-<script>document.write(new Date().getFullYear())</script> KeyAuth
 </footer>
             <!-- ============================================================== -->
             <!-- End footer -->
@@ -386,7 +386,7 @@ $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '".$_SESSIO
 			if (going == 1) {
 			handshake();
 			}
-		}, 3000)
+		}, 3000);
 	}
 	function doButton(value)
 	{

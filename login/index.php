@@ -26,7 +26,6 @@ if (isset($_SESSION['username']))
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.uk/auth/css/util.css">
 	<link rel="stylesheet" type="text/css" href="https://cdn.keyauth.uk/auth/css/main.css">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 <body>
 	<div class="limiter">
@@ -36,10 +35,6 @@ if (isset($_SESSION['username']))
 					<span class="login100-form-title p-b-51">
 						Login
 					</span>
-					
-					<div class="alert alert-primary" style="width: 100%;">
-					KeyAuth is for sale, make an offer here <a href="https://keyauth.com/bid/" target="_blank">https://keyauth.com/bid/</a>
-					</div>
 
 					<div class="wrap-input100 validate-input m-b-16">
 						<input class="input100" type="text" name="keyauthusername" placeholder="Username" required>
@@ -170,12 +165,10 @@ if (isset($_POST['login']))
     }
 
     $_SESSION['img'] = $img;
-
+	$ip = api\shared\primary\getIp();
     if ($acclogs) // check if account logs enabled
-    
     {
 		$ua = misc\etc\sanitize($_SERVER['HTTP_USER_AGENT']);
-		$ip = api\shared\primary\getIp();
         mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('$username','" . time() . "','$ip','$ua')"); // insert ip log
         $ts = time() - 604800;
         mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '$username' AND `date` < '$ts'"); // delete any account logs more than a week old

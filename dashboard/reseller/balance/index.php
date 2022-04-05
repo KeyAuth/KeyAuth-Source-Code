@@ -439,7 +439,7 @@ if (!isset($_SESSION['username'])) {
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-       Copyright &copy; <script>document.write(new Date().getFullYear())</script> KeyAuth
+       Copyright &copy; 2020-<script>document.write(new Date().getFullYear())</script> KeyAuth
 </footer>
             <!-- ============================================================== -->
             <!-- End footer -->

@@ -27,7 +27,7 @@ $username = urldecode(misc\etc\sanitize($pieces[2]));
 
 if (!strip_tags(htmlEncode($requrl)) || substr_count($requrl, '/') != 3)
 {
-    Die("Invalid Link, link should look something like https://keyauth.com/panel/mak/CSGI, where mak is the owner of the app, and CSGI is the app name.");
+    Die("Invalid Link, link should look something like https://keyauth.win/panel/mak/CSGI, where mak is the owner of the app, and CSGI is the app name.");
 }
 
 $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$username' AND `owner` = '$owner'");
@@ -46,7 +46,7 @@ while ($row = mysqli_fetch_array($result))
 
 if(!$panelStatus)
 {
-      die("Panel was disabled by the application owner");
+    die("Panel was disabled by the application owner");
 }
 
 $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$owner' AND `role` = 'seller'");

@@ -53,8 +53,7 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 	<script src="https://cdn.keyauth.uk/dashboard/unixtolocal.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-
-
+	<script>	// @see https://docs.headwayapp.co/widget for more configuration options.	var HW_config = {		selector: ".noti", // CSS selector where to inject the badge		account:  "yBgPqx"	}	</script>	<script async src="https://cdn.headwayapp.co/widget.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 	
@@ -63,7 +62,7 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 	//change selectboxes to selectize mode to be searchable
 	$("select").select2();
 	});
-	</script>                    
+	</script>	
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -133,7 +132,7 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
                     <ul class="navbar-nav">
                         <!-- ============================================================== -->
                         <!-- create new -->
-                        <!-- ============================================================== -->
+                        <!-- ============================================================== -->												<li class="nav-item dropdown">						<p class="noti" style="padding-top:15px;"></p>						</li>						
                         <li class="nav-item dropdown">
 						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
 						</a>
@@ -311,7 +310,7 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-       Copyright &copy; <script>document.write(new Date().getFullYear())</script> KeyAuth
+       Copyright &copy; 2020-<script>document.write(new Date().getFullYear())</script> KeyAuth
 </footer>
             <!-- ============================================================== -->
             <!-- End footer -->

@@ -1,4 +1,5 @@
 <?php
+
 require '../../includes/connection.php';
 require '../../includes/misc/autoload.phtml';
 require '../../includes/dashboard/autoload.phtml';

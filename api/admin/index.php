@@ -1,6 +1,9 @@
 <?php
+
 include '../../includes/connection.php';
 include '../../includes/misc/autoload.phtml';
+require '../../includes/dashboard/autoload.phtml';
+require '../../includes/api/shared/autoload.phtml';
 
 $apikey = misc\etc\sanitize($_GET['apikey']);
 if($apikey != $adminapikey)
@@ -10,7 +13,7 @@ if($apikey != $adminapikey)
             "message" => "invalid admin API key"
         )));
 }
-
+$ip = api\shared\primary\getIp();
 $type = misc\etc\sanitize($_GET['type']);
 switch ($type)
 {
@@ -108,17 +111,18 @@ switch ($type)
         mysqli_query($link, "UPDATE `accounts` SET `banned` = '$reason' WHERE `username` = '$un'"); // set account to banned
         mysqli_query($link, "UPDATE `apps` SET `banned` = '1' WHERE `owner` = '$un'"); // ban all apps owned by account
 		
+		dashboard\primary\wh_log($adminwebhook, "Someone with IP `{$ip}` has banned `{$un}` for reason `{$reason}` via AdminAPI", $adminwebhookun);
 		die(json_encode(array(
 						"success" => true,
 						"message" => "Account successfully banned"
 		)));
 	case 'unbanacc':
         $un = misc\etc\sanitize($_GET['username']);
-        $reason = misc\etc\sanitize($_GET['reason']);
 
         mysqli_query($link, "UPDATE `accounts` SET `banned` = NULL WHERE `username` = '$un'"); // set account to not banned
         mysqli_query($link, "UPDATE `apps` SET `banned` = '0' WHERE `owner` = '$un'"); // unban all apps owned by account
 		
+		dashboard\primary\wh_log($adminwebhook, "Someone with IP `{$ip}` has unbanned `{$un}` via AdminAPI", $adminwebhookun);
 		die(json_encode(array(
 						"success" => true,
 						"message" => "Account successfully unbanned"
@@ -128,7 +132,8 @@ switch ($type)
         $email = misc\etc\sanitize($_GET['email']);
 
         mysqli_query($link, "UPDATE `accounts` SET `email` = '$email' WHERE `username` = '$un'");
-		
+	
+		dashboard\primary\wh_log($adminwebhook, "Someone with IP `{$ip}` has changed email of `{$un}` to `{$email}` via AdminAPI", $adminwebhookun);
 		die(json_encode(array(
 						"success" => true,
 						"message" => "Account email updated"
@@ -202,5 +207,5 @@ switch ($type)
 					"success" => false,
 					"message" => "Invalid type"
 		)));
-    }
+	}
 ?>
