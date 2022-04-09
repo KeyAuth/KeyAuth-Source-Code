@@ -7,14 +7,11 @@ assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**I understand this isn't for asking for help with an already existent feature. I must join https://keyauth.win/discord/ for help with that**
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**Describe the suggestion**
+*replace this text with description of your suggestion*
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+**Screenshots**
+If applicable, add screenshots to help illustrate your suggestion.

@@ -7,32 +7,18 @@ assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**I understand this isn't for asking for help with an already existent feature OR an error with compiling an example. I must join https://keyauth.win/discord/ for help with that**
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+
+
+**Describe the bug**
+*replace this text with description of bug*
+
+**Steps To Reproduce**
+*replace this text with steps to reproduce bug*
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+*replace this text with the intended result you're trying to get*
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
-
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
