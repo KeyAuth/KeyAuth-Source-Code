@@ -1373,7 +1373,7 @@ switch ($type)
                 error("Failed to delete all files!");
             break;
             case 'success':
-                success("Successfully deleted all files!");
+                success("Successfully deleted file!");
             break;
             default:
                 error("Unhandled Error! Contact us if you need help");
