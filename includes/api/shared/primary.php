@@ -2,6 +2,7 @@
 
 namespace api\shared\primary;
 
+use misc\etc;
 function vpnCheck($ipaddr)
 {
 	global $proxycheckapikey;
@@ -20,7 +21,7 @@ function vpnCheck($ipaddr)
 }
 function getIp()
 {
-    return $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
+    return etc\sanitize($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR']);
 }
 function getSession($sessionid, $secret)
 {
