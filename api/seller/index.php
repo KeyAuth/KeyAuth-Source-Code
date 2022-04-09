@@ -1370,7 +1370,7 @@ switch ($type)
         switch ($resp)
         {
             case 'failure':
-                error("Failed to delete all files!");
+                error("Failed to delete file!");
             break;
             case 'success':
                 success("Successfully deleted file!");
