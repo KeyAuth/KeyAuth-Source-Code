@@ -289,7 +289,7 @@ switch ($type)
         die(json_encode(array(
             "success" => true,
             "message" => "Successfully retrieved blacklists",
-            "subs" => $rows
+            "blacklists" => $rows
         )));
     case 'fetchallsubs':
         $result = mysqli_query($link, "SELECT `name`, `level` FROM `subscriptions` WHERE `app` = '$secret'");
