@@ -80,7 +80,7 @@ if (mysqli_num_rows($result) > 0)
 }
 
 ?>
-
+			<div class="alert alert-danger alert-rounded">Sharing your seller key intentionally with anyone outside of your development team is consituted as account sharing and will result in an account ban.</div>
                         <div class="card">
                             <div class="card-body">
                                 <form class="form" method="post">
