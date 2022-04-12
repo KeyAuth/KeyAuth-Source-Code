@@ -422,7 +422,7 @@ switch (hex2bin($_POST['type']))
                 )) , $enckey));
             case 'user_banned':
 				if (strpos($userbanned, '{reason}') !== false) {
-					$result = mysqli_query($link, "SELECT `banned` FROM `users` WHERE `app` = '$secret' AND `username` = '$username'");
+					$result = mysqli_query($link, "SELECT `banned` FROM `users` WHERE `app` = '$secret' AND `username` = '$checkkey'");
 					$row = mysqli_fetch_array($result);
 					$reason = $row['banned'];
 					$userbanned = str_replace("{reason}",$reason,$userbanned);
