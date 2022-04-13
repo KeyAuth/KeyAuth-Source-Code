@@ -178,7 +178,7 @@ function extend($username, $sub, $expiry, $secret = null)
     }
     if ($username == "all")
     {
-        $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+        $result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
         if (mysqli_num_rows($result) == 0)
         {
             return 'missing';
@@ -190,11 +190,11 @@ function extend($username, $sub, $expiry, $secret = null)
         }
         foreach ($rows as $row)
         {
-			$result = mysqli_query($link, "SELECT `id` FROM `subs` WHERE `user` = '". $row['username'] ."' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+			$result = mysqli_query($link, "SELECT `id` FROM `subs` WHERE `user` = '". $row['username'] ."' AND `subscription` = '$sub' AND `expiry` > ".time()." AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 			if (mysqli_num_rows($result) > 0)
 			{
-				$expiry = $expiry - time();
-				mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`+$expiry WHERE `user` = '". $row['username'] ."' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+				$appendExpiry = $expiry - time();
+				mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`+$appendExpiry WHERE `user` = '". $row['username'] ."' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 			}
 			else {
 				mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('" . $row['username'] . "','$sub', '$expiry', '" . ($secret ?? $_SESSION['app']) . "')");
@@ -208,11 +208,11 @@ function extend($username, $sub, $expiry, $secret = null)
         {
             return 'missing';
         }
-		$result = mysqli_query($link, "SELECT `id` FROM `subs` WHERE `user` = '$username' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		$result = mysqli_query($link, "SELECT `id` FROM `subs` WHERE `user` = '$username' AND `subscription` = '$sub' AND `expiry` > ".time()." AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 		if (mysqli_num_rows($result) > 0)
 		{
-			$expiry = $expiry - time();
-			mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`+$expiry WHERE `user` = '$username' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+			$appendExpiry = $expiry - time();
+			mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`+$appendExpiry WHERE `user` = '$username' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 		}
         else
 		{
