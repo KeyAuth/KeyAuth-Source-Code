@@ -1370,10 +1370,10 @@ switch ($type)
         switch ($resp)
         {
             case 'failure':
-                error("Failed to delete file!");
+                error("Failed to delete all files!");
             break;
             case 'success':
-                success("Successfully deleted file!");
+                success("Successfully deleted all files!");
             break;
             default:
                 error("Unhandled Error! Contact us if you need help");
@@ -1459,7 +1459,7 @@ switch ($type)
 			"chats" => $rows
 		)));
 	case 'fetchallsessions':
-		$result = mysqli_query($link, "SELECT `id`, `credential`, `expiry`, `validated` FROM `sessions` WHERE `app` = '$secret'");
+		$result = mysqli_query($link, "SELECT `id`, `credential`, `expiry`, `validated`, `ip` FROM `sessions` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
 

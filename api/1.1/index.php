@@ -63,10 +63,9 @@ if ($banned)
 switch ($_POST['type'] ?? $_GET['type'])
 {
     case 'init':
-
+		$ip = api\shared\primary\getIp();
         if ($vpnblock)
         {
-			$ip = api\shared\primary\getIp();
             if (api\shared\primary\vpnCheck($ip))
             {
                 die(json_encode(array(
@@ -133,7 +132,7 @@ switch ($_POST['type'] ?? $_GET['type'])
         $sessionid = misc\etc\generateRandomString();
         // session init
         $time = time() + $sessionexpiry;
-        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`) VALUES ('$sessionid','$secret', '$time', '$enckey')");
+        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', '$enckey', '$ip')");
 
         $result = mysqli_query($link, "select count(1) FROM `users` WHERE `app` = '$secret'");
         $row = mysqli_fetch_array($result);
