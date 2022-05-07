@@ -258,7 +258,8 @@ CREATE TABLE `sessions` (
   `app` varchar(64) NOT NULL,
   `expiry` int(10) NOT NULL,
   `enckey` varchar(64) NOT NULL,
-  `validated` int(1) NOT NULL DEFAULT '0'
+  `validated` int(1) NOT NULL DEFAULT '0',
+  `ip` varchar(45) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -400,6 +401,12 @@ ALTER TABLE `subs`
 --
 ALTER TABLE `subscriptions`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD KEY `username` (`username`,`password`,`hwid`(767),`app`,`owner`,`createdate`,`lastlogin`,`banned`,`ip`,`cooldown`);
 
 --
 -- Indexes for table `uservars`
