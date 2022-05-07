@@ -929,6 +929,8 @@ switch ($type)
             $ip = $row['ip'];
             $createdate = $row['createdate'];
             $lastlogin = $row['lastlogin'];
+			$cooldown = $row["cooldown"];
+			$token = md5(substr($row["password"], -5));
         }
 
         $result = mysqli_query($link, "SELECT `subscription`, `expiry` FROM `subs` WHERE `user` = '$user' AND `app` = '$secret' AND `expiry` > " . time() . "");
@@ -947,7 +949,9 @@ switch ($type)
             "ip" => $ip,
             "hwid" => $hwid,
             "createdate" => $createdate,
-            "lastlogin" => $lastlogin
+            "lastlogin" => $lastlogin,
+			"cooldown" => $cooldown,
+			"token" => $token
         )));
     case 'keydata':
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$key' AND `app` = '$secret'");
@@ -1290,6 +1294,14 @@ switch ($type)
         if (mysqli_affected_rows($link) > 0) success("Reset hash successfully!");
 
         error("Failed to reset hash!");
+	case 'setcooldown':
+		$cooldown = misc\etc\sanitize($_GET['cooldown']);
+		
+        mysqli_query($link, "UPDATE `users` SET `cooldown` = '$cooldown' WHERE `app` = '$secret' AND `username` = '$user'");
+
+        if (mysqli_affected_rows($link) > 0) success("Cooldown set successfully!");
+
+        error("Failed to set cooldown!");
     case 'resetuser':
         $resp = misc\user\resetSingular($user, $secret);
         switch ($resp)
@@ -1483,6 +1495,32 @@ switch ($type)
 			"success" => true,
 			"message" => "Successfully retrieved sessions",
 			"sessions" => $rows
+		)));
+	case 'fetchallbuttons':
+		$result = mysqli_query($link, "SELECT `text`, `value` FROM `buttons` WHERE `app` = '$secret'");
+
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0)
+        {
+            http_response_code(406);
+            mysqli_close($link);
+            Die(json_encode(array(
+                "success" => false,
+                "message" => "No buttons found"
+            )));
+        }
+
+		$rows = array();
+		while ($r = mysqli_fetch_assoc($result))
+		{
+			$rows[] = $r;
+		}
+		mysqli_close($link);
+		die(json_encode(array(
+			"success" => true,
+			"message" => "Successfully retrieved buttons",
+			"buttons" => $rows
 		)));
 	case 'fetchallmutes':
 		$result = mysqli_query($link, "SELECT `user`, `time` FROM `chatmutes` WHERE `app` = '$secret'");
@@ -1775,6 +1813,7 @@ switch ($type)
         }
         $ver = $row["ver"];
         $download = $row["download"];
+        $webdownload = $row["webdownload"];
         $webhook = $row["webhook"];
         $resellerstore = $row["resellerstore"];
         $appdisabled = $row["appdisabled"];
@@ -1794,6 +1833,7 @@ switch ($type)
         $weekproduct = $row["weekproduct"];
         $monthproduct = $row["monthproduct"];
         $lifetimeproduct = $row["lifetimeproduct"];
+        $cooldown = $row["cooldown"];
 
         mysqli_close($link);
         if ($format == "text")
@@ -1803,6 +1843,7 @@ switch ($type)
             echo $hwidcheck ? 'true' : 'false' . "\n";
             echo $ver . "\n";
             echo $download . "\n";
+            echo $webdownload . "\n";
             echo $webhook . "\n";
             echo $resellerstore . "\n";
             echo $appdisabled . "\n";
@@ -1821,7 +1862,8 @@ switch ($type)
             echo $dayproduct . "\n";
             echo $weekproduct . "\n";
             echo $monthproduct . "\n";
-            echo $lifetimeproduct;
+            echo $lifetimeproduct . "\n";
+            echo $cooldown;
             break;
         }
         else
@@ -1833,6 +1875,7 @@ switch ($type)
                 "hwid-lock" => $hwidcheck,
                 "version" => "$ver",
                 "download" => "$download",
+                "webdownload" => "$webdownload",
                 "webhook" => "$webhook",
                 "resellerstore" => "$resellerstore",
                 "disabledmsg" => "$appdisabled",
@@ -1851,7 +1894,8 @@ switch ($type)
                 "dayresellerproductid" => "$dayproduct",
                 "weekresellerproductid" => "$weekproduct",
                 "monthresellerproductid" => "$monthproduct",
-                "liferesellerproductid" => "$lifetimeproduct"
+                "liferesellerproductid" => "$lifetimeproduct",
+                "cooldown" => "$cooldown"
             )));
         }
     case 'info':
