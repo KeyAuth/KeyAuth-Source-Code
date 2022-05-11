@@ -512,7 +512,16 @@ if(isset($_POST['updatesettings']))
 	$sellixmonth = misc\etc\sanitize($_POST['sellixmonthproduct']);
 	$sellixlife = misc\etc\sanitize($_POST['sellixlifetimeproduct']);
 	
-	($result = mysqli_query($link, "UPDATE `apps` SET `sellixsecret` = NULLIF('$sellixwebhooksecret', ''), `sellixdayproduct` = NULLIF('$sellixday', ''), `sellixweekproduct` = NULLIF('$sellixweek', ''), `sellixmonthproduct` = NULLIF('$sellixmonth', ''),`sellixlifetimeproduct` = NULLIF('$sellixlife', ''),`shoppysecret` = NULLIF('$shoppywebhooksecret', ''), `shoppydayproduct` = NULLIF('$shoppyday', ''), `shoppyweekproduct` = NULLIF('$shoppyweek', ''), `shoppymonthproduct` = NULLIF('$shoppymonth', ''),`shoppylifetimeproduct` = NULLIF('$shoppylife', '') WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+	
+	
+	if(!empty($shoppywebhooksecret) && !empty($sellixwebhooksecret)) {
+		dashboard\primary\error("You cannot utilize Sellix and Shoppy simultaneously due to conflicting JavaScript code");
+		echo "<meta http-equiv='Refresh' Content='2;'>";
+		return;
+	}
+	else if(!empty($shoppywebhooksecret) || !empty($sellixwebhooksecret)) {
+		($result = mysqli_query($link, "UPDATE `apps` SET `sellixsecret` = NULLIF('$sellixwebhooksecret', ''), `sellixdayproduct` = NULLIF('$sellixday', ''), `sellixweekproduct` = NULLIF('$sellixweek', ''), `sellixmonthproduct` = NULLIF('$sellixmonth', ''),`sellixlifetimeproduct` = NULLIF('$sellixlife', ''),`shoppysecret` = NULLIF('$shoppywebhooksecret', ''), `shoppydayproduct` = NULLIF('$shoppyday', ''), `shoppyweekproduct` = NULLIF('$shoppyweek', ''), `shoppymonthproduct` = NULLIF('$shoppymonth', ''),`shoppylifetimeproduct` = NULLIF('$shoppylife', '') WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+	}
 	
 	if(!is_null($cooldownduration))
 	{
