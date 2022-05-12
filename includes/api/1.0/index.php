@@ -178,7 +178,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
             return 'no_active_subs';
         }
         $lastlogin = time();
-        mysqli_query($link, "UPDATE `users` SET `ip` = NULLIF('$ip', ''),`lastlogin` = '$lastlogin' WHERE `username` = '$un'");
+        mysqli_query($link, "UPDATE `users` SET `ip` = NULLIF('$ip', ''),`lastlogin` = '$lastlogin' WHERE `username` = '$un' AND `app` = '$secret'");
         $rows = array();
         while ($r = mysqli_fetch_assoc($result))
         {
