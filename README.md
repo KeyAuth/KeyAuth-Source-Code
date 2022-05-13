@@ -18,8 +18,7 @@ You may also use our tester subscription which is completley free with less feat
 
 No support is given towards setup of this. Feel free to create issue though if code is broken https://github.com/KeyAuth/KeyAuth-Source-Code/issues/new
 
-[![CodeFactor](https://img.shields.io/codefactor/grade/github/KeyAuth/KeyAuth-Source-Code?label=CodeFactor&cacheSeconds=3600)](https://www.codefactor.io/repository/github/KeyAuth/KeyAuth-Source-Code)
-[![Release](https://img.shields.io/github/v/release/KeyAuth/KeyAuth-Source-Code?label=Release&color=brightgreen&cacheSeconds=3600)](https://github.com/KeyAuth/KeyAuth-Source-Code/releases/latest)
+[![CodeFactor](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code/badge)](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code)
 [![Discord](https://img.shields.io/discord/824397012685291520?label=Discord&cacheSeconds=3600)](https://discord.gg/UNk3MphscB)
 [![Twitter](https://img.shields.io/twitter/follow/KeyAuth?cacheSeconds=3600)](https://twitter.com/KeyAuth)
 
