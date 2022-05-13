@@ -15,7 +15,7 @@ function Decrypt($string, $enckey)
 function register($un, $key, $pw, $hwid, $secret)
 {
     global $link; // needed to refrence active MySQL connection
-    // query username
+    // search username
     $result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '$secret'");
     // if username already in existence
     if (mysqli_num_rows($result) >= 1)
@@ -155,11 +155,11 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
         if ($hwidenabled == "1")
         {
             // check if hwid in db contains hwid recieved
-            if (strpos($hwidd, $hwid) === false && $hwidd != NULL)
+            if ($hwid != NULL && strpos($hwidd, $hwid) === false && $hwidd != NULL)
             {
                 return 'hwid_mismatch';
             }
-            else if ($hwidd == NULL)
+            else if ($hwidd == NULL && $hwid != NULL)
             {
                 mysqli_query($link, "UPDATE `users` SET `hwid` = NULLIF('$hwid', '') WHERE `username` = '$un' AND `app` = '$secret'");
             }
@@ -178,7 +178,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
             return 'no_active_subs';
         }
         $lastlogin = time();
-        mysqli_query($link, "UPDATE `users` SET `ip` = NULLIF('$ip', ''),`lastlogin` = '$lastlogin' WHERE `username` = '$un'");
+        mysqli_query($link, "UPDATE `users` SET `ip` = NULLIF('$ip', ''),`lastlogin` = '$lastlogin' WHERE `username` = '$un' AND `app` = '$secret'");
         $rows = array();
         while ($r = mysqli_fetch_assoc($result))
         {
