@@ -31,4 +31,6 @@ $shoppyAPIkey = ""; // shoppy.gg API key for my staff to look up orders
 
 $proxycheckapikey = ""; // proxycheck.io API key to check if IP is considered a VPN
 
+$bunnyNetKey = ""; // bunny.net CDN used for custom domains
+
 ?>

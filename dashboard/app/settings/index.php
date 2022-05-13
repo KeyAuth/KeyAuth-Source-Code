@@ -96,6 +96,7 @@ $(document).ready(function(){
 					$hwidcheck = $row['hwidcheck'];
 					$vpnblock = $row['vpnblock'];
 					$panelstatus = $row['panelstatus'];
+					$customDomain = $row['customDomain'];
 					$hashcheck = $row['hashcheck'];
 
                     $verr = $row['ver'];
@@ -223,6 +224,12 @@ $(document).ready(function(){
                                             <label class="form-control" style="height:auto;"><?php
                                             echo '<a href="https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/panel/'.$_SESSION['username'].'/'.$_SESSION['name'].'" target="_blank">https://'.($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']).'/panel/'.$_SESSION['username'].'/'.$_SESSION['name'].'</a>';
 											?></label>
+                                        </div>
+                                    </div>
+									<div class="form-group row">
+                                        <label for="example-tel-input" class="col-2 col-form-label">Customer panel custom domain <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Custom domain for customer panel. Please lookup KeyAuth YouTube video for custom domains for instructions"></i></label>
+                                        <div class="col-10">
+                                            <input class="form-control" maxlength="100" name="customDomain" id="defaultconfig-3" value="<?php echo $customDomain; ?>" placeholder="panel.example.com">
                                         </div>
                                     </div>
 									<div class="form-group row">
@@ -471,6 +478,7 @@ if(isset($_POST['updatesettings']))
     $webhooker = misc\etc\sanitize($_POST['webhook']);
     $resellerstorelink = misc\etc\sanitize($_POST['resellerstore']);
 	$panelstatus = misc\etc\sanitize($_POST['panelstatus']);
+	$customDomain = misc\etc\sanitize($_POST['customDomain']);
 	
 	$cooldownduration = misc\etc\sanitize($_POST['cooldownduration']);
 	$cooldownexpiry = misc\etc\sanitize($_POST['cooldownexpiry']);
@@ -478,7 +486,7 @@ if(isset($_POST['updatesettings']))
 	$sessionduration = misc\etc\sanitize($_POST['sessionduration']);
 	$sessionexpiry = misc\etc\sanitize($_POST['sessionexpiry']);
  
-    ($result = mysqli_query($link, "UPDATE `apps` SET `enabled` = '$status',`hashcheck` = '$hashstatus', `hwidcheck` = '$hwid',`vpnblock` = '$vpn', `ver` = '$ver', `download` = NULLIF('$dl', ''),`webdownload` = NULLIF('$webdl', ''), `webhook` = NULLIF('$webhooker', ''), `resellerstore` = NULLIF('$resellerstorelink', ''),`panelstatus` = '$panelstatus' WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
+    ($result = mysqli_query($link, "UPDATE `apps` SET `enabled` = '$status', `customDomain` = '$customDomain', `hashcheck` = '$hashstatus', `hwidcheck` = '$hwid',`vpnblock` = '$vpn', `ver` = '$ver', `download` = NULLIF('$dl', ''),`webdownload` = NULLIF('$webdl', ''), `webhook` = NULLIF('$webhooker', ''), `resellerstore` = NULLIF('$resellerstorelink', ''),`panelstatus` = '$panelstatus' WHERE `secret` = '".$_SESSION['app']."'")) or die(mysqli_error($link));
 	
 	
 	$appdisabledpost = misc\etc\sanitize($_POST['appdisabled']);
@@ -512,7 +520,36 @@ if(isset($_POST['updatesettings']))
 	$sellixmonth = misc\etc\sanitize($_POST['sellixmonthproduct']);
 	$sellixlife = misc\etc\sanitize($_POST['sellixlifetimeproduct']);
 	
-	
+	if(!empty($customDomain) && $_SESSION['role'] == "seller") {
+		if(strpos($customDomain, "http") === 0) {
+			dashboard\primary\error("Do not include protocol. Your custom domain should be entered as panel.example.com not https://panel.example.com or http://panel.example.com");
+			echo "<meta http-equiv='Refresh' Content='2;'>";
+			return;
+		}
+		$url = "https://api.bunny.net/pullzone/783238/addHostname";
+
+		$curl = curl_init($url);
+		curl_setopt($curl, CURLOPT_URL, $url);
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		
+		$headers = array(
+		"AccessKey: $bunnyNetKey",
+		"Content-Type: application/json",
+		);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+		
+		$data = '{"Hostname":"'.$customDomain.'"}';
+		
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+		
+		curl_exec($curl);
+	}
+	else if(!empty($customDomain)) {
+		dashboard\primary\error("You must have seller plan to utilize customer panel");
+		echo "<meta http-equiv='Refresh' Content='2;'>";
+		return;
+	}
 	
 	if(!empty($shoppywebhooksecret) && !empty($sellixwebhooksecret)) {
 		dashboard\primary\error("You cannot utilize Sellix and Shoppy simultaneously due to conflicting JavaScript code");

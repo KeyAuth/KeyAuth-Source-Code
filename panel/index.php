@@ -18,19 +18,26 @@ function htmlEncode($s)
     return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 }
 
-$requrl = $_SERVER['REQUEST_URI'];
+$host = $_SERVER['HTTP_CDN_HOST']; // bunny.net host header
+if(!isset($host)) {
 
-$uri = trim($_SERVER['REQUEST_URI'], '/');
-$pieces = explode('/', $uri);
-$owner = urldecode(misc\etc\sanitize($pieces[1]));
-$username = urldecode(misc\etc\sanitize($pieces[2]));
-
-if (!strip_tags(htmlEncode($requrl)) || substr_count($requrl, '/') != 3)
-{
-    Die("Invalid Link, link should look something like https://keyauth.win/panel/mak/CSGI, where mak is the owner of the app, and CSGI is the app name.");
+	$requrl = $_SERVER['REQUEST_URI'];
+	
+	$uri = trim($_SERVER['REQUEST_URI'], '/');
+	$pieces = explode('/', $uri);
+	$owner = urldecode(misc\etc\sanitize($pieces[1]));
+	$name = urldecode(misc\etc\sanitize($pieces[2]));
+	
+	if (!strip_tags(htmlEncode($requrl)) || substr_count($requrl, '/') != 3)
+	{
+		Die("Invalid Link, link should look something like https://keyauth.win/panel/mak/CSGI, where mak is the owner of the app, and CSGI is the app name.");
+	}
+	
+	$result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$name' AND `owner` = '$owner'");
 }
-
-$result = mysqli_query($link, "SELECT * FROM `apps` WHERE `name` = '$username' AND `owner` = '$owner'");
+else {
+	$result = mysqli_query($link, "SELECT * FROM `apps` WHERE `customDomain` = '$host'");
+}
 
 if (mysqli_num_rows($result) == 0)
 {
@@ -42,6 +49,8 @@ while ($row = mysqli_fetch_array($result))
     $secret = $row['secret'];
 	$_SESSION['panelapp'] = $secret;
 	$panelStatus = $row['panelstatus'];
+	$owner = $row['owner']; // in the cases where custom domain is used
+	$name = $row['name']; // in the cases where custom domain is used
 }
 
 if(!$panelStatus)
@@ -62,9 +71,9 @@ if (mysqli_num_rows($result) == 0)
 <head>
 	<?php
 echo '
-	    <title>KeyAuth - Login to ' . $username . ' Panel</title>
+	    <title>KeyAuth - Login to ' . $name . ' Panel</title>
 	    <meta name="og:image" content="https://cdn.keyauth.uk/front/assets/img/favicon.png">
-        <meta name="description" content="Login to reset your HWID or download ' . $username . '">
+        <meta name="description" content="Login to reset your HWID or download ' . $name . '">
         ';
 ?>
 	<meta charset="UTF-8">
@@ -80,7 +89,7 @@ echo '
 			<div class="wrap-login100 p-t-50 p-b-90">
 				<form class="login100-form validate-form flex-sb flex-w" method="post">
 					<span class="login100-form-title p-b-51">
-						<?php echo 'Login To ' . $username . ' Panel'; ?>
+						<?php echo 'Login To ' . $name . ' Panel'; ?>
 					</span>
 
 					
