@@ -75,7 +75,7 @@ function register($un, $key, $pw, $hwid, $secret)
         $password = password_hash($pw, PASSWORD_BCRYPT);
         $createdate = time();
         // create user
-        mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`,`owner`,`createdate`) VALUES ('$un','$password', NULLIF('$hwid', ''), '$secret', '$genby', '$createdate')");
+        mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`,`owner`,`createdate`, `lastlogin`, `ip`) VALUES ('$un','$password', NULLIF('$hwid', ''), '$secret', '$genby', '$createdate', '$createdate', '$ip')");
         $result = mysqli_query($link, "SELECT `subscription`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
         $rows = array();
         while ($r = mysqli_fetch_assoc($result))
