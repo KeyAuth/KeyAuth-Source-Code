@@ -1332,7 +1332,7 @@ echo '
 
                                                     <td><?php echo $row["note"] ?? "N/A"; ?></td>
 
-													<td><?php echo $row["usedby"]; ?></td>
+													<td><?php echo $row["usedby"] ?? "N/A"; ?></td>
 
                                                     <td><label class="<?php echo $badge; ?>"><?php echo $row['status']; ?></label></td>
 
@@ -1352,7 +1352,7 @@ echo '
 
                                                 <button class="dropdown-item" name="unbankey" value="<?php echo $key; ?>">Unban</button>
 
-                                                <div class="dropdown-divider"></div>
+                                                </tr></form>
 
 												<?php
 
