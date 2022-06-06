@@ -12,55 +12,51 @@ if (session_status() === PHP_SESSION_NONE) {
 
 if (!isset($_SESSION['username'])) {
 
-         header("Location: ../../../login/");
+    header("Location: ../../../login/");
 
-        exit();
-
+    exit();
 }
 
 
 
 
 
-	        $username = $_SESSION['username'];
+$username = $_SESSION['username'];
 
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 
-            $row = mysqli_fetch_array($result);
-
-            
-
-            $banned = $row['banned'];
-
-            $lastreset = $row['lastreset'];
-
-if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
-
-            {
-
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
-
-				session_destroy();
-
-				exit();
-
-            }
-
-        
-
-            $role = $row['role'];
-
-            $_SESSION['role'] = $role;
-
-			
-
-			$darkmode = $row['darkmode'];
+$row = mysqli_fetch_array($result);
 
 
 
-			
+$banned = $row['banned'];
 
-                            
+$lastreset = $row['lastreset'];
+
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset) {
+
+    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+
+    session_destroy();
+
+    exit();
+}
+
+
+
+$role = $row['role'];
+
+$_SESSION['role'] = $role;
+
+
+
+$darkmode = $row['darkmode'];
+
+
+
+
+
+
 
 ?>
 
@@ -90,11 +86,11 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
     <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
 
-	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
 
     <!-- Custom CSS -->
 
-	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
 
     <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
 
@@ -104,41 +100,40 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
     <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 
-	
-
-	<script src="https://cdn.keyauth.uk/dashboard/unixtolocal.js"></script>
-
-	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
 
+    <script src="https://cdn.keyauth.uk/dashboard/unixtolocal.js"></script>
 
-	<script>
-	// @see https://docs.headwayapp.co/widget for more configuration options.
-	var HW_config = {
-		selector: ".noti", // CSS selector where to inject the badge
-		account:  "yBgPqx"
-	}
-	</script>
-	<script async src="https://cdn.headwayapp.co/widget.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-	
+    <script>
+        // @see https://docs.headwayapp.co/widget for more configuration options.
+        var HW_config = {
+            selector: ".noti", // CSS selector where to inject the badge
+            account: "yBgPqx"
+        }
+    </script>
+    <script async src="https://cdn.headwayapp.co/widget.js"></script>
 
-	<script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-	$(document).ready(function () {
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-	// change selectboxes to selectize mode to be searchable
 
-	$("select").select2();
 
-	});
+    <script>
+        $(document).ready(function() {
 
-	</script>
-	
+            // change selectboxes to selectize mode to be searchable
+
+            $("select").select2();
+
+        });
+    </script>
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -153,7 +148,11 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
 </head>
 
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php if ($darkmode == 0) {
+                        echo "dark";
+                    } else {
+                        echo "light";
+                    } ?>">
 
     <!-- ============================================================== -->
 
@@ -217,13 +216,13 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
                         <span class="logo-text">
 
-                             <!-- dark Logo text -->
+                            <!-- dark Logo text -->
 
-                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
 
-                             <!-- Light Logo text -->    
+                            <!-- Light Logo text -->
 
-                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
 
                         </span>
 
@@ -278,26 +277,26 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
                         <!-- create new -->
 
                         <!-- ============================================================== -->
-						
-						<li class="nav-item dropdown">
-						<p class="noti" style="padding-top:15px;"></p>
-						</li>
-						
+
+                        <li class="nav-item dropdown">
+                            <p class="noti" style="padding-top:15px;"></p>
+                        </li>
+
                         <li class="nav-item dropdown">
 
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
 
-						</a>
+                            </a>
 
-						</li>
+                        </li>
 
-						<li class="nav-item dropdown">
+                        <li class="nav-item dropdown">
 
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
 
-						</a>
+                            </a>
 
-						</li>
+                        </li>
 
                         <!-- ============================================================== -->
 
@@ -377,9 +376,9 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
                         <?php
 
-						dashboard\primary\sidebar($role);
+                        dashboard\primary\sidebar($role);
 
-						?>
+                        ?>
 
                     </ul>
 
@@ -437,7 +436,7 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
             <!-- Container fluid  -->
 
-   
+
 
             <!-- ============================================================== -->
 
@@ -469,11 +468,11 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
                                             <tr>
 
-<th>Date</th>
+                                                <th>Date</th>
 
-<th>IP Address</th>
+                                                <th>IP Address</th>
 
-<th>User Agent</th>
+                                                <th>User Agent</th>
 
                                             </tr>
 
@@ -481,61 +480,60 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
                                         <tbody>
 
-<?php
+                                            <?php
 
-        ($result = mysqli_query($link, "SELECT * FROM `acclogs` WHERE `username` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
+                                            ($result = mysqli_query($link, "SELECT * FROM `acclogs` WHERE `username` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
 
-        $rows = array();
+                                            $rows = array();
 
-        while ($r = mysqli_fetch_assoc($result))
+                                            while ($r = mysqli_fetch_assoc($result)) {
 
-        {
-
-            $rows[] = $r;
-
-        }
+                                                $rows[] = $r;
+                                            }
 
 
 
-        foreach ($rows as $row)
+                                            foreach ($rows as $row) {
 
-        {
-
-			?>
+                                            ?>
 
 
 
-                                                    <tr>
+                                                <tr>
 
-													
 
-													<td><script>document.write(convertTimestamp(<?php echo $row["date"]; ?>));</script></td>
 
-													
+                                                    <td>
+                                                        <script>
+                                                            document.write(convertTimestamp(<?php echo $row["date"]; ?>));
+                                                        </script>
+                                                    </td>
+
+
 
                                                     <td><?php echo $row["ip"]; ?></td>
 
-                                                    
+
 
                                                     <td><?php echo $row["useragent"]; ?></td>
 
 
 
-                                                    </tr>
+                                                </tr>
 
 
 
-                                                <?php
+                                            <?php
 
 
 
                                             }
 
-                                            
 
 
 
-                                        ?>
+
+                                            ?>
 
                                         </tbody>
 
@@ -543,11 +541,11 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
                                             <tr>
 
-<th>Date</th>
+                                                <th>Date</th>
 
-<th>IP Address</th>
+                                                <th>IP Address</th>
 
-<th>User Agent</th>
+                                                <th>User Agent</th>
 
                                             </tr>
 
@@ -567,39 +565,39 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
                 <!-- Show / hide columns dynamically -->
 
-                
+
 
                 <!-- Column rendering -->
 
-                
+
 
                 <!-- Row grouping -->
 
-                
+
 
                 <!-- Multiple table control element -->
 
-                
+
 
                 <!-- DOM / jQuery events -->
 
-                
+
 
                 <!-- Complex headers with column visibility -->
 
-                
+
 
                 <!-- language file -->
 
-                
+
 
                 <!-- Setting defaults -->
 
-                
+
 
                 <!-- Footer callback -->
 
-                
+
 
                 <!-- ============================================================== -->
 
@@ -637,9 +635,11 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
             <footer class="footer text-center">
 
-       Copyright &copy; 2020-<script>document.write(new Date().getFullYear())</script> KeyAuth
+                Copyright &copy; 2020-<script>
+                    document.write(new Date().getFullYear())
+                </script> KeyAuth
 
-</footer>
+            </footer>
 
             <!-- ============================================================== -->
 
@@ -665,9 +665,9 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
     <!-- ============================================================== -->
 
-    
 
-   
+
+
 
     <!-- ============================================================== -->
 
@@ -675,7 +675,7 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
     <!-- ============================================================== -->
 
-    
+
 
     <!-- Bootstrap tether Core JavaScript -->
 
@@ -707,7 +707,7 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
     <!--Custom JavaScript -->
 
-   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
 
     <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
 
@@ -731,9 +731,9 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
     <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
 
-		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 
-	    <!-- start - This is for export functionality only -->
+    <!-- start - This is for export functionality only -->
 
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
 
@@ -749,13 +749,13 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
 
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
 
-  
-
-					
 
 
 
-<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+
+
+
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 </body>
 

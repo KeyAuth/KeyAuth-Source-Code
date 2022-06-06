@@ -1,9 +1,8 @@
 <?php
 
-if(strlen($_GET['sellerkey']) != 32)
-{
-	http_response_code(404);
-    error("Invalid seller key length. Seller key is located in seller settings of dashboard.");
+if (strlen($_GET['sellerkey']) != 32) {
+    http_response_code(404);
+    error("Invalid seller key length. Seller key is located in seller settings of dashboard.", "text");
 }
 
 include '../../includes/connection.php';
@@ -16,32 +15,26 @@ $user = misc\etc\sanitize($_GET['user']);
 $sellerkey = misc\etc\sanitize($_GET['sellerkey']);
 $format = misc\etc\sanitize($_GET['format']);
 
-function success($message)
+function success($message, $format)
 {
     global $link;
     mysqli_close($link);
-    if ($format == "text")
-    {
+    if ($format == "text") {
         die($message);
-    }
-    else
-    {
+    } else {
         die(json_encode(array(
             "success" => true,
             "message" => "$message"
         )));
     }
 }
-function error($message)
+function error($message, $format)
 {
     global $link;
     mysqli_close($link);
-    if ($format == "text")
-    {
+    if ($format == "text") {
         die($message);
-    }
-    else
-    {
+    } else {
         die(json_encode(array(
             "success" => false,
             "message" => "$message"
@@ -49,25 +42,22 @@ function error($message)
     }
 }
 
-if (empty($sellerkey))
-{
-    error("No seller key specified");
+if (empty($sellerkey)) {
+    error("No seller key specified", $format);
 }
 
 $type = misc\etc\sanitize($_GET['type']);
-if (!$type)
-{
-    error("Type not specified");
+if (!$type) {
+    error("Type not specified", $format);
 }
 
 $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `sellerkey` = '$sellerkey'");
 
 $num = mysqli_num_rows($result);
 
-if ($num == 0)
-{
+if ($num == 0) {
     http_response_code(404);
-    error("No application with specified seller key found");
+    error("No application with specified seller key found", $format);
 }
 
 $row = mysqli_fetch_array($result);
@@ -76,10 +66,9 @@ $secret = $row['secret'];
 $owner = $row['owner'];
 $banned = $row['banned'];
 
-if ($banned)
-{
+if ($banned) {
     http_response_code(403);
-    error("This application has been banned from KeyAuth.com for violating terms");
+    error("This application has been banned from KeyAuth.com for violating terms", $format);
 }
 
 $seller_check = mysqli_query($link, "SELECT `role` FROM `accounts` WHERE `username` = '$owner'");
@@ -87,88 +76,73 @@ $sellrow = mysqli_fetch_array($seller_check);
 
 $role = $sellrow["role"];
 
-if ($role !== "seller")
-{
+if ($role !== "seller") {
     http_response_code(403);
-    error("Not authorized to use SellerAPI, please upgrade");
+    error("Not authorized to use SellerAPI, please upgrade", $format);
 }
 
-switch ($type)
-{
+switch ($type) {
     case 'add':
         $expiry = misc\etc\sanitize($_GET['expiry']);
         $level = misc\etc\sanitize($_GET['level']);
-		
-		$payload = file_get_contents('php://input');
-		$json = json_decode($payload);
-		$data = $json->data;
+
+        $payload = file_get_contents('php://input');
+        $json = json_decode($payload);
+        $data = $json->data;
         $amount = misc\etc\sanitize($data->quantity) ?? misc\etc\sanitize($json->data->order->quantity) ?? misc\etc\sanitize($_GET['amount']);
 
-        if (is_null($expiry))
-        {
+        if (is_null($expiry)) {
             http_response_code(406);
             error("Expiry not set");
         }
 
-	    if (!isset($amount))
-        {
+        if (!isset($amount)) {
             $amount = "1";
         }
-        if (!is_numeric($amount))
-        {
+        if (!is_numeric($amount)) {
             $amount = "1";
         }
 
-        if (!isset($level))
-        {
+        if (!isset($level)) {
             $level = "1";
         }
-        if (!is_numeric($level))
-        {
+        if (!is_numeric($level)) {
             $level = "1";
         }
 
         $mask = misc\etc\sanitize($_GET['mask']);
-        if (empty($mask))
-        {
+        if (empty($mask)) {
             $mask = "XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX";
         }
-        if (!is_numeric($level))
-        {
+        if (!is_numeric($level)) {
             $mask = "XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX";
         }
 
         $key = misc\license\createLicense($amount, $mask, $expiry, $level, NULL, 86400, $secret);
-        switch ($key)
-        {
+        switch ($key) {
             case 'max_keys':
-                error("You can only generate 100 licenses at a time");
-            break;
+                error("You can only generate 100 licenses at a time", $format);
+                break;
             case 'dupe_custom_key':
-                error("Can't do custom key with amount greater than one");
-            break;
+                error("Can't do custom key with amount greater than one", $format);
+                break;
             default:
-                if ($amount > 1)
-                {
-                    if ($format == "text")
-                    {
+                if ($amount > 1) {
+                    if ($format == "text") {
                         $keys = NULL;
-                        for ($i = 0;$i < count($key);$i++)
-                        {
+                        for ($i = 0; $i < count($key); $i++) {
                             $keys .= "" . $key[$i] . "\n";
                         }
                         $keys = preg_replace(
 
-                        '~[\r\n]+~',
+                            '~[\r\n]+~',
 
-                        "\r\n",
+                            "\r\n",
 
-                        trim($keys)
-);
+                            trim($keys)
+                        );
                         die($keys);
-                    }
-                    else
-                    {
+                    } else {
                         http_response_code(302);
                         mysqli_close($link);
                         die(json_encode(array(
@@ -177,73 +151,62 @@ switch ($type)
                             "keys" => $key
                         )));
                     }
-                }
-                else
-                {
-                    if ($format == "text")
-                    {
-                        die(array_values($key) [0]);
-                    }
-                    else
-                    {
+                } else {
+                    if ($format == "text") {
+                        die(array_values($key)[0]);
+                    } else {
                         mysqli_close($link);
                         die(json_encode(array(
                             "success" => true,
                             "message" => "License Successfully Generated",
-                            "key" => array_values($key) [0]
+                            "key" => array_values($key)[0]
                         )));
                     }
                 }
-            break;
+                break;
         }
     case 'addtime':
         $resp = misc\license\addTime($_GET['time'], 86400, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
                 http_response_code(500);
-                error("Failed to add time!");
-            break;
+                error("Failed to add time!", $format);
+                break;
             case 'success':
-                success("Added time to unused licenses!");
-            break;
+                success("Added time to unused licenses!", $format);
+                break;
             default:
                 http_response_code(400);
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'setvar':
         $resp = misc\user\setVariable($user, $_GET['var'], $_GET['data'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'missing':
-                error("No users found!");
-            break;
+                error("No users found!", $format);
+                break;
             case 'failure':
-                error("Failed to set variable!");
-            break;
+                error("Failed to set variable!", $format);
+                break;
             case 'success':
-                success("Successfully set variable!");
-            break;
+                success("Successfully set variable!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'getvar':
         $var = misc\etc\sanitize($_GET['var']);
 
         $result = mysqli_query($link, "SELECT * FROM `uservars` WHERE `name` = '$var' AND `user` = '$user' AND `app` = '$secret'");
 
-        if (mysqli_num_rows($result) == 0)
-        {
+        if (mysqli_num_rows($result) == 0) {
             http_response_code(404);
             mysqli_close($link);
-            if ($format == "text")
-            {
+            if ($format == "text") {
                 die("Variable not found for user");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => false,
                     "message" => "Variable not found for user"
@@ -255,12 +218,9 @@ switch ($type)
         $data = $row['data'];
 
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die($data);
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "Successfully retrieved variable",
@@ -270,19 +230,17 @@ switch ($type)
     case 'fetchallblacks':
         $result = mysqli_query($link, "SELECT `hwid`, `ip`, `type` FROM `bans` WHERE `app` = '$secret'");
 
-        if (mysqli_num_rows($result) == 0)
-        {
+        if (mysqli_num_rows($result) == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No blacklists found"
             )));
         }
 
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result))
-        {
+        while ($r = mysqli_fetch_assoc($result)) {
             $rows[] = $r;
         }
         mysqli_close($link);
@@ -294,19 +252,17 @@ switch ($type)
     case 'fetchallsubs':
         $result = mysqli_query($link, "SELECT `name`, `level` FROM `subscriptions` WHERE `app` = '$secret'");
 
-        if (mysqli_num_rows($result) == 0)
-        {
+        if (mysqli_num_rows($result) == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No subscriptions found"
             )));
         }
 
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result))
-        {
+        while ($r = mysqli_fetch_assoc($result)) {
             $rows[] = $r;
         }
         mysqli_close($link);
@@ -318,19 +274,17 @@ switch ($type)
     case 'fetchalluservars':
         $result = mysqli_query($link, "SELECT `name`, `data`, `user` FROM `uservars` WHERE `app` = '$secret'");
 
-        if (mysqli_num_rows($result) == 0)
-        {
+        if (mysqli_num_rows($result) == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No user variables Found"
             )));
         }
 
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result))
-        {
+        while ($r = mysqli_fetch_assoc($result)) {
             $rows[] = $r;
         }
         mysqli_close($link);
@@ -342,19 +296,17 @@ switch ($type)
     case 'fetchallfiles':
         $result = mysqli_query($link, "SELECT `id`, `url` FROM `files` WHERE `app` = '$secret'");
 
-        if (mysqli_num_rows($result) == 0)
-        {
+        if (mysqli_num_rows($result) == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No files Found"
             )));
         }
 
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result))
-        {
+        while ($r = mysqli_fetch_assoc($result)) {
             $rows[] = $r;
         }
         mysqli_close($link);
@@ -366,19 +318,17 @@ switch ($type)
     case 'fetchallvars':
         $result = mysqli_query($link, "SELECT `varid`, `msg` FROM `vars` WHERE `app` = '$secret'");
 
-        if (mysqli_num_rows($result) == 0)
-        {
+        if (mysqli_num_rows($result) == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No variables Found"
             )));
         }
 
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result))
-        {
+        while ($r = mysqli_fetch_assoc($result)) {
             $rows[] = $r;
         }
         mysqli_close($link);
@@ -391,190 +341,174 @@ switch ($type)
         if (!is_numeric($_GET['authed'])) error("Authed paramater must be 1 if you want to require login first, or 0 if you don't want to.");
 
         $resp = misc\variable\add($_GET['name'], $_GET['data'], $_GET['authed'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'exists':
-                error("Variable name already exists!");
-            break;
+                error("Variable name already exists!", $format);
+                break;
             case 'failure':
-                error("Failed to create variable!");
-            break;
+                error("Failed to create variable!", $format);
+                break;
             case 'success':
-                success("Successfully created variable!");
-            break;
+                success("Successfully created variable!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'addsub':
         $resp = misc\sub\add($_GET['name'], $_GET['level'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to create subscription!");
-            break;
+                error("Failed to create subscription!", $format);
+                break;
             case 'success':
-                success("Successfully created subscription!");
-            break;
+                success("Successfully created subscription!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delappsub':
         $resp = misc\sub\deleteSingular($_GET['name'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete subscription!");
-            break;
+                error("Failed to delete subscription!", $format);
+                break;
             case 'success':
-                success("Successfully deleted subscription!");
-            break;
+                success("Successfully deleted subscription!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'addchannel':
         $resp = misc\chat\createChannel($_GET['name'], $_GET['delay'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to create channel!");
-            break;
+                error("Failed to create channel!", $format);
+                break;
             case 'success':
-                success("Successfully created channel!");
-            break;
+                success("Successfully created channel!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delchannel':
         $resp = misc\chat\deleteChannel($_GET['name'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete channel!");
-            break;
+                error("Failed to delete channel!", $format);
+                break;
             case 'success':
-                success("Successfully deleted channel!");
-            break;
+                success("Successfully deleted channel!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'clearchannel':
         $resp = misc\chat\clearChannel($_GET['name'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to clear channel!");
-            break;
+                error("Failed to clear channel!", $format);
+                break;
             case 'success':
-                success("Successfully cleared channel!");
-            break;
+                success("Successfully cleared channel!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'muteuser':
         if (!is_numeric($_GET['time'])) error("Invalid time paramater, must be number");
 
         $timeout = $_GET['time'] + time();
         $resp = misc\chat\muteUser($_GET['user'], $timeout, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'missing':
-                error("User doesn't exist!");
-            break;
+                error("User doesn't exist!", $format);
+                break;
             case 'failure':
-                error("Failed to mute user!");
-            break;
+                error("Failed to mute user!", $format);
+                break;
             case 'success':
-                success("Successfully muted user!");
-            break;
+                success("Successfully muted user!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'unmuteuser':
         $resp = misc\chat\unMuteUser($_GET['user'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to unmute user!");
-            break;
+                error("Failed to unmute user!", $format);
+                break;
             case 'success':
-                success("Successfully unmuted user!");
-            break;
+                success("Successfully unmuted user!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'kill':
         $resp = misc\session\killSingular($_GET['sessid'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to kill session!");
-            break;
+                error("Failed to kill session!", $format);
+                break;
             case 'success':
-                success("Successfully killed session!");
-            break;
+                success("Successfully killed session!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'killall':
         $resp = misc\session\killAll($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to kill all sessions!");
-            break;
+                error("Failed to kill all sessions!", $format);
+                break;
             case 'success':
-                success("Successfully killed all sessions!");
-            break;
+                success("Successfully killed all sessions!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'addwebhook':
-        if (!is_numeric($_GET['authed'])) error("Authed paramater must be 1 if you want to require login first, or 0 if you don't want to.");
+        if (!is_numeric($_GET['authed'])) error("Authed paramater must be 1 if you want to require login first, or 0 if you don't want to.", $format);
 
         $resp = misc\webhook\add($_GET['baseurl'], $_GET['ua'], $_GET['authed'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to add webhook!");
-            break;
+                error("Failed to add webhook!", $format);
+                break;
             case 'success':
-                success("Successfully added webhook!");
-            break;
+                success("Successfully added webhook!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'black':
         $ipaddr = misc\etc\sanitize($_GET['ip']);
 
         $hwid = misc\etc\sanitize($_GET['hwid']);
-        if (!empty($hwid))
-        {
+        if (!empty($hwid)) {
             mysqli_query($link, "INSERT INTO `bans` (`hwid`, `type`, `app`) VALUES ('$hwid','hwid', '$secret')");
         }
 
-        if (!empty($ipaddr))
-        {
+        if (!empty($ipaddr)) {
             mysqli_query($link, "INSERT INTO `bans` (`ip`, `type`, `app`) VALUES ('$ipaddr','ip', '$secret')");
         }
 
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die("Blacklist Addition Successful");
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "Blacklist Addition Successful"
@@ -582,42 +516,39 @@ switch ($type)
         }
     case 'delblack':
         $resp = misc\blacklist\deleteSingular($_GET['data'], $_GET['blacktype'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'invalid':
-                error("Invalid blacklist type!");
-            break;
+                error("Invalid blacklist type!", $format);
+                break;
             case 'failure':
-                error("Failed to delete blacklist!");
-            break;
+                error("Failed to delete blacklist!", $format);
+                break;
             case 'success':
-                success("Successfully deleted blacklist!");
-            break;
+                success("Successfully deleted blacklist!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delblacks':
         $resp = misc\blacklist\deleteAll($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete all blacklists!");
-            break;
+                error("Failed to delete all blacklists!", $format);
+                break;
             case 'success':
-                success("Successfully deleted all blacklists!");
-            break;
+                success("Successfully deleted all blacklists!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'activate':
         $pass = misc\etc\sanitize($_GET['pass']);
         $hwid = misc\etc\sanitize($_GET['hwid']);
 
         $resp = api\v1_0\register($user, $key, $pass, $hwid, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'username_taken':
                 die(json_encode(array(
                     "success" => false,
@@ -662,35 +593,26 @@ switch ($type)
         }
     case 'resetpw':
         $passwd = misc\etc\sanitize($_GET['passwd']);
-		if(!is_null($passwd))
-			$passwd = password_hash($passwd, PASSWORD_BCRYPT);
+        if (!is_null($passwd))
+            $passwd = password_hash($passwd, PASSWORD_BCRYPT);
         mysqli_query($link, "UPDATE `users` SET `password` = NULLIF('$passwd','') WHERE `username` = '$user' AND `app` = '$secret'");
 
-        if (mysqli_affected_rows($link) != 0)
-        {
+        if (mysqli_affected_rows($link) != 0) {
             mysqli_close($link);
-            if ($format == "text")
-            {
+            if ($format == "text") {
                 die("Password reset successful");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => true,
                     "message" => "Password reset successful"
                 )));
             }
-        }
-        else
-        {
+        } else {
             http_response_code(500);
             mysqli_close($link);
-            if ($format == "text")
-            {
+            if ($format == "text") {
                 die("Failed To reset password");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => false,
                     "message" => "Failed To reset password"
@@ -702,43 +624,36 @@ switch ($type)
         $level = misc\etc\sanitize($_GET['level']);
         mysqli_query($link, "UPDATE `subscriptions` SET `level` = '$level' WHERE `name` = '$sub' AND `app` = '$secret'");
 
-        if (mysqli_affected_rows($link) > 0)
-        {
-            success("Subscription successfully edited");
-        }
-        else
-        {
-            error("Failed to edit subscription");
+        if (mysqli_affected_rows($link) > 0) {
+            success("Subscription successfully edited", $format);
+        } else {
+            error("Failed to edit subscription", $format);
         }
     case 'setnote':
         $note = misc\etc\sanitize($_GET['note']);
         mysqli_query($link, "UPDATE `keys` SET `note` = '$note' WHERE `key` = '$key' AND `app` = '$secret'");
 
-        if (mysqli_affected_rows($link) > 0)
-        {
-            success("Successfully set note");
+        if (mysqli_affected_rows($link) > 0) {
+            success("Successfully set note", $format);
+        } else {
+            error("Failed to set note", $format);
         }
-        else
-        {
-            error("Failed to set note");
-        }
-	case 'countsubs':
-		$name = misc\etc\sanitize($_GET['name']);
+    case 'countsubs':
+        $name = misc\etc\sanitize($_GET['name']);
 
         $result = mysqli_query($link, "SELECT `id` FROM `subscriptions` WHERE `name` = '$name' AND `app` = '$secret'");
         // if not found
-        if (mysqli_num_rows($result) === 0)
-        {
-            error("You haven't created a subscription with that name");
+        if (mysqli_num_rows($result) === 0) {
+            error("You haven't created a subscription with that name", $format);
         }
-		
-		$result = mysqli_query($link, "SELECT COUNT(`id`) FROM `subs` WHERE `subscription` = '$name' AND `expiry` > '". time() ."'AND `app` = '$secret'");
-		$row = mysqli_fetch_array($result);
-		$count = $row[0];
-		die(json_encode(array(
+
+        $result = mysqli_query($link, "SELECT COUNT(`id`) FROM `subs` WHERE `subscription` = '$name' AND `expiry` > '" . time() . "'AND `app` = '$secret'");
+        $row = mysqli_fetch_array($result);
+        $count = $row[0];
+        die(json_encode(array(
             "success" => true,
             "message" => "Subscription count found successfully",
-			"count" => $count
+            "count" => $count
         )));
     case 'editvar':
         $varid = misc\etc\sanitize($_GET['varid']);
@@ -746,12 +661,9 @@ switch ($type)
         mysqli_query($link, "UPDATE `vars` SET `msg` = '$data' WHERE `varid` = '$varid' AND `app` = '$secret'");
 
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die("Variable Edit Successful");
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "Variable Edit Successful"
@@ -762,13 +674,11 @@ switch ($type)
 
         $result = mysqli_query($link, "SELECT * FROM `vars` WHERE `varid` = '$name' AND `app` = '$secret'");
         // if not found
-        if (mysqli_num_rows($result) === 0)
-        {
-            error("Variable not found");
+        if (mysqli_num_rows($result) === 0) {
+            error("Variable not found", $format);
         }
 
-        while ($row = mysqli_fetch_array($result))
-        {
+        while ($row = mysqli_fetch_array($result)) {
             $data = $row["msg"];
         }
 
@@ -778,52 +688,43 @@ switch ($type)
         )));
     case 'delvar':
         $resp = misc\variable\deleteSingular($_GET['name'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete variable!");
-            break;
+                error("Failed to delete variable!", $format);
+                break;
             case 'success':
-                success("Successfully deleted variable!");
-            break;
+                success("Successfully deleted variable!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
-	case 'pauseapp':
-            $result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `expiry` > '" . time() . "'");
-            while ($row = mysqli_fetch_array($result))
-            {
-                $expires = $row['expiry'];
-                $exp = $expires - time();
-                mysqli_query($link, "UPDATE `subs` SET `paused` = 1, `expiry` = '$exp' WHERE `app` = '$secret' AND `id` = '" . $row['id'] . "'");
-            }
-            mysqli_query($link, "UPDATE `apps` SET `paused` = 1 WHERE `secret` = '$secret'");
-			if (mysqli_affected_rows($link) > 0)
-			{
-				success("Subscription paused application");
-			}
-			else
-			{
-				error("Failed to pause application");
-			}
-	case 'unpauseapp':
-            $result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `paused` = 1");
-            while ($row = mysqli_fetch_array($result))
-            {
-                $expires = $row['expiry'];
-                $exp = $expires + time();
-                mysqli_query($link, "UPDATE `subs` SET `paused` = 0, `expiry` = '$exp' WHERE `app` = '$secret' AND `id` = '" . $row['id'] . "'");
-            }
-            mysqli_query($link, "UPDATE `apps` SET `paused` = 0 WHERE `secret` = '$secret'");
-			if (mysqli_affected_rows($link) > 0)
-			{
-				success("Subscription unpaused application");
-			}
-			else
-			{
-				error("Failed to unpause application");
-			}
+    case 'pauseapp':
+        $result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `expiry` > '" . time() . "'");
+        while ($row = mysqli_fetch_array($result)) {
+            $expires = $row['expiry'];
+            $exp = $expires - time();
+            mysqli_query($link, "UPDATE `subs` SET `paused` = 1, `expiry` = '$exp' WHERE `app` = '$secret' AND `id` = '" . $row['id'] . "'");
+        }
+        mysqli_query($link, "UPDATE `apps` SET `paused` = 1 WHERE `secret` = '$secret'");
+        if (mysqli_affected_rows($link) > 0) {
+            success("Subscription paused application", $format);
+        } else {
+            error("Failed to pause application", $format);
+        }
+    case 'unpauseapp':
+        $result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `paused` = 1");
+        while ($row = mysqli_fetch_array($result)) {
+            $expires = $row['expiry'];
+            $exp = $expires + time();
+            mysqli_query($link, "UPDATE `subs` SET `paused` = 0, `expiry` = '$exp' WHERE `app` = '$secret' AND `id` = '" . $row['id'] . "'");
+        }
+        mysqli_query($link, "UPDATE `apps` SET `paused` = 0 WHERE `secret` = '$secret'");
+        if (mysqli_affected_rows($link) > 0) {
+            success("Subscription unpaused application", $format);
+        } else {
+            error("Failed to unpause application", $format);
+        }
     case 'stats':
         $unusedquery = mysqli_query($link, "SELECT count(1) FROM `keys` WHERE `app` = '$secret' AND `status` = 'Not Used'");
         $row = mysqli_fetch_array($unusedquery);
@@ -865,7 +766,7 @@ switch ($type)
 
         $totalaccs = $resellers + $managers;
 
-        Die(json_encode(array(
+        die(json_encode(array(
             "success" => true,
             "unused" => "$unused",
             "used" => "$used",
@@ -891,7 +792,7 @@ switch ($type)
 
         mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$user' AND `app` = '$secret'");
 
-        success("Added HWID");
+        success("Added HWID", $format);
     case 'addhash':
         $hash = misc\etc\sanitize($_GET['hash']);
         $result = mysqli_query($link, "SELECT `hash` FROM `apps` WHERE `secret` = '$secret'");
@@ -902,12 +803,11 @@ switch ($type)
 
         mysqli_query($link, "UPDATE `apps` SET `hash` = '$newHash' WHERE `secret` = '$secret'");
 
-        success("Added hash successfully");
+        success("Added hash successfully", $format);
     case 'getkey':
         $result = mysqli_query($link, "SELECT `key` FROM `keys` WHERE `usedby` = '$user' AND `app` = '$secret'");
-        if (mysqli_num_rows($result) === 0)
-        {
-            error("License not found");
+        if (mysqli_num_rows($result) === 0) {
+            error("License not found", $format);
         }
         $row = mysqli_fetch_array($result);
         $key = $row["key"];
@@ -918,25 +818,22 @@ switch ($type)
     case 'userdata':
         $result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$user' AND `app` = '$secret'");
         // if not found
-        if (mysqli_num_rows($result) === 0)
-        {
-            error("User not found");
+        if (mysqli_num_rows($result) === 0) {
+            error("User not found", $format);
         }
 
-        while ($row = mysqli_fetch_array($result))
-        {
+        while ($row = mysqli_fetch_array($result)) {
             $hwid = $row['hwid'];
             $ip = $row['ip'];
             $createdate = $row['createdate'];
             $lastlogin = $row['lastlogin'];
-			$cooldown = $row["cooldown"];
-			$token = md5(substr($row["password"], -5));
+            $cooldown = $row["cooldown"];
+            $token = md5(substr($row["password"], -5));
         }
 
         $result = mysqli_query($link, "SELECT `subscription`, `expiry` FROM `subs` WHERE `user` = '$user' AND `app` = '$secret' AND `expiry` > " . time() . "");
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result))
-        {
+        while ($r = mysqli_fetch_assoc($result)) {
             $timeleft = $r["expiry"] - time();
             $r += ["timeleft" => $timeleft];
             $rows[] = $r;
@@ -950,14 +847,13 @@ switch ($type)
             "hwid" => $hwid,
             "createdate" => $createdate,
             "lastlogin" => $lastlogin,
-			"cooldown" => $cooldown,
-			"token" => $token
+            "cooldown" => $cooldown,
+            "token" => $token
         )));
     case 'keydata':
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$key' AND `app` = '$secret'");
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result))
-        {
+        while ($r = mysqli_fetch_assoc($result)) {
             $r = array_reverse($r);
             $r['success'] = true;
             $r = array_reverse($r);
@@ -965,60 +861,50 @@ switch ($type)
         }
         die(json_encode($rows));
     case 'extend':
-        if (!is_numeric($_GET['expiry'])) error("Expiry not set correctly, must be number of days");
+        if (!is_numeric($_GET['expiry'])) error("Expiry not set correctly, must be number of days", $format);
 
         $expiry = $_GET['expiry'] * 86400 + time(); // 86400 is the number of seconds in a day since we're using unix time
         $resp = misc\user\extend($user, $_GET['sub'], $expiry, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'missing':
-                error("User(s) not found!");
-            break;
+                error("User(s) not found!", $format);
+                break;
             case 'sub_missing':
-                error("Subscription not found!");
-            break;
+                error("Subscription not found!", $format);
+                break;
             case 'date_past':
-                error("Subscription expiry must be set in the future!");
-            break;
+                error("Subscription expiry must be set in the future!", $format);
+                break;
             case 'failure':
-                error("Failed to extend user(s)!");
-            break;
+                error("Failed to extend user(s)!", $format);
+                break;
             case 'success':
-                success("Successfully extended user(s)!");
-            break;
+                success("Successfully extended user(s)!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'verify':
         $keyquery = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
 
         $keycount = mysqli_num_rows($keyquery);
 
-        if ($keycount == 0)
-        {
+        if ($keycount == 0) {
             http_response_code(406);
             mysqli_close($link);
-            if ($format == "text")
-            {
+            if ($format == "text") {
                 die("Key Not Found");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => false,
                     "message" => "Key Not Found"
                 )));
             }
-        }
-        else
-        {
-            if ($format == "text")
-            {
+        } else {
+            if ($format == "text") {
                 die("Key Successfully Verified");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => true,
                     "message" => "Key Successfully Verified"
@@ -1028,30 +914,21 @@ switch ($type)
     case 'verifyuser':
         $result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '$secret' AND `username` = '$user'");
 
-        if (mysqli_num_rows($result) == 0)
-        {
+        if (mysqli_num_rows($result) == 0) {
             http_response_code(406);
             mysqli_close($link);
-            if ($format == "text")
-            {
+            if ($format == "text") {
                 die("User Not Found");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => false,
                     "message" => "User Not Found"
                 )));
             }
-        }
-        else
-        {
-            if ($format == "text")
-            {
+        } else {
+            if ($format == "text") {
                 die("User Successfully Verified");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => true,
                     "message" => "User Successfully Verified"
@@ -1060,288 +937,267 @@ switch ($type)
         }
     case 'del':
         $resp = misc\license\deleteSingular($key, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete license!");
-            break;
+                error("Failed to delete license!", $format);
+                break;
             case 'success':
-                success("Successfully deleted license!");
-            break;
+                success("Successfully deleted license!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'ban':
         $resp = misc\license\ban($key, $_GET['reason'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to ban license!");
-            break;
+                error("Failed to ban license!", $format);
+                break;
             case 'success':
-                success("Successfully banned license!");
-            break;
+                success("Successfully banned license!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'unban':
         $resp = misc\license\unban($key, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to unban license!");
-            break;
+                error("Failed to unban license!", $format);
+                break;
             case 'success':
-                success("Successfully unbanned license!");
-            break;
+                success("Successfully unbanned license!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'banuser':
         $resp = misc\user\ban($user, $_GET['reason'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'missing':
-                error("User not found!");
-            break;
+                error("User not found!", $format);
+                break;
             case 'failure':
-                error("Failed to ban user!");
-            break;
+                error("Failed to ban user!", $format);
+                break;
             case 'success':
-                success("Successfully banned user!");
-            break;
+                success("Successfully banned user!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'unbanuser':
         $resp = misc\user\unban($user, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'missing':
-                error("User not found!");
-            break;
+                error("User not found!", $format);
+                break;
             case 'failure':
-                error("Failed to unban user!");
-            break;
+                error("Failed to unban user!", $format);
+                break;
             case 'success':
-                success("Successfully unbanned user!");
-            break;
+                success("Successfully unbanned user!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'deluservar':
         $resp = misc\user\deleteVar($user, $_GET['var'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete variable!");
-            break;
+                error("Failed to delete variable!", $format);
+                break;
             case 'success':
-                success("Successfully deleted variable!");
-            break;
+                success("Successfully deleted variable!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delsub':
         $resp = misc\user\deleteSub($user, $_GET['sub'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete subscription!");
-            break;
+                error("Failed to delete subscription!", $format);
+                break;
             case 'success':
-                success("Successfully deleted subscription!");
-            break;
+                success("Successfully deleted subscription!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delunused':
         $resp = misc\license\deleteAllUnused($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Didn't find any unused keys!");
-            break;
+                error("Didn't find any unused keys!", $format);
+                break;
             case 'success':
-                success("Deleted All Unused Keys!");
-            break;
+                success("Deleted All Unused Keys!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delused':
         $resp = misc\license\deleteAllUsed($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Didn't find any used keys!");
-            break;
+                error("Didn't find any used keys!", $format);
+                break;
             case 'success':
-                success("Deleted All Used Keys!");
-            break;
+                success("Deleted All Used Keys!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'adduser':
-        if (!is_numeric($_GET['expiry'])) error("Expiry not set correctly, must be number of days");
+        if (!is_numeric($_GET['expiry'])) error("Expiry not set correctly, must be number of days", $format);
 
         $expiry = $_GET['expiry'] * 86400 + time(); // 86400 is the number of seconds in a day since we're using unix time
         $resp = misc\user\add($user, $_GET['sub'], $expiry, $secret, $_GET['pass']);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'sub_missing':
-                error("Subscription not found!");
-            break;
+                error("Subscription not found!", $format);
+                break;
             case 'date_past':
-                error("Subscription expiry must be set in the future!");
-            break;
+                error("Subscription expiry must be set in the future!", $format);
+                break;
             case 'failure':
-                error("Failed to create user!");
-            break;
+                error("Failed to create user!", $format);
+                break;
             case 'success':
-                success("Successfully created user!");
-            break;
+                success("Successfully created user!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delexpusers':
         $resp = misc\user\deleteExpiredUsers($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'missing':
-                error("You have no users!");
-            break;
+                error("You have no users!", $format);
+                break;
             case 'failure':
-                error("No users are expired!");
-            break;
+                error("No users are expired!", $format);
+                break;
             case 'success':
-                success("Successfully deleted expired users!");
-            break;
+                success("Successfully deleted expired users!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delallusers':
         $resp = misc\user\deleteAll($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete all users!");
-            break;
+                error("Failed to delete all users!", $format);
+                break;
             case 'success':
-                success("Successfully deleted all users!");
-            break;
+                success("Successfully deleted all users!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'deluser':
         $resp = misc\user\deleteSingular($user, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete user!");
-            break;
+                error("Failed to delete user!", $format);
+                break;
             case 'success':
-                success("Successfully deleted user!");
-            break;
+                success("Successfully deleted user!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delalllicenses':
         $resp = misc\license\deleteAll($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Didn't find any keys!");
-            break;
+                error("Didn't find any keys!", $format);
+                break;
             case 'success':
-                success("Deleted All Keys!");
-            break;
+                success("Deleted All Keys!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delallvars':
         $resp = misc\variable\deleteAll($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete all variables!");
-            break;
+                error("Failed to delete all variables!", $format);
+                break;
             case 'success':
-                success("Successfully deleted all variables!");
-            break;
+                success("Successfully deleted all variables!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'reset':
         die("Endpoint Deprecated, you can no longer use keys directly. A user is created from the key, and that user has a HWID and IP associated with it.");
     case 'resethash':
         mysqli_query($link, "UPDATE `apps` SET `hash` = NULL WHERE `secret` = '$secret'");
 
-        if (mysqli_affected_rows($link) > 0) success("Reset hash successfully!");
+        if (mysqli_affected_rows($link) > 0) success("Reset hash successfully!", $format);
 
-        error("Failed to reset hash!");
-	case 'setcooldown':
-		$cooldown = misc\etc\sanitize($_GET['cooldown']);
-		
+        error("Failed to reset hash!", $format);
+    case 'setcooldown':
+        $cooldown = misc\etc\sanitize($_GET['cooldown']);
+
         mysqli_query($link, "UPDATE `users` SET `cooldown` = '$cooldown' WHERE `app` = '$secret' AND `username` = '$user'");
 
-        if (mysqli_affected_rows($link) > 0) success("Cooldown set successfully!");
+        if (mysqli_affected_rows($link) > 0) success("Cooldown set successfully!", $format);
 
-        error("Failed to set cooldown!");
+        error("Failed to set cooldown!", $format);
     case 'resetuser':
         $resp = misc\user\resetSingular($user, $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to reset user!");
-            break;
+                error("Failed to reset user!", $format);
+                break;
             case 'success':
-                success("Successfully reset user!");
-            break;
+                success("Successfully reset user!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'resetalluser':
         $resp = misc\user\resetAll($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to reset all users!");
-            break;
+                error("Failed to reset all users!", $format);
+                break;
             case 'success':
-                success("Successfully reset all users!");
-            break;
+                success("Successfully reset all users!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'upload':
         $url = misc\etc\sanitize($_GET['url']);
 
-        if (!filter_var($url, FILTER_VALIDATE_URL))
-        {
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
             mysqli_close($link);
-            if ($format == "text")
-            {
+            if ($format == "text") {
                 die("URL is invalid");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => false,
                     "message" => "URL is invalid"
@@ -1353,9 +1209,8 @@ switch ($type)
 
         $filesize = strlen($file);
 
-        if ($filesize > 50000000)
-        {
-            error("File size limit is 50 MB.");
+        if ($filesize > 50000000) {
+            error("File size limit is 50 MB.", $format);
             return;
         }
 
@@ -1366,12 +1221,9 @@ switch ($type)
         mysqli_query($link, "INSERT INTO `files` (name, id, url, size, uploaddate, app) VALUES ('$fn', '$id', '$url', '$fs', '" . time() . "', '$secret')");
 
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die("File ID " . $id . " Uploaded Successfully");
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "File ID $id Uploaded Successfully"
@@ -1379,62 +1231,54 @@ switch ($type)
         }
     case 'delfile':
         $resp = misc\upload\deleteSingular($_GET['fileid'], $secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete all files!");
-            break;
+                error("Failed to delete all files!", $format);
+                break;
             case 'success':
-                success("Successfully deleted all files!");
-            break;
+                success("Successfully deleted all files!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'delallfiles':
         $resp = misc\upload\deleteAll($secret);
-        switch ($resp)
-        {
+        switch ($resp) {
             case 'failure':
-                error("Failed to delete all files!");
-            break;
+                error("Failed to delete all files!", $format);
+                break;
             case 'success':
-                success("Successfully deleted all files!");
-            break;
+                success("Successfully deleted all files!", $format);
+                break;
             default:
-                error("Unhandled Error! Contact us if you need help");
-            break;
+                error("Unhandled Error! Contact us if you need help", $format);
+                break;
         }
     case 'fetchallkeys':
         $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No License Keys Found"
             )));
         }
 
-        if ($format == "text")
-        {
-            while ($row = mysqli_fetch_array($result))
-            {
+        if ($format == "text") {
+            while ($row = mysqli_fetch_array($result)) {
                 $stringData .= "" . $row['key'] . "\n";
             }
             $remove = substr($stringData, 0, -2);
             echo $remove;
             break;
-        }
-        else
-        {
+        } else {
             $rows = array();
-            while ($r = mysqli_fetch_assoc($result))
-            {
+            while ($r = mysqli_fetch_assoc($result)) {
                 $rows[] = $r;
             }
             mysqli_close($link);
@@ -1444,154 +1288,138 @@ switch ($type)
                 "keys" => $rows
             )));
         }
-	case 'fetchallchats':
-		$result = mysqli_query($link, "SELECT `name`, `delay` FROM `chats` WHERE `app` = '$secret'");
+    case 'fetchallchats':
+        $result = mysqli_query($link, "SELECT `name`, `delay` FROM `chats` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No chat channels found"
             )));
         }
 
-		$rows = array();
-		while ($r = mysqli_fetch_assoc($result))
-		{
-			$rows[] = $r;
-		}
-		mysqli_close($link);
-		die(json_encode(array(
-			"success" => true,
-			"message" => "Successfully retrieved chats",
-			"chats" => $rows
-		)));
-	case 'fetchallsessions':
-		$result = mysqli_query($link, "SELECT `id`, `credential`, `expiry`, `validated`, `ip` FROM `sessions` WHERE `app` = '$secret'");
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result)) {
+            $rows[] = $r;
+        }
+        mysqli_close($link);
+        die(json_encode(array(
+            "success" => true,
+            "message" => "Successfully retrieved chats",
+            "chats" => $rows
+        )));
+    case 'fetchallsessions':
+        $result = mysqli_query($link, "SELECT `id`, `credential`, `expiry`, `validated`, `ip` FROM `sessions` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No sessions found"
             )));
         }
 
-		$rows = array();
-		while ($r = mysqli_fetch_assoc($result))
-		{
-			$rows[] = $r;
-		}
-		mysqli_close($link);
-		die(json_encode(array(
-			"success" => true,
-			"message" => "Successfully retrieved sessions",
-			"sessions" => $rows
-		)));
-	case 'fetchallbuttons':
-		$result = mysqli_query($link, "SELECT `text`, `value` FROM `buttons` WHERE `app` = '$secret'");
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result)) {
+            $rows[] = $r;
+        }
+        mysqli_close($link);
+        die(json_encode(array(
+            "success" => true,
+            "message" => "Successfully retrieved sessions",
+            "sessions" => $rows
+        )));
+    case 'fetchallbuttons':
+        $result = mysqli_query($link, "SELECT `text`, `value` FROM `buttons` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No buttons found"
             )));
         }
 
-		$rows = array();
-		while ($r = mysqli_fetch_assoc($result))
-		{
-			$rows[] = $r;
-		}
-		mysqli_close($link);
-		die(json_encode(array(
-			"success" => true,
-			"message" => "Successfully retrieved buttons",
-			"buttons" => $rows
-		)));
-	case 'fetchallmutes':
-		$result = mysqli_query($link, "SELECT `user`, `time` FROM `chatmutes` WHERE `app` = '$secret'");
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result)) {
+            $rows[] = $r;
+        }
+        mysqli_close($link);
+        die(json_encode(array(
+            "success" => true,
+            "message" => "Successfully retrieved buttons",
+            "buttons" => $rows
+        )));
+    case 'fetchallmutes':
+        $result = mysqli_query($link, "SELECT `user`, `time` FROM `chatmutes` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No mutes found"
             )));
         }
 
-		$rows = array();
-		while ($r = mysqli_fetch_assoc($result))
-		{
-			$rows[] = $r;
-		}
-		mysqli_close($link);
-		die(json_encode(array(
-			"success" => true,
-			"message" => "Successfully retrieved mutes",
-			"mutes" => $rows
-		)));
-	case 'editchan':
-		$name = misc\etc\sanitize($_GET['name']);
-		$delay = misc\etc\sanitize($_GET['delay']);
-		$delay = $delay * 60; // making it such that the delay is in the unit of minutes
-		
-		mysqli_query($link, "UPDATE `chats` SET `delay` = '$delay' WHERE `app` = '$secret' AND `name` = '$name'");
-		if (mysqli_affected_rows($link) > 0) // check query impacted something, else show error
-		{
-			success("Successfully updated channel!");
-		}
-		else
-		{
-			error("Failed To update channel!");
-		}
+        $rows = array();
+        while ($r = mysqli_fetch_assoc($result)) {
+            $rows[] = $r;
+        }
+        mysqli_close($link);
+        die(json_encode(array(
+            "success" => true,
+            "message" => "Successfully retrieved mutes",
+            "mutes" => $rows
+        )));
+    case 'editchan':
+        $name = misc\etc\sanitize($_GET['name']);
+        $delay = misc\etc\sanitize($_GET['delay']);
+        $delay = $delay * 60; // making it such that the delay is in the unit of minutes
+
+        mysqli_query($link, "UPDATE `chats` SET `delay` = '$delay' WHERE `app` = '$secret' AND `name` = '$name'");
+        if (mysqli_affected_rows($link) > 0) // check query impacted something, else show error
+        {
+            success("Successfully updated channel!", $format);
+        } else {
+            error("Failed To update channel!", $format);
+        }
     case 'fetchallusernames':
         $result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `app` = '$secret'");
 
         $num = mysqli_num_rows($result);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No users found"
             )));
         }
 
-        if ($format == "text")
-        {
-            while ($row = mysqli_fetch_array($result))
-            {
+        if ($format == "text") {
+            while ($row = mysqli_fetch_array($result)) {
                 $stringData .= "" . $row['username'] . "\n";
             }
             $remove = substr($stringData, 0, -2);
             echo $remove;
             break;
-        }
-        else
-        {
+        } else {
             $rows = array();
-            while ($r = mysqli_fetch_array($result))
-            {
+            while ($r = mysqli_fetch_array($result)) {
                 $rows[] = $r['username'];
             }
             mysqli_close($link);
@@ -1606,22 +1434,20 @@ switch ($type)
 
         $num = mysqli_num_rows($result);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No Users Found"
             )));
         }
 
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result))
-        {
+        while ($r = mysqli_fetch_assoc($result)) {
             $rows[] = $r;
         }
-		
+
         mysqli_close($link);
         die(json_encode(array(
             "success" => true,
@@ -1630,12 +1456,9 @@ switch ($type)
         )));
     case 'setseller':
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die("Seller Key Successfully Found");
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "Seller Key Successfully Found"
@@ -1643,15 +1466,11 @@ switch ($type)
         }
     case 'balance':
         $username = misc\etc\sanitize($_GET['username']);
-        if (empty($username))
-        {
+        if (empty($username)) {
             mysqli_close($link);
-            if ($format == "text")
-            {
+            if ($format == "text") {
                 die("Username Not Set");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => false,
                     "message" => "Username Not Set"
@@ -1660,15 +1479,11 @@ switch ($type)
         }
 
         $result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `app` = '$name' AND `username` = '$username'");
-        if ($result->num_rows == 0)
-        {
+        if ($result->num_rows == 0) {
             mysqli_close($link);
-            if ($format == "text")
-            {
+            if ($format == "text") {
                 die("You don't own account you were attemping to modify balance for");
-            }
-            else
-            {
+            } else {
                 die(json_encode(array(
                     "success" => false,
                     "message" => "You don't own account you were attemping to modify balance for"
@@ -1683,28 +1498,22 @@ switch ($type)
         $sixmonthamount = misc\etc\sanitize($_GET['sixmonth']);
         $lifetimeamount = misc\etc\sanitize($_GET['lifetime']);
 
-        if (!isset($dayamount))
-        {
+        if (!isset($dayamount)) {
             $dayamount = "0";
         }
-        if (!isset($weekamount))
-        {
+        if (!isset($weekamount)) {
             $weekamount = "0";
         }
-        if (!isset($monthamount))
-        {
+        if (!isset($monthamount)) {
             $monthamount = "0";
         }
-        if (!isset($threemonthamount))
-        {
+        if (!isset($threemonthamount)) {
             $threemonthamount = "0";
         }
-        if (!isset($sixmonthamount))
-        {
+        if (!isset($sixmonthamount)) {
             $sixmonthamount = "0";
         }
-        if (!isset($lifetimeamount))
-        {
+        if (!isset($lifetimeamount)) {
             $lifetimeamount = "0";
         }
 
@@ -1740,12 +1549,9 @@ switch ($type)
         mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '$username'");
 
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die("Balance Successfully Added");
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "Balance Successfully Added"
@@ -1756,34 +1562,28 @@ switch ($type)
 
         $num = mysqli_num_rows($result);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             http_response_code(406);
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "No Subscriptions Found"
                 // in theory this should not happen
-                
+
             )));
         }
 
-        if ($format == "text")
-        {
+        if ($format == "text") {
             // $result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '$secret' AND `user` = '$user'"); // this is not needed as results already has a value so we dont need to get it again
-            while ($row = mysqli_fetch_array($result))
-            {
+            while ($row = mysqli_fetch_array($result)) {
                 $stringData .= "" . $row['user'] . " " . $row['subscription'] . " " . $row['expiry'] . " " . $row['key'] . "\n";
             }
             $remove = substr($stringData, 0, -2);
             echo $remove;
             break;
-        }
-        else
-        {
+        } else {
             $rows = array();
-            while ($r = mysqli_fetch_assoc($result))
-            {
+            while ($r = mysqli_fetch_assoc($result)) {
                 $rows[] = $r;
             }
             mysqli_close($link);
@@ -1794,21 +1594,15 @@ switch ($type)
             )));
         }
     case 'getsettings':
-        if ($row["enabled"] == 0)
-        {
+        if ($row["enabled"] == 0) {
             $enabled = false;
-        }
-        else
-        {
+        } else {
             $enabled = true;
         }
 
-        if ($row["hwidcheck"] == 0)
-        {
+        if ($row["hwidcheck"] == 0) {
             $hwidcheck = false;
-        }
-        else
-        {
+        } else {
             $hwidcheck = true;
         }
         $ver = $row["ver"];
@@ -1836,8 +1630,7 @@ switch ($type)
         $cooldown = $row["cooldown"];
 
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             echo $enabled ? 'true' : 'false';
             echo "\n";
             echo $hwidcheck ? 'true' : 'false' . "\n";
@@ -1865,9 +1658,7 @@ switch ($type)
             echo $lifetimeproduct . "\n";
             echo $cooldown;
             break;
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "Retrieved Settings Successfully",
@@ -1902,17 +1693,15 @@ switch ($type)
         $resultt = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '$secret' AND `key` = '$key'");
         $num = mysqli_num_rows($resultt);
 
-        if ($num == 0)
-        {
+        if ($num == 0) {
             mysqli_close($link);
-            Die(json_encode(array(
+            die(json_encode(array(
                 "success" => false,
                 "message" => "Key Not Found"
             )));
         }
 
-        while ($row = mysqli_fetch_array($resultt))
-        {
+        while ($row = mysqli_fetch_array($resultt)) {
             $expiry = $row["expires"];
             $hwid = $row["hwid"];
             $status = $row["status"];
@@ -1926,7 +1715,7 @@ switch ($type)
                 "success" => true,
                 "duration" => "$expiry",
                 "hwid" => "$hwid",
-				"note" => "$note",
+                "note" => "$note",
                 "status" => "$status",
                 "level" => "$level",
                 "createdby" => "$genby",
@@ -1960,123 +1749,91 @@ switch ($type)
         $monthproduct = misc\etc\sanitize($_GET['monthproduct']);
         $lifetimeproduct = misc\etc\sanitize($_GET['lifetimeproduct']);
 
-        if (!empty($enabled))
-        {
-            if ($enabled == "true")
-            {
+        if (!empty($enabled)) {
+            if ($enabled == "true") {
                 $enabled = 1;
-            }
-            else if ($enabled == "false")
-            {
+            } else if ($enabled == "false") {
                 $enabled = 0;
             }
             mysqli_query($link, "UPDATE `apps` SET `enabled` = '$enabled' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($hwidcheck))
-        {
-            if ($hwidcheck == "true")
-            {
+        if (!empty($hwidcheck)) {
+            if ($hwidcheck == "true") {
                 $hwidcheck = 1;
-            }
-            else if ($hwidcheck == "false")
-            {
+            } else if ($hwidcheck == "false") {
                 $hwidcheck = 0;
             }
             mysqli_query($link, "UPDATE `apps` SET `hwidcheck` = '$hwidcheck' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($ver))
-        {
+        if (!empty($ver)) {
             mysqli_query($link, "UPDATE `apps` SET `ver` = '$ver' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($download))
-        {
+        if (!empty($download)) {
             mysqli_query($link, "UPDATE `apps` SET `ver` = '$ver' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($webhook))
-        {
+        if (!empty($webhook)) {
             mysqli_query($link, "UPDATE `apps` SET `webhook` = '$webhook' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($resellerstore))
-        {
+        if (!empty($resellerstore)) {
             mysqli_query($link, "UPDATE `apps` SET `resellerstore` = '$resellerstore' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($appdisabled))
-        {
+        if (!empty($appdisabled)) {
             mysqli_query($link, "UPDATE `apps` SET `appdisabled` = '$appdisabled' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($usernametaken))
-        {
+        if (!empty($usernametaken)) {
             mysqli_query($link, "UPDATE `apps` SET `usernametaken` = '$usernametaken' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($keynotfound))
-        {
+        if (!empty($keynotfound)) {
             mysqli_query($link, "UPDATE `apps` SET `keynotfound` = '$keynotfound' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($keyused))
-        {
+        if (!empty($keyused)) {
             mysqli_query($link, "UPDATE `apps` SET `keyused` = '$keyused' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($nosublevel))
-        {
+        if (!empty($nosublevel)) {
             mysqli_query($link, "UPDATE `apps` SET `nosublevel` = '$nosublevel' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($usernamenotfound))
-        {
+        if (!empty($usernamenotfound)) {
             mysqli_query($link, "UPDATE `apps` SET `usernamenotfound` = '$usernamenotfound' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($passmismatch))
-        {
+        if (!empty($passmismatch)) {
             mysqli_query($link, "UPDATE `apps` SET `passmismatch` = '$passmismatch' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($hwidmismatch))
-        {
+        if (!empty($hwidmismatch)) {
             mysqli_query($link, "UPDATE `apps` SET `hwidmismatch` = '$hwidmismatch' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($noactivesubs))
-        {
+        if (!empty($noactivesubs)) {
             mysqli_query($link, "UPDATE `apps` SET `noactivesubs` = '$noactivesubs' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($hwidblacked))
-        {
+        if (!empty($hwidblacked)) {
             mysqli_query($link, "UPDATE `apps` SET `hwidblacked` = '$hwidblacked' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($keypaused))
-        {
+        if (!empty($keypaused)) {
             mysqli_query($link, "UPDATE `apps` SET `keypaused` = '$keypaused' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($keyexpired))
-        {
+        if (!empty($keyexpired)) {
             mysqli_query($link, "UPDATE `apps` SET `keyexpired` = '$keyexpired' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($sellixsecret))
-        {
+        if (!empty($sellixsecret)) {
             mysqli_query($link, "UPDATE `apps` SET `sellixsecret` = '$sellixsecret' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($dayproduct))
-        {
+        if (!empty($dayproduct)) {
             mysqli_query($link, "UPDATE `apps` SET `dayproduct` = '$dayproduct' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($weekproduct))
-        {
+        if (!empty($weekproduct)) {
             mysqli_query($link, "UPDATE `apps` SET `weekproduct` = '$weekproduct' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($monthproduct))
-        {
+        if (!empty($monthproduct)) {
             mysqli_query($link, "UPDATE `apps` SET `monthproduct` = '$monthproduct' WHERE `sellerkey` = '$sellerkey'");
         }
-        if (!empty($lifetimeproduct))
-        {
+        if (!empty($lifetimeproduct)) {
             mysqli_query($link, "UPDATE `apps` SET `lifetimeproduct` = '$lifetimeproduct' WHERE `sellerkey` = '$sellerkey'");
         }
 
         // mysqli_query($link, "UPDATE `keys` SET `expires` = '$expiry' WHERE `app` = '$secret' AND `key` = '$key'");
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die("Settings Update Successful");
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "Settings Update Successful"
@@ -2087,12 +1844,9 @@ switch ($type)
         mysqli_query($link, "UPDATE `keys` SET `expires` = '$expiry' WHERE `app` = '$secret' AND `key` = '$key'");
 
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die("License Edit Successful");
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => true,
                 "message" => "License Edit Successful"
@@ -2106,16 +1860,14 @@ switch ($type)
         die($row["role"]);
     default:
         mysqli_close($link);
-        if ($format == "text")
-        {
+        if ($format == "text") {
             die("Type doesn't exist");
-        }
-        else
-        {
+        } else {
             die(json_encode(array(
                 "success" => false,
                 "message" => "Type doesn't exist"
             )));
         }
-    }
+}
+
 ?>

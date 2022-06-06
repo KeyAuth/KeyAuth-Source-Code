@@ -498,4 +498,3 @@ function random_string_upper($length = 10, $keyspace = '0123456789ABCDEFGHIJKLMN
                         "validated" => $row["validated"]
                     );
                 }
-?>
