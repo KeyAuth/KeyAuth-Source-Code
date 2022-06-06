@@ -11,7 +11,6 @@ $link = mysqli_connect("localhost", "root", "", "keyauth");
 // Check connection status
 
 if ($link === false) {
-
     die("ERROR: Could not connect. " . mysqli_connect_error());
 }
 
@@ -22,7 +21,6 @@ $adminwebhook = ""; // discord webhook which receives admin actions
 $webhookun = "KeyAuth Logs"; // webhook username
 
 $adminwebhookun = "KeyAuth Admin Logs"; // admin webhook's username
-
 
 $adminapikey = ""; // api key for api/admin (an api only my staff can use)
 

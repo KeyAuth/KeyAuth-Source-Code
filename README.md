@@ -29,8 +29,8 @@ No support is given towards setup of this. Feel free to create issue though if c
 - Download The Repository
 - Upload all files to your PHP host of choice
 - Right click the db_structure.sql file and click edit. Then copy the contents and paste into SQL import tab on phpmyadmin
-- Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/includes/connection.php#L16 to your database credentials
-- (Optional) Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/includes/connection.php#L22 to your Discord webhook link if you want to log all logins to a Discord webhook
+- Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/includes/connection.php#L9 to your database credentials
+- (Optional) Change https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/includes/connection.php#L19 to your Discord webhook link if you want to log all logins to a Discord webhook
 
 Some pages such as the API endpoint that upgrades users after they purchase a subscription have been omitted to prevent violation of the license (No Commercial Access Allowed)
 
