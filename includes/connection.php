@@ -10,10 +10,8 @@ $link = mysqli_connect("localhost", "root", "", "keyauth");
 
 // Check connection status
 
-if($link === false){
-
+if ($link === false) {
     die("ERROR: Could not connect. " . mysqli_connect_error());
-
 }
 
 $logwebhook = ""; // discord webhook which receives login logs and keys created
@@ -24,7 +22,6 @@ $webhookun = "KeyAuth Logs"; // webhook username
 
 $adminwebhookun = "KeyAuth Admin Logs"; // admin webhook's username
 
-
 $adminapikey = ""; // api key for api/admin (an api only my staff can use)
 
 $shoppyAPIkey = ""; // shoppy.gg API key for my staff to look up orders
@@ -32,5 +29,3 @@ $shoppyAPIkey = ""; // shoppy.gg API key for my staff to look up orders
 $proxycheckapikey = ""; // proxycheck.io API key to check if IP is considered a VPN
 
 $bunnyNetKey = ""; // bunny.net CDN used for custom domains
-
-?>

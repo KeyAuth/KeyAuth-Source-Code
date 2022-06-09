@@ -1,47 +1,32 @@
 <?php
 
 include '../../../includes/connection.php';
-
 include '../../../includes/functions.php';
 
 session_start();
 
-
-
 if (!isset($_SESSION['username'])) {
 
-         header("Location: ../../../login/");
+    header("Location: ../../../login/");
 
-        exit();
-
+    exit();
 }
 
+$username = $_SESSION['username'];
+
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+
+$row = mysqli_fetch_array($result);
 
 
 
+$role = $row['role'];
 
-	        $username = $_SESSION['username'];
-
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-
-            $row = mysqli_fetch_array($result);
-
-        
-
-            $role = $row['role'];
-
-            $_SESSION['role'] = $role;
-
-			
-
-			$darkmode = $row['darkmode'];
+$_SESSION['role'] = $role;
 
 
 
-			
-
-                            
-
+$darkmode = $row['darkmode'];
 ?>
 
 <!DOCTYPE html>
@@ -70,11 +55,11 @@ if (!isset($_SESSION['username'])) {
 
     <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
 
-	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
 
     <!-- Custom CSS -->
 
-	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
 
     <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
 
@@ -84,35 +69,28 @@ if (!isset($_SESSION['username'])) {
 
     <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 
-	
-
-
-
-	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
 
 
 
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
 
-	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script>
+        $(document).ready(function() {
 
-	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+            //change selectboxes to selectize mode to be searchable
 
-	
+            $("select").select2();
 
-	<script>
-
-	$(document).ready(function () {
-
-	//change selectboxes to selectize mode to be searchable
-
-	$("select").select2();
-
-	});
-
-	</script>                    
+        });
+    </script>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 
@@ -126,25 +104,23 @@ if (!isset($_SESSION['username'])) {
 
 <![endif]-->
 
-<script type='text/javascript'>
+    <script type='text/javascript'>
+        $(document).ready(function() {
 
-                
+            $("#content").fadeIn(1900);
 
-                        $(document).ready(function(){
+            $("#sticky-footer bg-white").fadeIn(1900);
 
-        $("#content").fadeIn(1900);
-
-        $("#sticky-footer bg-white").fadeIn(1900);
-
-        });             
-
-                
-
-                </script>
+        });
+    </script>
 
 </head>
 
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php if ($darkmode == 0) {
+                        echo "dark";
+                    } else {
+                        echo "light";
+                    } ?>">
 
     <!-- ============================================================== -->
 
@@ -208,13 +184,13 @@ if (!isset($_SESSION['username'])) {
 
                         <span class="logo-text">
 
-                             <!-- dark Logo text -->
+                            <!-- dark Logo text -->
 
-                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
 
-                             <!-- Light Logo text -->    
+                            <!-- Light Logo text -->
 
-                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
 
                         </span>
 
@@ -272,19 +248,19 @@ if (!isset($_SESSION['username'])) {
 
                         <li class="nav-item dropdown">
 
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
 
-						</a>
+                            </a>
 
-						</li>
+                        </li>
 
-						<li class="nav-item dropdown">
+                        <li class="nav-item dropdown">
 
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
 
-						</a>
+                            </a>
 
-						</li>
+                        </li>
 
                         <!-- ============================================================== -->
 
@@ -364,27 +340,13 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                        <li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span
+                        <li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span class="hide-menu">Reseller</span></li>
 
-                                class="hide-menu">Reseller</span></li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../reseller/keys/" aria-expanded="false"><i data-feather="key"></i><span class="hide-menu">Licenses</span></a></li>
 
-                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../reseller/users/" aria-expanded="false"><i data-feather="users"></i><span class="hide-menu">Users</span></a></li>
 
-                                href="../../reseller/keys/" aria-expanded="false"><i data-feather="key"></i><span
-
-                                    class="hide-menu">Licenses</span></a></li>
-
-						<li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
-
-                                href="../../reseller/users/" aria-expanded="false"><i data-feather="users"></i><span
-
-                                    class="hide-menu">Users</span></a></li>
-
-                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
-
-                                href="../../reseller/balance/" aria-expanded="false"><i
-
-                                    data-feather="credit-card"></i><span class="hide-menu">Balance</span></a></li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="../../reseller/balance/" aria-expanded="false"><i data-feather="credit-card"></i><span class="hide-menu">Balance</span></a></li>
 
 
 
@@ -444,11 +406,11 @@ if (!isset($_SESSION['username'])) {
 
             <!-- Container fluid  -->
 
-			
 
-	
 
-   
+
+
+
 
             <!-- ============================================================== -->
 
@@ -474,203 +436,190 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                        $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '".$_SESSION['app']."'");
+                                $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '" . $_SESSION['app'] . "'");
 
 
 
-                        $row = mysqli_fetch_array($result);
+                                $row = mysqli_fetch_array($result);
 
 
 
-						if($row["sellixsecret"] != NULL)
+                                if ($row["sellixsecret"] != NULL) {
 
 
+                                    echo '<script src="https://cdn.sellix.io/static/js/embed.js" ></script>';
 
-                        {
 
 
-						echo '<script src="https://cdn.sellix.io/static/js/embed.js" ></script>';
-							
 
+                                    if ($row["sellixdayproduct"] != NULL) {
 
 
-						if($row["sellixdayproduct"] != NULL)
 
+                                        echo '<a data-sellix-product="' . $row["sellixdayproduct"] . '" data-sellix-custom-Username="' . $_SESSION['username'] . '" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Day Keys (sellix)</a>';
+                                    }
 
 
-                        {
 
+                                    if ($row["sellixweekproduct"] != NULL) {
 
 
-							echo '<a data-sellix-product="'.$row["sellixdayproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Day Keys (sellix)</a>';
 
+                                        echo '<br><br><a data-sellix-product="' . $row["sellixweekproduct"] . '" data-sellix-custom-Username="' . $_SESSION['username'] . '" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Week Keys (sellix)</a>';
+                                    }
 
 
-						}
 
+                                    if ($row["sellixmonthproduct"] != NULL) {
 
 
-						if($row["sellixweekproduct"] != NULL)
 
+                                        echo '<br><br><a data-sellix-product="' . $row["sellixmonthproduct"] . '" data-sellix-custom-Username="' . $_SESSION['username'] . '" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Month Keys (sellix)</a>';
+                                    }
 
 
-                        {
 
+                                    if ($row["sellixlifetimeproduct"] != NULL) {
 
 
-							echo '<br><br><a data-sellix-product="'.$row["sellixweekproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Week Keys (sellix)</a>';
 
+                                        echo '<br><br><a data-sellix-product="' . $row["sellixlifetimeproduct"] . '" data-sellix-custom-Username="' . $_SESSION['username'] . '" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Lifetime Keys (sellix)</a>';
+                                    }
+                                }
 
 
-						}
 
+                                if ($row["shoppysecret"] != NULL) {
 
 
-						if($row["sellixmonthproduct"] != NULL)
 
+                                    echo '<script src="https://shoppy.gg/api/embed.js"></script>';
 
 
-                        {
 
+                                    if ($row["shoppydayproduct"] != NULL) {
 
 
-							echo '<br><br><a data-sellix-product="'.$row["sellixmonthproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Month Keys (sellix)</a>';
 
+                                        echo '<button data-shoppy-product="' . $row["shoppydayproduct"] . '" data-shoppy-username="' . $_SESSION['username'] . '" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Day Keys (shoppy)</button>';
+                                    }
 
 
-						}
 
+                                    if ($row["shoppyweekproduct"] != NULL) {
 
 
-						if($row["sellixlifetimeproduct"] != NULL)
 
+                                        echo '<br><br><a data-shoppy-product="' . $row["shoppyweekproduct"] . '" data-shoppy-username="' . $_SESSION['username'] . '" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Week Keys (shoppy)</a>';
+                                    }
 
 
-                        {
 
+                                    if ($row["shoppymonthproduct"] != NULL) {
 
 
-							echo '<br><br><a data-sellix-product="'.$row["sellixlifetimeproduct"].'" data-sellix-custom-Username="'.$_SESSION['username'].'" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Lifetime Keys (sellix)</a>';
 
+                                        echo '<br><br><a data-shoppy-product="' . $row["shoppymonthproduct"] . '" data-shoppy-username="' . $_SESSION['username'] . '" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Month Keys (shoppy)</a>';
+                                    }
 
 
-						}
 
-                        }
+                                    if ($row["shoppylifetimeproduct"] != NULL) {
 
-						
 
-						if($row["shoppysecret"] != NULL)
 
+                                        echo '<br><br><a data-shoppy-product="' . $row["shoppylifetimeproduct"] . '" data-shoppy-username="' . $_SESSION['username'] . '" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Lifetime Keys (shoppy)</a>';
+                                    }
+                                }
 
 
-                        {
 
 
 
-						echo '<script src="https://shoppy.gg/api/embed.js"></script>';	
 
 
+                                if ($row["resellerstore"] != NULL) {
 
-						if($row["shoppydayproduct"] != NULL)
 
 
+                                    echo '<a href="' . $row["resellerstore"] . '" target="resellerstore" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Keys</a>';
 
-                        {
 
 
+                                    return;
+                                }
 
-							echo '<button data-shoppy-product="'.$row["shoppydayproduct"].'" data-shoppy-username="'.$_SESSION['username'].'" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Day Keys (shoppy)</button>';
 
 
+                                ?>
 
-						}
 
 
+                                <?php
 
-						if($row["shoppyweekproduct"] != NULL)
 
 
+                                $result = mysqli_query($link, "SELECT `balance` FROM `accounts` WHERE `username` = '" . $_SESSION['username'] . "'");
 
-                        {
 
 
 
-							echo '<br><br><a data-shoppy-product="'.$row["shoppyweekproduct"].'" data-shoppy-username="'.$_SESSION['username'].'" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Week Keys (shoppy)</a>';
 
 
 
-						}
+                                $row = mysqli_fetch_array($result);
 
 
 
-						if($row["shoppymonthproduct"] != NULL)
 
 
 
-                        {
 
+                                $balance = $row["balance"];
 
 
-							echo '<br><br><a data-shoppy-product="'.$row["shoppymonthproduct"].'" data-shoppy-username="'.$_SESSION['username'].'" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Month Keys (shoppy)</a>';
 
 
 
-						}
 
 
+                                $balance = explode("|", $balance);
 
-						if($row["shoppylifetimeproduct"] != NULL)
 
 
 
-                        {
 
 
 
-							echo '<br><br><a data-shoppy-product="'.$row["shoppylifetimeproduct"].'" data-shoppy-username="'.$_SESSION['username'].'" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Lifetime Keys (shoppy)</a>';
+                                $day = $balance[0];
 
 
 
-						}
+                                $week = $balance[1];
 
-                        }
 
 
+                                $month = $balance[2];
 
-						
 
 
+                                $threemonth = $balance[3];
 
-                        if($row["resellerstore"] != NULL)
 
 
+                                $sixmonth = $balance[4];
 
-                        {
 
 
+                                $life = $balance[5];
 
-                        echo '<a href="'.$row["resellerstore"].'" target="resellerstore" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Purchase Keys</a>';
 
 
 
-                        return;
 
 
 
-                        }
-
-
-
-                        ?>
-
-						
-
-						<?php
-
-
-
-                            $result = mysqli_query($link, "SELECT `balance` FROM `accounts` WHERE `username` = '".$_SESSION['username']."'");
+                                echo '
 
 
 
@@ -678,67 +627,7 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                            $row = mysqli_fetch_array($result);
-
-
-
-                            
-
-
-
-                            $balance = $row["balance"];
-
-
-
-                            
-
-
-
-                            $balance = explode("|", $balance);
-
-
-
-                            
-
-
-
-                            $day = $balance[0];
-
-
-
-                            $week = $balance[1];
-
-
-
-                            $month = $balance[2];
-
-
-
-                            $threemonth = $balance[3];
-
-
-
-                            $sixmonth = $balance[4];
-
-
-
-                            $life = $balance[5];
-
-
-
-                            
-
-
-
-                            echo '
-
-
-
-                            
-
-
-
-                            <p>'.$day.' Day Key(s)</p>
+                            <p>' . $day . ' Day Key(s)</p>
 
 
 
@@ -746,7 +635,7 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                            <p>'.$week.' Week Key(s)</p>
+                            <p>' . $week . ' Week Key(s)</p>
 
 
 
@@ -754,7 +643,7 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                            <p>'.$month.' Month Key(s)</p>
+                            <p>' . $month . ' Month Key(s)</p>
 
 
 
@@ -762,7 +651,7 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                            <p>'.$threemonth.' Three Month Key(s)</p>
+                            <p>' . $threemonth . ' Three Month Key(s)</p>
 
 
 
@@ -770,7 +659,7 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                            <p>'.$sixmonth.' Six Month Key(s)</p>
+                            <p>' . $sixmonth . ' Six Month Key(s)</p>
 
 
 
@@ -778,7 +667,7 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                            <p>'.$life.' Lifetime Key(s)</p>
+                            <p>' . $life . ' Lifetime Key(s)</p>
 
 
 
@@ -786,11 +675,11 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                            
 
 
 
-                            ?>
+
+                                ?>
 
                             </div>
 
@@ -802,39 +691,39 @@ if (!isset($_SESSION['username'])) {
 
                 <!-- Show / hide columns dynamically -->
 
-                
+
 
                 <!-- Column rendering -->
 
-                
+
 
                 <!-- Row grouping -->
 
-                
+
 
                 <!-- Multiple table control element -->
 
-                
+
 
                 <!-- DOM / jQuery events -->
 
-                
+
 
                 <!-- Complex headers with column visibility -->
 
-                
+
 
                 <!-- language file -->
 
-                
+
 
                 <!-- Setting defaults -->
 
-                
+
 
                 <!-- Footer callback -->
 
-                
+
 
                 <!-- ============================================================== -->
 
@@ -872,9 +761,11 @@ if (!isset($_SESSION['username'])) {
 
             <footer class="footer text-center">
 
-       Copyright &copy; 2020-<script>document.write(new Date().getFullYear())</script> KeyAuth
+                Copyright &copy; 2020-<script>
+                    document.write(new Date().getFullYear())
+                </script> KeyAuth
 
-</footer>
+            </footer>
 
             <!-- ============================================================== -->
 
@@ -900,9 +791,9 @@ if (!isset($_SESSION['username'])) {
 
     <!-- ============================================================== -->
 
-    
 
-   
+
+
 
     <!-- ============================================================== -->
 
@@ -910,7 +801,7 @@ if (!isset($_SESSION['username'])) {
 
     <!-- ============================================================== -->
 
-    
+
 
     <!-- Bootstrap tether Core JavaScript -->
 
@@ -942,7 +833,7 @@ if (!isset($_SESSION['username'])) {
 
     <!--Custom JavaScript -->
 
-   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
 
     <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
 
@@ -966,9 +857,9 @@ if (!isset($_SESSION['username'])) {
 
     <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
 
-		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 
-	    <!-- start - This is for export functionality only -->
+    <!-- start - This is for export functionality only -->
 
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
 
@@ -982,11 +873,11 @@ if (!isset($_SESSION['username'])) {
 
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
 
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>		
+    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
 
 
 
-<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 </body>
 

@@ -13,33 +13,31 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-	        $username = $_SESSION['username'];
+$username = $_SESSION['username'];
 
-            ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 
-            $row = mysqli_fetch_array($result);
+$row = mysqli_fetch_array($result);
 
-            
 
-			if($username == "demodeveloper" || $username == "demoseller")
-			{
-				die("OwnerID: " . $row['ownerid'] . "<br>that's the only thing you need on this page.");
-			}
-			
-            $banned = $row['banned'];
 
-			$lastreset = $row['lastreset'];
+if ($username == "demodeveloper" || $username == "demoseller") {
+    die("OwnerID: " . $row['ownerid'] . "<br>that's the only thing you need on this page.");
+}
 
-			if (!is_null($banned) || $_SESSION['logindate'] < $lastreset)
-			{
-				echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
-				session_destroy();
-				exit();
-			}
-            $role = $row['role'];
-            $twofactor = $row['twofactor'];
-            $_SESSION['role'] = $role;
-			$darkmode = $row['darkmode'];       
+$banned = $row['banned'];
+
+$lastreset = $row['lastreset'];
+
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset) {
+    echo "<meta http-equiv='Refresh' Content='0; url=../../../login/'>";
+    session_destroy();
+    exit();
+}
+$role = $row['role'];
+$twofactor = $row['twofactor'];
+$_SESSION['role'] = $role;
+$darkmode = $row['darkmode'];
 
 ?>
 
@@ -69,11 +67,11 @@ if (!isset($_SESSION['username'])) {
 
     <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.keyauth.uk/static/images/favicon.png">
 
-	<script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/libs/jquery/dist/jquery.min.js"></script>
 
     <!-- Custom CSS -->
 
-	<link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
 
     <link href="https://cdn.keyauth.uk/dashboard/assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
 
@@ -83,42 +81,41 @@ if (!isset($_SESSION['username'])) {
 
     <link href="https://cdn.keyauth.uk/dashboard/dist/css/style.min.css" rel="stylesheet">
 
-	
 
 
 
-	<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
 
 
-	<script>
-	// @see https://docs.headwayapp.co/widget for more configuration options.
-	var HW_config = {
-		selector: ".noti", // CSS selector where to inject the badge
-		account:  "yBgPqx"
-	}
-	</script>
-	<script async src="https://cdn.headwayapp.co/widget.js"></script>
+    <script>
+        // @see https://docs.headwayapp.co/widget for more configuration options.
+        var HW_config = {
+            selector: ".noti", // CSS selector where to inject the badge
+            account: "yBgPqx"
+        }
+    </script>
+    <script async src="https://cdn.headwayapp.co/widget.js"></script>
 
 
 
-	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-	
 
-	<script>
 
-	$(document).ready(function () {
+    <script>
+        $(document).ready(function() {
 
-	//change selectboxes to selectize mode to be searchable
+            //change selectboxes to selectize mode to be searchable
 
-	$("select").select2();
+            $("select").select2();
 
-	});
-
-	</script>                    
+        });
+    </script>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 
@@ -134,7 +131,11 @@ if (!isset($_SESSION['username'])) {
 
 </head>
 
-<body data-theme="<?php if($darkmode == 0){echo "dark";}else{echo"light";}?>">
+<body data-theme="<?php if ($darkmode == 0) {
+                        echo "dark";
+                    } else {
+                        echo "light";
+                    } ?>">
 
     <!-- ============================================================== -->
 
@@ -198,13 +199,13 @@ if (!isset($_SESSION['username'])) {
 
                         <span class="logo-text">
 
-                             <!-- dark Logo text -->
+                            <!-- dark Logo text -->
 
-                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-text.png" alt="homepage" class="dark-logo" />
 
-                             <!-- Light Logo text -->    
+                            <!-- Light Logo text -->
 
-                             <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
+                            <img src="https://cdn.keyauth.uk/dashboard/assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
 
                         </span>
 
@@ -259,24 +260,24 @@ if (!isset($_SESSION['username'])) {
                         <!-- create new -->
 
                         <!-- ============================================================== -->
-						<li class="nav-item dropdown">
-						<p class="noti" style="padding-top:15px;"></p>
-						</li>
+                        <li class="nav-item dropdown">
+                            <p class="noti" style="padding-top:15px;"></p>
+                        </li>
                         <li class="nav-item dropdown">
 
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://keyauth.com/discord/" target="discord"> <i class="mdi mdi-discord font-24"></i>
 
-						</a>
+                            </a>
 
-						</li>
+                        </li>
 
-						<li class="nav-item dropdown">
+                        <li class="nav-item dropdown">
 
-						<a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark" href="https://t.me/KeyAuth" target="telegram"> <i class="mdi mdi-telegram font-24"></i>
 
-						</a>
+                            </a>
 
-						</li>
+                        </li>
 
                         <!-- ============================================================== -->
 
@@ -356,9 +357,9 @@ if (!isset($_SESSION['username'])) {
 
                         <?php
 
-						dashboard\primary\sidebar($role);
+                        dashboard\primary\sidebar($role);
 
-						?>
+                        ?>
 
                     </ul>
 
@@ -416,7 +417,7 @@ if (!isset($_SESSION['username'])) {
 
             <!-- Container fluid  -->
 
-   
+
 
             <!-- ============================================================== -->
 
@@ -426,37 +427,31 @@ if (!isset($_SESSION['username'])) {
 
                 <!-- Start Page Content -->
 
-				<?php
+                <?php
 
-				($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '".$_SESSION['username']."'")) or die(mysqli_error($link));
+                ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
 
-        if (mysqli_num_rows($result) > 0)
+                if (mysqli_num_rows($result) > 0) {
 
-            {
+                    while ($row = mysqli_fetch_array($result)) {
 
-                while ($row = mysqli_fetch_array($result))
+                        $darkmode = (($row['darkmode'] ? 1 : 0) ? 'Disabled' : 'Enabled');
 
-                {
 
-                    $darkmode = (($row['darkmode'] ? 1 : 0) ? 'Disabled' : 'Enabled');
 
-					
+                        $acclogs = (($row['acclogs'] ? 0 : 1) ? 'Disabled' : 'Enabled');
 
-                    $acclogs = (($row['acclogs'] ? 0 : 1) ? 'Disabled' : 'Enabled');
 
-					
 
-					$expiry = date('jS F Y h:i:s A (T)', $row["expires"]);
-
+                        $expiry = date('jS F Y h:i:s A (T)', $row["expires"]);
+                    }
                 }
 
-            }
 
-			
 
-			
 
-				?>
+
+                ?>
 
                 <!-- ============================================================== -->
 
@@ -478,7 +473,7 @@ if (!isset($_SESSION['username'])) {
 
                                         <div class="col-10">
 
-											<label class="form-control"><?php echo $_SESSION['username']; ?></label>
+                                            <label class="form-control"><?php echo $_SESSION['username']; ?></label>
 
                                         </div>
 
@@ -490,87 +485,75 @@ if (!isset($_SESSION['username'])) {
 
                                         <div class="col-10">
 
-											<label class="form-control"><?php echo $_SESSION['ownerid']; ?></label>
+                                            <label class="form-control"><?php echo $_SESSION['ownerid']; ?></label>
 
                                         </div>
 
                                     </div>
 
-									<div class="form-group row">
+                                    <div class="form-group row">
 
                                         <label for="example-text-input" class="col-2 col-form-label">Subscription Expires</label>
 
                                         <div class="col-10">
 
-											<label class="form-control"><?php echo $expiry; ?></label>
+                                            <label class="form-control"><?php echo $expiry; ?></label>
 
                                         </div>
 
                                     </div>
 
-									<div class="form-group row">
+                                    <div class="form-group row">
 
                                         <label for="example-tel-input" class="col-2 col-form-label">Darkmode</label>
 
                                         <div class="col-10">
 
-                                            <select class="form-control" name="darkmode"><option><?php echo $darkmode; 
+                                            <select class="form-control" name="darkmode">
+                                                <option><?php echo $darkmode;
 
-                                                    
 
-                                                    if($darkmode == "Enabled")
 
-                                                    {
+                                                        if ($darkmode == "Enabled") {
 
-                                                        echo"<option>Disabled</option>";
+                                                            echo "<option>Disabled</option>";
+                                                        } else {
 
-                                                    }
+                                                            echo "<option>Enabled</option>";
+                                                        }
 
-                                                    else
 
-                                                    {
 
-                                                        echo"<option>Enabled</option>";
-
-                                                    }
-
-                                                    
-
-                                                    ?></option></select>
+                                                        ?></option>
+                                            </select>
 
                                         </div>
 
                                     </div>
 
-									<div class="form-group row">
+                                    <div class="form-group row">
 
                                         <label for="example-tel-input" class="col-2 col-form-label">Account logs</label>
 
                                         <div class="col-10">
 
-                                            <select class="form-control" name="acclogs"><option><?php echo $acclogs; 
+                                            <select class="form-control" name="acclogs">
+                                                <option><?php echo $acclogs;
 
-                                                    
 
-                                                    if($acclogs == "Enabled")
 
-                                                    {
+                                                        if ($acclogs == "Enabled") {
 
-                                                        echo"<option>Disabled</option>";
+                                                            echo "<option>Disabled</option>";
+                                                        } else {
 
-                                                    }
+                                                            echo "<option>Enabled</option>";
+                                                        }
 
-                                                    else
 
-                                                    {
 
-                                                        echo"<option>Enabled</option>";
-
-                                                    }
-
-                                                    
-
-                                                    ?></option></select>
+                                                        ?></option>
+                                            </select>
 
                                         </div>
 
@@ -600,7 +583,7 @@ if (!isset($_SESSION['username'])) {
 
                                     </div>
 
-									<div class="form-group row">
+                                    <div class="form-group row">
 
                                         <label for="example-password-input" class="col-2 col-form-label">Email</label>
 
@@ -612,7 +595,7 @@ if (!isset($_SESSION['username'])) {
 
                                     </div>
 
-									<div class="form-group row">
+                                    <div class="form-group row">
 
                                         <label for="example-password-input" class="col-2 col-form-label">Username</label>
 
@@ -624,39 +607,23 @@ if (!isset($_SESSION['username'])) {
 
                                     </div>
 
-                                    <button name="updatesettings" class="btn btn-success"> <i class="fa fa-check"></i> Save</button>  <a href="JavaScript:newPopup('https://discord.com/api/oauth2/authorize?client_id=866538681308545054&redirect_uri=https%3A%2F%2F<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>%2Fapi%2Fdiscord%2F&response_type=code&scope=identify%20guilds.join');" class="btn btn-info"> <i class="fab fa-discord"></i>  Link Discord</a>  <?php if($twofactor == 0){echo '<button name="method_2factor" class="btn waves-effect waves-light btn-dark"> <i class="fa fa-lock"></i> Enable 2FA</button>';}else{echo'<button name="method_2factor_disable" class="btn waves-effect waves-light btn-dark"> <i class="fa fa-lock"></i> Disable 2FA</button>';}?>  <button name="refreshownerid" class="btn btn-warning" onclick="return confirm('Are you sure you want to reset ownerid for your account and all your applications?')"> <i class="fa fa-check"></i> Refresh OwnerID</button>
+                                    <button name="updatesettings" class="btn btn-success"> <i class="fa fa-check"></i> Save</button> <a href="JavaScript:newPopup('https://discord.com/api/oauth2/authorize?client_id=866538681308545054&redirect_uri=https%3A%2F%2F<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>%2Fapi%2Fdiscord%2F&response_type=code&scope=identify%20guilds.join');" class="btn btn-info"> <i class="fab fa-discord"></i> Link Discord</a> <?php if ($twofactor == 0) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        echo '<button name="method_2factor" class="btn waves-effect waves-light btn-dark"> <i class="fa fa-lock"></i> Enable 2FA</button>';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    } else {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        echo '<button name="method_2factor_disable" class="btn waves-effect waves-light btn-dark"> <i class="fa fa-lock"></i> Disable 2FA</button>';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    } ?> <button name="refreshownerid" class="btn btn-warning" onclick="return confirm('Are you sure you want to reset ownerid for your account and all your applications?')"> <i class="fa fa-check"></i> Refresh OwnerID</button>
 
                                 </form>
 
-								<?php
+                                <?php
 
 
 
-																	require_once '../../../auth/GoogleAuthenticator.php';
+                                require_once '../../../auth/GoogleAuthenticator.php';
 
 
 
-                                                                    $gauth = new GoogleAuthenticator();
-
-
-
-                                                                    
-
-
-
-                                                                    if (isset($_POST['method_2factor']))
-
-
-
-                                                                    {
-
-
-
-                                                                        $two_fac = true;
-
-
-
-                                                                        
+                                $gauth = new GoogleAuthenticator();
 
 
 
@@ -664,31 +631,47 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                        $code_2factor = $gauth->createSecret();
+                                if (isset($_POST['method_2factor'])) {
 
 
 
-                                                                        $integrate_code = mysqli_query($link, "UPDATE `accounts` SET `googleAuthCode` = '$code_2factor' WHERE `username` = '".$_SESSION['username']."'") or die(mysqli_error($link));
+                                    $two_fac = true;
 
 
 
-                                                                            
 
 
 
-                                            
 
 
 
-                                                                            $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2factor, 'KeyAuth');
+
+
+                                    $code_2factor = $gauth->createSecret();
 
 
 
-                                                                            
+                                    $integrate_code = mysqli_query($link, "UPDATE `accounts` SET `googleAuthCode` = '$code_2factor' WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
 
 
 
-                                                                            echo '
+
+
+
+
+
+
+
+
+                                    $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2factor, 'KeyAuth');
+
+
+
+
+
+
+
+                                    echo '
 
 
 
@@ -716,7 +699,7 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                            <img src="'.$google_QR_Code.'" />
+                                                                            <img src="' . $google_QR_Code . '" />
 
 
 
@@ -728,7 +711,7 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                            <label>Alternatively, you can set it manually, code: '.$code_2factor.'</label>
+                                                                            <label>Alternatively, you can set it manually, code: ' . $code_2factor . '</label>
 
 
 
@@ -752,39 +735,28 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                            ';                                                                            
+                                                                            ';
+                                }
 
 
 
-                                                                        
 
 
 
-                                                                    }
 
-																	
-
-																	
-
-																	
-
-																	if (isset($_POST['method_2factor_disable']))
+                                if (isset($_POST['method_2factor_disable'])) {
 
 
 
-                                                                    {
+                                    $two_fac = true;
 
 
 
-                                                                        $two_fac = true;
 
 
 
-                                                                            
 
-
-
-                                                                            echo '
+                                    echo '
 
 
 
@@ -828,19 +800,12 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                            ';                                                                            
+                                                                            ';
+                                }
 
 
 
-                                                                        
-
-
-
-                                                                    }
-
-
-
-                                            ?>
+                                ?>
 
                             </div>
 
@@ -852,287 +817,226 @@ if (!isset($_SESSION['username'])) {
 
                 <!-- Show / hide columns dynamically -->
 
-                
+
 
                 <!-- Column rendering -->
 
-                
+
 
                 <!-- Row grouping -->
 
-                
+
 
                 <!-- Multiple table control element -->
 
-                
 
-				<?php
 
+                <?php
 
 
-                    if(isset($_POST['refreshownerid']))
 
-					{
+                if (isset($_POST['refreshownerid'])) {
 
-			$ownerid = misc\etc\generateRandomString();
+                    $ownerid = misc\etc\generateRandomString();
 
-			
 
-            mysqli_query($link, "UPDATE `accounts` SET `ownerid` = '$ownerid' WHERE `username` = '".$_SESSION['username']."'");
 
-            mysqli_query($link, "UPDATE `apps` SET `ownerid` = '$ownerid' WHERE `owner` = '".$_SESSION['username']."'");
+                    mysqli_query($link, "UPDATE `accounts` SET `ownerid` = '$ownerid' WHERE `username` = '" . $_SESSION['username'] . "'");
 
-			
+                    mysqli_query($link, "UPDATE `apps` SET `ownerid` = '$ownerid' WHERE `owner` = '" . $_SESSION['username'] . "'");
 
-			$_SESSION['ownerid'] = $ownerid;
 
-			
 
-			if(mysqli_affected_rows($link) != 0)
+                    $_SESSION['ownerid'] = $ownerid;
 
-			{
 
-			success("Successfully Refreshed OwnerID!");
 
-			echo "<meta http-equiv='Refresh' Content='2;'>";         
+                    if (mysqli_affected_rows($link) != 0) {
 
-			}
+                        success("Successfully Refreshed OwnerID!");
 
-			else
+                        echo "<meta http-equiv='Refresh' Content='2;'>";
+                    } else {
 
-			{
+                        dashboard\primary\error("OwnerID Refresh Failed!");
 
-			dashboard\primary\error("OwnerID Refresh Failed!");
+                        echo "<meta http-equiv='Refresh' Content='2;'>";
+                    }
+                }
 
-			echo "<meta http-equiv='Refresh' Content='2;'>";
 
-			}
 
-					}
+                if (isset($_POST['updatesettings'])) {
 
-						
 
-                    if(isset($_POST['updatesettings']))
 
+                    $pw = misc\etc\sanitize($_POST['pw']);
 
 
-                    {
 
+                    $pfp = misc\etc\sanitize($_POST['pfp']);
 
 
-                        $pw = misc\etc\sanitize($_POST['pw']);
 
+                    $email = misc\etc\sanitize($_POST['email']);
 
 
-                        $pfp = misc\etc\sanitize($_POST['pfp']);
 
-						
+                    $username = misc\etc\sanitize($_POST['username']);
 
-                        $email = misc\etc\sanitize($_POST['email']);
 
-						
 
-                        $username = misc\etc\sanitize($_POST['username']);
+                    $darkmode = misc\etc\sanitize($_POST['darkmode']);
 
-						
 
-                        $darkmode = misc\etc\sanitize($_POST['darkmode']);
 
-						
+                    $acclogs = misc\etc\sanitize($_POST['acclogs']);
 
-                        $acclogs = misc\etc\sanitize($_POST['acclogs']);
 
-						
 
-						$darkmode = $darkmode == "Enabled" ? 0 : 1;
+                    $darkmode = $darkmode == "Enabled" ? 0 : 1;
 
-						$acclogs = $acclogs == "Disabled" ? 0 : 1;
+                    $acclogs = $acclogs == "Disabled" ? 0 : 1;
 
-						mysqli_query($link, "UPDATE `accounts` SET `darkmode` = '$darkmode',`acclogs` = '$acclogs' WHERE `username` = '".$_SESSION['username']."'");
+                    mysqli_query($link, "UPDATE `accounts` SET `darkmode` = '$darkmode',`acclogs` = '$acclogs' WHERE `username` = '" . $_SESSION['username'] . "'");
 
-						
 
-						if($acclogs == 0)
 
-						{
+                    if ($acclogs == 0) {
 
-							mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '" . $_SESSION['username'] . "'"); // delete all account logs
+                        mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '" . $_SESSION['username'] . "'"); // delete all account logs
 
-						}
+                    }
 
-						
 
-                        if(isset($email) && trim($email) != '')
 
+                    if (isset($email) && trim($email) != '') {
 
+                        ($result = mysqli_query($link, "SELECT `email` FROM `accounts` WHERE `email` = '$email'")) or die(mysqli_error($link));
 
-                        {
+                        if (mysqli_num_rows($result) != 0) {
 
-							($result = mysqli_query($link, "SELECT `email` FROM `accounts` WHERE `email` = '$email'")) or die(mysqli_error($link));
+                            dashboard\primary\error("Another account is already using this email!");
 
-							if (mysqli_num_rows($result) != 0)
+                            echo "<meta http-equiv='Refresh' Content='2;'>";
 
-							{
-
-								dashboard\primary\error("Another account is already using this email!");
-
-								echo "<meta http-equiv='Refresh' Content='2;'>";  
-
-								return;
-
-							}
-
-							
-
-                            mysqli_query($link, "UPDATE `accounts` SET `email` = '$email' WHERE `username` = '".$_SESSION['username']."'");
-
-							
-
-							if (mysqli_affected_rows($link) != 0)
-
-							{	
-
-								dashboard\primary\wh_log($logwebhook,"".$_SESSION['username']." with email " . $_SESSION['email'] . " has changed email to `{$email}`", $webhookun);
-
-								
-
-								$_SESSION['email'] = $email;
-
-							}
-
-
-
-                        }
-
-						
-
-						if(isset($username) && trim($username) != '')
-
-
-
-                        {
-
-							
-
-							if($username == $_SESSION['username'])
-
-							{
-
-								dashboard\primary\error("You already occupy this username!");
-
-								echo "<meta http-equiv='Refresh' Content='2;'>";  
-
-								return;
-
-							}
-
-							
-
-							($result = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-
-							if (mysqli_num_rows($result) != 0)
-
-							{
-
-								dashboard\primary\error("Another account is already using this username!");
-
-								echo "<meta http-equiv='Refresh' Content='2;'>";  
-
-								return;
-
-							}
-
-							
-
-                            mysqli_query($link, "UPDATE `acclogs` SET `username` = '$username' WHERE `username` = '".$_SESSION['username']."'");
-
-                            mysqli_query($link, "UPDATE `apps` SET `owner` = '$username' WHERE `owner` = '".$_SESSION['username']."'");
-
-                            mysqli_query($link, "UPDATE `keys` SET `genby` = '$username' WHERE `genby` = '".$_SESSION['username']."'");
-
-			    mysqli_query($link, "UPDATE `users` SET `owner` = '$username' WHERE `owner` = '".$_SESSION['username']."'");
-							
-							mysqli_query($link, "UPDATE `accounts` SET `owner` = '$username' WHERE `owner` = '".$_SESSION['username']."'");	
-
-							mysqli_query($link, "UPDATE `accounts` SET `username` = '$username' WHERE `username` = '".$_SESSION['username']."'");
-
-							
-
-							if (mysqli_affected_rows($link) != 0)
-
-							{
-
-								dashboard\primary\wh_log($logwebhook,"".$_SESSION['username']." has changed username to `{$username}`", $webhookun);
-
-								
-
-								$_SESSION['username'] = $username;
-
-							}
-
-
-
-                        }
-
-						
-
-						if(isset($pw) && trim($pw) != '')
-
-
-
-                        {
-
-
-
-                            $pass_encrypted = password_hash($pw, PASSWORD_BCRYPT);
-
-
-
-                            mysqli_query($link, "UPDATE `accounts` SET `password` = '$pass_encrypted' WHERE `username` = '".$_SESSION['username']."'");
-
-
-
+                            return;
                         }
 
 
 
-                        
+                        mysqli_query($link, "UPDATE `accounts` SET `email` = '$email' WHERE `username` = '" . $_SESSION['username'] . "'");
 
 
 
-                        if(isset($_POST['pfp']) && trim($_POST['pfp']) != '')
+                        if (mysqli_affected_rows($link) != 0) {
+
+                            dashboard\primary\wh_log($logwebhook, "" . $_SESSION['username'] . " with email " . $_SESSION['email'] . " has changed email to `{$email}`", $webhookun);
 
 
 
-                        {
-
-							if (!filter_var($pfp, FILTER_VALIDATE_URL)) { 
-
-							dashboard\primary\error("Invalid Url For Profile Image!");
-
-							return;
-
-							}
+                            $_SESSION['email'] = $email;
+                        }
+                    }
 
 
 
-                            $_SESSION['img'] = $pfp;
+                    if (isset($username) && trim($username) != '') {
 
 
 
-                            mysqli_query($link, "UPDATE `accounts` SET `img` = '$pfp' WHERE `username` = '".$_SESSION['username']."'");
+                        if ($username == $_SESSION['username']) {
 
+                            dashboard\primary\error("You already occupy this username!");
 
+                            echo "<meta http-equiv='Refresh' Content='2;'>";
 
+                            return;
                         }
 
 
 
+                        ($result = mysqli_query($link, "SELECT `username` FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+
+                        if (mysqli_num_rows($result) != 0) {
+
+                            dashboard\primary\error("Another account is already using this username!");
+
+                            echo "<meta http-equiv='Refresh' Content='2;'>";
+
+                            return;
+                        }
+
+
+
+                        mysqli_query($link, "UPDATE `acclogs` SET `username` = '$username' WHERE `username` = '" . $_SESSION['username'] . "'");
+
+                        mysqli_query($link, "UPDATE `apps` SET `owner` = '$username' WHERE `owner` = '" . $_SESSION['username'] . "'");
+
+                        mysqli_query($link, "UPDATE `keys` SET `genby` = '$username' WHERE `genby` = '" . $_SESSION['username'] . "'");
+
+                        mysqli_query($link, "UPDATE `users` SET `owner` = '$username' WHERE `owner` = '" . $_SESSION['username'] . "'");
+
+                        mysqli_query($link, "UPDATE `accounts` SET `owner` = '$username' WHERE `owner` = '" . $_SESSION['username'] . "'");
+
+                        mysqli_query($link, "UPDATE `accounts` SET `username` = '$username' WHERE `username` = '" . $_SESSION['username'] . "'");
+
+
+
+                        if (mysqli_affected_rows($link) != 0) {
+
+                            dashboard\primary\wh_log($logwebhook, "" . $_SESSION['username'] . " has changed username to `{$username}`", $webhookun);
+
+
+
+                            $_SESSION['username'] = $username;
+                        }
+                    }
+
+
+
+                    if (isset($pw) && trim($pw) != '') {
+
+
+
+                        $pass_encrypted = password_hash($pw, PASSWORD_BCRYPT);
+
+
+
+                        mysqli_query($link, "UPDATE `accounts` SET `password` = '$pass_encrypted' WHERE `username` = '" . $_SESSION['username'] . "'");
+                    }
 
 
 
 
-                                                echo '
+
+
+
+                    if (isset($_POST['pfp']) && trim($_POST['pfp']) != '') {
+
+                        if (!filter_var($pfp, FILTER_VALIDATE_URL)) {
+
+                            dashboard\primary\error("Invalid Url For Profile Image!");
+
+                            return;
+                        }
+
+
+
+                        $_SESSION['img'] = $pfp;
+
+
+
+                        mysqli_query($link, "UPDATE `accounts` SET `img` = '$pfp' WHERE `username` = '" . $_SESSION['username'] . "'");
+                    }
+
+
+
+
+
+
+
+                    echo '
 
 
 
@@ -1184,11 +1088,8 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                        echo "<meta http-equiv='Refresh' Content='2;'>";  
-
-
-
-                    }
+                    echo "<meta http-equiv='Refresh' Content='2;'>";
+                }
 
 
 
@@ -1196,31 +1097,23 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                    if (isset($_POST['submit_code']))
+                if (isset($_POST['submit_code'])) {
 
 
 
-                                                                        {
+                    if (empty($_POST['scan_code'])) {
 
 
 
-                                                                            if (empty($_POST['scan_code']))
 
 
 
-                                                                            {
 
 
 
-                                                                                
 
 
-
-                                                                                
-
-
-
-                                                                                echo '
+                        echo '
 
 
 
@@ -1268,99 +1161,73 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                                ';          
+                                                                                ';
+                    }
 
 
 
-                                            
 
 
 
-                                            
 
+                    $code = misc\etc\sanitize($_POST['scan_code']);
 
 
-                                                                            }
 
 
 
-                                                                            
 
 
+                    $user_result = mysqli_query($link, "SELECT * from `accounts` WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
 
-                                                                            $code = misc\etc\sanitize($_POST['scan_code']);
 
 
+                    while ($row = mysqli_fetch_array($user_result)) {
 
-                                                                            
 
 
+                        $secret_code = $row['googleAuthCode'];
+                    }
 
-                                                                            $user_result = mysqli_query($link, "SELECT * from `accounts` WHERE `username` = '".$_SESSION['username']."'") or die(mysqli_error($link));
 
 
 
-                                                                            while ($row = mysqli_fetch_array($user_result))
 
 
 
-                                                                            {
+                    $checkResult = $gauth->verifyCode($secret_code, $code, 2);
 
 
 
-                                                                                $secret_code = $row['googleAuthCode'];
 
 
 
-                                                                            }
 
+                    if ($checkResult) {
 
 
-                                                                            
 
 
 
-                                                                            $checkResult = $gauth->verifyCode($secret_code, $code, 2);
 
 
+                        $enable_2factor = mysqli_query($link, "UPDATE `accounts` SET `twofactor` = '1' WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
 
-                                                                            
 
 
 
-                                                                            if ($checkResult)
 
 
 
-                                                                            {
+                        if ($enable_2factor) {
 
 
 
-                                                                                
 
 
 
-                                                                                $enable_2factor = mysqli_query($link, "UPDATE `accounts` SET `twofactor` = '1' WHERE `username` = '".$_SESSION['username']."'") or die(mysqli_error($link));
 
-
-
-                                                                                
-
-
-
-                                                                                if ($enable_2factor)
-
-
-
-                                                                                {          
-
-
-
-
-
-
-
-                                                                                    echo '
+                            echo '
 
 
 
@@ -1408,35 +1275,22 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                                    ';                                                                                          
+                                                                                    ';
 
-																					echo "<meta http-equiv='Refresh' Content='2;'>";
-
-                                                                                
-
-
-
-                                                                                }
+                            echo "<meta http-equiv='Refresh' Content='2;'>";
+                        } else {
 
 
 
-                                                                                else
 
 
 
-                                                                                {
 
 
 
-                                                                                    
 
 
-
-                                                                                    
-
-
-
-                                                                                    echo '
+                            echo '
 
 
 
@@ -1484,47 +1338,17 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                                    ';                       
+                                                                                    ';
+                        }
+                    } else {
 
 
 
-                                                                                    
 
 
 
-                                                                                    
 
-
-
-                                                                                    
-
-
-
-                                                                                                         
-
-
-
-                                                                                }
-
-
-
-                                                                            }
-
-
-
-                                                                            else
-
-
-
-                                                                            {
-
-
-
-                                                                                
-
-
-
-                                                                                echo '
+                        echo '
 
 
 
@@ -1572,61 +1396,39 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                                ';                      
+                                                                                ';
+                    }
+                }
 
 
 
-                                                                                    
 
 
 
-                                                                            }
 
 
 
-                                                                            
 
 
 
-                                                                        }
 
-																		
-
-																		
-
-																		
-
-																		
-
-																		
-
-																		
-
-																		if (isset($_POST['submit_code_disable']))
+                if (isset($_POST['submit_code_disable'])) {
 
 
 
-                                                                        {
+                    if (empty($_POST['scan_code'])) {
 
 
 
-                                                                            if (empty($_POST['scan_code']))
 
 
 
-                                                                            {
 
 
 
-                                                                                
 
 
-
-                                                                                
-
-
-
-                                                                                echo '
+                        echo '
 
 
 
@@ -1674,99 +1476,73 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                                ';          
+                                                                                ';
+                    }
 
 
 
-                                            
 
 
 
-                                            
 
+                    $code = misc\etc\sanitize($_POST['scan_code']);
 
 
-                                                                            }
 
 
 
-                                                                            
 
 
+                    $user_result = mysqli_query($link, "SELECT * from `accounts` WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
 
-                                                                            $code = misc\etc\sanitize($_POST['scan_code']);
 
 
+                    while ($row = mysqli_fetch_array($user_result)) {
 
-                                                                            
 
 
+                        $secret_code = $row['googleAuthCode'];
+                    }
 
-                                                                            $user_result = mysqli_query($link, "SELECT * from `accounts` WHERE `username` = '".$_SESSION['username']."'") or die(mysqli_error($link));
 
 
 
-                                                                            while ($row = mysqli_fetch_array($user_result))
 
 
 
-                                                                            {
+                    $checkResult = $gauth->verifyCode($secret_code, $code, 2);
 
 
 
-                                                                                $secret_code = $row['googleAuthCode'];
 
 
 
-                                                                            }
 
+                    if ($checkResult) {
 
 
-                                                                            
 
 
 
-                                                                            $checkResult = $gauth->verifyCode($secret_code, $code, 2);
 
 
+                        $enable_2factor = mysqli_query($link, "UPDATE `accounts` SET `twofactor` = '0' WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
 
-                                                                            
 
 
 
-                                                                            if ($checkResult)
 
 
 
-                                                                            {
+                        if ($enable_2factor) {
 
 
 
-                                                                                
 
 
 
-                                                                                $enable_2factor = mysqli_query($link, "UPDATE `accounts` SET `twofactor` = '0' WHERE `username` = '".$_SESSION['username']."'") or die(mysqli_error($link));
 
-
-
-                                                                                
-
-
-
-                                                                                if ($enable_2factor)
-
-
-
-                                                                                {          
-
-
-
-
-
-
-
-                                                                                    echo '
+                            echo '
 
 
 
@@ -1814,35 +1590,22 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                                    ';                                                                                          
+                                                                                    ';
 
-																					echo "<meta http-equiv='Refresh' Content='2;'>";	
-
-                                                                                
-
-
-
-                                                                                }
+                            echo "<meta http-equiv='Refresh' Content='2;'>";
+                        } else {
 
 
 
-                                                                                else
 
 
 
-                                                                                {
 
 
 
-                                                                                    
 
 
-
-                                                                                    
-
-
-
-                                                                                    echo '
+                            echo '
 
 
 
@@ -1890,47 +1653,17 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                                    ';                       
+                                                                                    ';
+                        }
+                    } else {
 
 
 
-                                                                                    
 
 
 
-                                                                                    
 
-
-
-                                                                                    
-
-
-
-                                                                                                         
-
-
-
-                                                                                }
-
-
-
-                                                                            }
-
-
-
-                                                                            else
-
-
-
-                                                                            {
-
-
-
-                                                                                
-
-
-
-                                                                                echo '
+                        echo '
 
 
 
@@ -1978,49 +1711,35 @@ if (!isset($_SESSION['username'])) {
 
 
 
-                                                                                ';                      
+                                                                                ';
+                    }
+                }
 
 
 
-                                                                                    
+                ?>
 
 
-
-                                                                            }
-
-
-
-                                                                            
-
-
-
-                                                                        }
-
-
-
-                    ?>
-
-				
 
                 <!-- DOM / jQuery events -->
 
-                
+
 
                 <!-- Complex headers with column visibility -->
 
-                
+
 
                 <!-- language file -->
 
-                
+
 
                 <!-- Setting defaults -->
 
-                
+
 
                 <!-- Footer callback -->
 
-                
+
 
                 <!-- ============================================================== -->
 
@@ -2058,9 +1777,11 @@ if (!isset($_SESSION['username'])) {
 
             <footer class="footer text-center">
 
-       Copyright &copy; 2020-<script>document.write(new Date().getFullYear())</script> KeyAuth
+                Copyright &copy; 2020-<script>
+                    document.write(new Date().getFullYear())
+                </script> KeyAuth
 
-</footer>
+            </footer>
 
             <!-- ============================================================== -->
 
@@ -2086,9 +1807,9 @@ if (!isset($_SESSION['username'])) {
 
     <!-- ============================================================== -->
 
-    
 
-   
+
+
 
     <!-- ============================================================== -->
 
@@ -2096,7 +1817,7 @@ if (!isset($_SESSION['username'])) {
 
     <!-- ============================================================== -->
 
-    
+
 
     <!-- Bootstrap tether Core JavaScript -->
 
@@ -2128,7 +1849,7 @@ if (!isset($_SESSION['username'])) {
 
     <!--Custom JavaScript -->
 
-   <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/feather.min.js"></script>
 
     <script src="https://cdn.keyauth.uk/dashboard/dist/js/custom.min.js"></script>
 
@@ -2152,9 +1873,9 @@ if (!isset($_SESSION['username'])) {
 
     <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/dashboards/dashboard1.js"></script>
 
-		<script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.keyauth.uk/dashboard/assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
 
-	    <!-- start - This is for export functionality only -->
+    <!-- start - This is for export functionality only -->
 
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
 
@@ -2170,43 +1891,37 @@ if (!isset($_SESSION['username'])) {
 
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
 
-  
-
-					
 
 
 
-<script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 
 
-<script type="text/javascript">
+    <script src="https://cdn.keyauth.uk/dashboard/dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
-// Popup window code
 
-function newPopup(url) {
 
-	popupWindow = window.open(
+    <script type="text/javascript">
+        // Popup window code
 
-		url,'popUpWindow','menubar=no,width=500,height=777,location=no,resizable=no,scrollbars=yes,status=no')
+        function newPopup(url) {
 
-}
+            popupWindow = window.open(
 
-</script>
+                url, 'popUpWindow', 'menubar=no,width=500,height=777,location=no,resizable=no,scrollbars=yes,status=no')
 
-<script>
+        }
+    </script>
 
-                        
+    <script>
+        function bankey(key) {
 
-		function bankey(key) {
+            var bankey = $('.bankey');
 
-		 var bankey = $('.bankey');
+            bankey.attr('value', key);
 
-		 bankey.attr('value', key);
-
-      }
-
-                    </script>
+        }
+    </script>
 
 </body>
 
