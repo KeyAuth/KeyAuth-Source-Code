@@ -669,7 +669,15 @@ $keylevels = $row['keylevels'];
 
 
                             $amount = sanitize($_POST['amount']);
-
+                            
+                            if($amount < 0) {
+									error("Amount of keys can\'t be negative.");
+								
+									echo "<meta http-equiv='Refresh' Content='2;'>";
+								
+									return;
+						    }
+                            
                             if ($amount > 100) {
 
                                 mysqli_close($link);
