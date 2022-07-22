@@ -74,6 +74,11 @@ function createChannel($name, $delay, $secret = null)
 	global $link;
 	$name = etc\sanitize($name);
 	$delay = etc\sanitize($delay);
+	$result = mysqli_query($link, "SELECT * FROM `chats` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `name` = '$name'");
+    if (mysqli_num_rows($result) > 0)
+    {
+        return 'failure';
+    }	
 	
 	mysqli_query($link, "INSERT INTO `chats` (`name`, `delay`, `app`) VALUES ('$name','$delay','" . ($secret ?? $_SESSION['app']) . "')");
     if (mysqli_affected_rows($link) > 0)
