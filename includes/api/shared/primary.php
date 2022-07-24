@@ -27,9 +27,7 @@ function getIp()
 function getSession($sessionid, $secret)
 {
     global $link; // needed to refrence active MySQL connection
-    mysqli_query($link, "DELETE FROM `sessions` WHERE `expiry` < " . time() . "") or die(mysqli_error($link));
-    // clean out expired sessions
-    $result = mysqli_query($link, "SELECT * FROM `sessions` WHERE `id` = '$sessionid' AND `app` = '$secret'");
+    $result = mysqli_query($link, "SELECT * FROM `sessions` WHERE `id` = '$sessionid' AND `app` = '$secret' AND `expiry` > " . time() . "");
     $num = mysqli_num_rows($result);
     if ($num === 0) {
         die(json_encode(array(
