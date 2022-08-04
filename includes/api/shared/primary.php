@@ -3,6 +3,7 @@
 namespace api\shared\primary;
 
 use misc\etc;
+use misc\cache;
 
 function vpnCheck($ipaddr)
 {
@@ -13,7 +14,8 @@ function vpnCheck($ipaddr)
     $result = curl_exec($ch);
     curl_close($ch);
     $json = json_decode($result);
-    if ($json
+    if (
+        $json
         ->$ipaddr->proxy == "yes"
     ) {
         return true;
@@ -26,20 +28,17 @@ function getIp()
 }
 function getSession($sessionid, $secret)
 {
-    global $link; // needed to refrence active MySQL connection
-    $result = mysqli_query($link, "SELECT * FROM `sessions` WHERE `id` = '$sessionid' AND `app` = '$secret' AND `expiry` > " . time() . "");
-    $num = mysqli_num_rows($result);
-    if ($num === 0) {
+    // had to name it 'state' instead of 'session' because Redis wouldn't save key with 'session' in it
+    $row = cache\fetch('KeyAuthState:' . $secret . ':' . $sessionid, "SELECT * FROM `sessions` WHERE `id` = '$sessionid' AND `app` = '$secret' AND `expiry` > " . time() . "", 0);
+    if ($row == "not_found") {
         die(json_encode(array(
             "success" => false,
             "message" => "Invalid SessionID. Your program either failed to initialize, or never attempted to."
         )));
     }
-    $row = mysqli_fetch_array($result);
     return array(
         "credential" => $row["credential"],
         "enckey" => $row["enckey"],
         "validated" => $row["validated"]
     );
 }
-?>

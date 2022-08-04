@@ -1,34 +1,17 @@
 <?php
 
-include 'includes/connection.php';
+include 'includes/misc/autoload.phtml';
 
-$result = mysqli_query($link, "select count(1) FROM `accounts`");
-$row = mysqli_fetch_array($result);
+$row = misc\cache\fetch('KeyAuthStats', "SELECT(select count(1) FROM `accounts`) AS 'numAccs',(select count(1) FROM `sessions` WHERE `validated` = 1 AND `expiry` > " . time() . ") AS 'numOnlineUsers',(select count(1) FROM `keys`) AS 'numKeys',(select count(1) FROM `apps`) AS 'numApps';", 0, 1800);
 
-$accs = number_format($row[0]);
+$numAccs = $row['numAccs'];
+$numOnlineUsers = $row['numOnlineUsers'];
+$numApps = $row['numApps'];
+$numKeys = $row['numKeys'];
 
-$result = mysqli_query($link, "select count(1) FROM `apps`");
-$row = mysqli_fetch_array($result);
-
-$apps = number_format($row[0]);
-
-$result = mysqli_query($link, "select count(1) FROM `keys`");
-$row = mysqli_fetch_array($result);
-
-$keys = number_format($row[0]);
-
-$result = mysqli_query($link, "select count(1) FROM `sessions` WHERE `validated` = 1");
-$row = mysqli_fetch_array($result);
-
-$activeUsers = number_format($row[0]);
-
-mysqli_close($link);
-
-// output JSON
 die(json_encode(array(
-    "accounts" => $accs,
-    "applications" => $apps,
-    "licenses" => $keys,
-    "activeUsers" => $activeUsers
+    "accounts" => $numAccs,
+    "applications" => $numApps,
+    "licenses" => $numKeys,
+    "activeUsers" => $numOnlineUsers
 )));
-?>
