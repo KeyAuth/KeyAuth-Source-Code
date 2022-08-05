@@ -668,20 +668,20 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $session = api\shared\primary\getSession($sessionid, $secret);
         $enckey = $session["enckey"];
 
-        $rows = misc\cache\fetch('KeyAuthOnlineUsers:' . $secret, "SELECT DISTINCT `credential` FROM `sessions` WHERE `validated` = 1 AND `app` = '$secret'", 0, 1800);
+        $rows = misc\cache\fetch('KeyAuthOnlineUsers:' . $secret, "SELECT DISTINCT `credential` FROM `sessions` WHERE `validated` = 1 AND `app` = '$secret'", 1, 1800);
 
         if ($rows == "not_found") {
             $response = json_encode(array(
                 "success" => false,
                 "message" => "No online users found!"
             ));
+        } else {
+            $response = json_encode(array(
+                "success" => true,
+                "message" => "Successfully fetched online users.",
+                "users" => $rows
+            ));
         }
-
-        $response = json_encode(array(
-            "success" => true,
-            "message" => "Successfully fetched online users.",
-            "users" => $rows
-        ));
 
         if (isset($response)) {
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
