@@ -867,11 +867,19 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $channel = misc\etc\sanitize($_POST['channel'] ?? $_GET['channel']);
         $rows = misc\cache\fetch('KeyAuthChatMsgs:' . $secret . ':' . $channel, "SELECT `author`, `message`, `timestamp` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret'", 1);
 
-        $response = json_encode(array(
-            "success" => true,
-            "message" => "Successfully retrieved chat messages",
-            "messages" => $rows
-        ));
+        if ($rows == "not_found") {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "No messages found"
+            ));
+        } else {
+            $response = json_encode(array(
+                "success" => true,
+                "message" => "Successfully retrieved chat messages",
+                "messages" => $rows
+            ));
+        }
+
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
 

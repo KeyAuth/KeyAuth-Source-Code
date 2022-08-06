@@ -662,6 +662,13 @@ switch (hex2bin($_POST['type'])) {
         $channel = misc\etc\sanitize(api\v1_0\Decrypt($_POST['channel'], $enckey));
         $rows = misc\cache\fetch('KeyAuthChatMsgs:' . $secret . ':' . $channel, "SELECT `author`, `message`, `timestamp` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret'", 1);
 
+        if ($rows == "not_found") {
+            die(api\v1_0\Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "No messages found"
+            )), $enckey));
+        }
+
         die(api\v1_0\Encrypt(json_encode(array(
             "success" => true,
             "message" => "Successfully retrieved chat messages",

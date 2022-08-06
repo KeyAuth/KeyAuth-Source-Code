@@ -693,6 +693,13 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $channel = misc\etc\sanitize($_POST['channel'] ?? $_GET['channel']);
         $rows = misc\cache\fetch('KeyAuthChatMsgs:' . $secret . ':' . $channel, "SELECT `author`, `message`, `timestamp` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret'", 1);
 
+        if ($rows == "not_found") {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "No messages found"
+            )));
+        }
+
         die(json_encode(array(
             "success" => true,
             "message" => "Successfully retrieved chat messages",
