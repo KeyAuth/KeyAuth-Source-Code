@@ -936,7 +936,7 @@ switch ($type) {
             }
         }
     case 'del':
-        $resp = misc\license\deleteSingular($key, $secret);
+        $resp = misc\license\deleteSingular($key, false, $secret);
         switch ($resp) {
             case 'failure':
                 error("Failed to delete license!", $format);

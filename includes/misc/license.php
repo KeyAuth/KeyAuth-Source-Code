@@ -191,9 +191,9 @@ function deleteSingular($key, $userToo, $secret = null)
 	$userToo = etc\sanitize($userToo);
 
 	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
+		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
 		if (mysqli_num_rows($result) === 0) {
-			return 'nope';
+			return 'failure';
 		}
 	}
 
@@ -227,9 +227,9 @@ function ban($key, $reason, $userToo, $secret = null)
 	$userToo = etc\sanitize($userToo);
 
 	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
+		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
 		if (mysqli_num_rows($result) === 0) {
-			return 'nope';
+			return 'failure';
 		}
 	}
 
@@ -261,9 +261,9 @@ function unban($key, $secret = null)
 	$key = etc\sanitize($key);
 
 	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
+		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
 		if (mysqli_num_rows($result) === 0) {
-			return 'nope';
+			return 'failure';
 		}
 	}
 
