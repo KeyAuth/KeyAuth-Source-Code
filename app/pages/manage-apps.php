@@ -16,6 +16,9 @@ if ($_SESSION['role'] == "Reseller") {
 		$row = mysqli_fetch_array($result);
 		$_SESSION["app"] = $row["secret"];
 		$_SESSION["name"] = $appName;
+
+        echo '<meta http-equiv="refresh" content="2">';
+        dashboard\primary\success("Successfully Selected the App!");
 	}
 
 	if (isset($_POST['create_app'])) {
@@ -220,7 +223,7 @@ if ($_SESSION['role'] == "Reseller") {
 		}
 	}
 
-	if ($_SESSION["app"]) {
+	if (isset($_SESSION["app"])) {
 		$appsecret = $_SESSION["app"];
 		($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '$appsecret'")) or die(mysqli_error($link));
 
@@ -412,30 +415,35 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                         target="_blank">https://github.com/mazk5145/KeyAuth-Lua-Examples</a>
                     <!--end::Table-->
                 </div>
-                <!--end::Tap pane-->
+                <!--end::Tap panel-->
             </div>
         </div>
         <!--end::Body-->
     </div>
     <?php
 	} ?>
-    <a class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#create_app">Create App</a>
-    <a class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#rename_app">Rename App</a>
+        <a class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#create_app">Create App</a>
+    <?php
+    if (isset($_SESSION['app'])) {
+    ?>
+        <a class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#rename_app">Rename App</a>
     <?php
 	($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
 	$row = mysqli_fetch_array($result);
 	if (!$row['paused']) {
 	?>
-    <a class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#pause_app">Pause App & Users</a>
+        <a class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#pause_app">Pause App & Users</a>
     <?php
 	} else {
 	?>
-    <a class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#unpause_app">Unpause App & Users</a>
+        <a class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#unpause_app">Unpause App & Users</a>
     <?php
 	}
-	?>
-    <a class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#refresh_app">Refresh App Secret</a>
-    <a class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#delete_app">Delete App</a>
+    ?>
+        <a class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#refresh_app">Refresh App Secret</a>
+        <a class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#delete_app">Delete App</a>
+    <?php
+    }?>
 
     <br></br>
     <div class="card">
@@ -455,7 +463,12 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
 					foreach ($rows as $row) {
 						$appName = $row['name'];
 						$paused = $row['paused'];
-						$appSelected = ($_SESSION["selectedApp"] == $appName);
+
+                        if (isset($_SESSION["selectedApp"])) {
+                            $appSelected = ($_SESSION["selectedApp"] == $appName);
+                        } else {
+                            $appSelected = 0;
+                        }
 					?>
                     <tr>
 
