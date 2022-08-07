@@ -382,7 +382,7 @@ function error($msg)
                             const notyf = new Notyf();
                             notyf
                               .error({
-                                message: \'' . $msg . '\',
+                                message: \'' . addslashes($msg) . '\',
                                 duration: 3500,
                                 dismissible: true
                               });               
@@ -397,7 +397,7 @@ function success($msg)
                             const notyf = new Notyf();
                             notyf
                               .success({
-                                message: \'' . $msg . '\',
+                                message: \'' . addslashes($msg) . '\',
                                 duration: 3500,
                                 dismissible: true
                               });               

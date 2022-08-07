@@ -12,10 +12,11 @@ if ($_SESSION['role'] == "Reseller") {
 	if (isset($_POST['selectApp'])) {
 		$appName = misc\etc\sanitize($_POST['selectApp']);
 		$_SESSION["selectedApp"] = $appName;
-		($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appName'"));
+		($result = mysqli_query($link, "SELECT `secret`, `name` FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appName'"));
 		$row = mysqli_fetch_array($result);
 		$_SESSION["app"] = $row["secret"];
-		$_SESSION["name"] = $appName;
+		$_SESSION["name"] = $row["name"];
+        (mysqli_query($link, "UPDATE `accounts` SET `app` = '" . $_SESSION["name"] . "' WHERE `username` = '" . $_SESSION['username'] . "'"));
 
         echo '<meta http-equiv="refresh" content="2">';
         dashboard\primary\success("Successfully Selected the App!");
@@ -96,11 +97,35 @@ if ($_SESSION['role'] == "Reseller") {
 			dashboard\primary\error("You already have an application with this name!");
 			return;
 		}
-		mysqli_query($link, "UPDATE `apps` SET `name` = '$appname' WHERE `secret` = '" . $_SESSION['app'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
-		mysqli_query($link, "UPDATE `accounts` SET `app` = '$appname' WHERE `app` = '" . $_SESSION['name'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
-		$oldName = $_SESSION['name'];
-		$_SESSION['name'] = $appname;
+
+        // Fetch Session Secret Application Name :D
+        $appsecret = $_SESSION["app"];
+        ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '$appsecret'")) or die(mysqli_error($link));
+
+        $row = mysqli_fetch_array($result);
+        $OLDFetchedAppName = $row["name"];
+
+        if ($OLDFetchedAppName != $_SESSION['name']) {
+            dashboard\primary\error("Looks like you're trying to rename different app from session than secret.");
+            return;
+        }
+
+        mysqli_query($link, "UPDATE `apps` SET `name` = '$appname' WHERE `secret` = '" . $_SESSION['app'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
+        
+        // ERROR IS FROM THIS BECAUSE SESSION = NAME IS WRONG
+        // mysqli_query($link, "UPDATE `accounts` SET `app` = '$appname' WHERE `app` = '" . $_SESSION['name'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
+        
+        // Working Version
+        mysqli_query($link, "UPDATE `accounts` SET `app` = '$appname' WHERE `owner` = '" . $_SESSION['username'] . "'");
+
+
+
+
+
 		if (mysqli_affected_rows($link) != 0) {
+            $oldName = $_SESSION['name'];
+            $_SESSION['name'] = $appname;
+
 			dashboard\primary\success("Successfully Renamed App!");
 			misc\cache\purge('KeyAuthApp:' . $oldName . ':' . $_SESSION['ownerid']);
 			if ($_SESSION['role'] == "seller") {

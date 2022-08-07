@@ -81,7 +81,7 @@ function error($msg)
 
                               .error({
 
-                                message: \'' . $msg . '\',
+                                message: \'' . addslashes($msg) . '\',
 
                                 duration: 3500,
 
@@ -105,7 +105,7 @@ function success($msg)
 
                               .success({
 
-                                message: \'' . $msg . '\',
+                                message: \'' . addslashes($msg) . '\',
 
                                 duration: 3500,
 
