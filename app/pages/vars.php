@@ -2,6 +2,7 @@
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
+
 if (isset($_POST['genvar'])) {
     $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
     $resp = misc\variable\add($_POST['varname'], $_POST['vardata'], $authed);
@@ -202,7 +203,7 @@ if (isset($_POST['savevar'])) {
         </div>
     </div>
 
-    <table id="kt_datatable_subs" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
+    <table id="kt_datatable_vars" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
         <thead>
             <tr class="fw-bolder fs-6 text-gray-800 px-7">
                 <th>Variable Name</th>
