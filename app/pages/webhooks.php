@@ -2,6 +2,7 @@
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
+
 if (isset($_POST['genwebhook'])) {
 
     if ($_SESSION['role'] == "tester") {
@@ -160,7 +161,7 @@ if (isset($_POST['savewebhook'])) {
         </div>
     </div>
     <br>
-    <table id="kt_datatable_subs" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
+    <table id="kt_datatable_webhooks" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
         <thead>
             <tr class="fw-bolder fs-6 text-gray-800 px-7">
                 <th>Webhook ID</th>
