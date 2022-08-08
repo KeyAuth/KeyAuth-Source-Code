@@ -2,6 +2,7 @@
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
+
 if (isset($_POST['addfile'])) {
     $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
     $resp = misc\upload\add($_POST['url'], $authed);
@@ -125,7 +126,7 @@ if (isset($_POST['savefile'])) {
 ?>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-
+<script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
     <form method="POST">
         <button data-bs-toggle="modal" type="button" data-bs-target="#create-files"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
@@ -202,11 +203,6 @@ if (isset($_POST['savefile'])) {
                 ($result = mysqli_query($link, "SELECT * FROM `files` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
                 if (mysqli_num_rows($result) > 0) {
                     while ($row = mysqli_fetch_array($result)) {
-                        if (!$row["uploaddate"] == NULL) {
-                            $time = date('Y/m/d H:i', $row["uploaddate"]);
-                        } else {
-                            echo "N/A";
-                        }
                         echo "<tr>";
 
                         echo "  <td>" . $row["name"] . "</td>";
@@ -215,7 +211,7 @@ if (isset($_POST['savefile'])) {
 
                         echo "  <td>" . $row["size"] . "</td>";
 
-                        echo "  <td>" . $time . "</td>";
+                        echo "  <td><script>document.write(convertTimestamp(".$row["uploaddate"]."));</script></td>";
 
                         echo "  <td>" . (($row["authed"] ? 1 : 0) ? 'True' : 'False') . "</td>";
 
