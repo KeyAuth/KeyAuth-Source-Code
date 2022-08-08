@@ -58,7 +58,7 @@ if (isset($_POST['draw'])) {
 		if ($row['status'] == "Banned") { $banBtns = '<button class="btn menu-link px-3" style="font-size:0.95rem;" name="unbankey" value="' . $row['key'] . '">Unban</button>'; } else { $banBtns = '<a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#ban-key" onclick="bankey(\'' . $row["key"] . '\')">Ban</a>'; }
 
 		$MarginManager = "";
-		if ($totalRecordwithFilter < 2) { $MarginManager = "margin-bottom: 50px;"; } else { $MarginManager = "margin-bottom: 10px;"; }
+		if ($totalRecordwithFilter < 2) { $MarginManager = "margin-bottom: 50px;"; } else { $MarginManager = "margin-bottom: 0px;"; }
 
 		$data[] = array(
 			"key" => $row['key'],

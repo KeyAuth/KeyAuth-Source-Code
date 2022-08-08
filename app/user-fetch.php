@@ -66,7 +66,7 @@ if (isset($_POST['draw'])) {
 
 		## Add Extra Margin to buttons if value is 1 or 2, because datatables with ajax breaks it.
 		$MarginManager = "";
-		if ($totalRecordwithFilter < 2) { $MarginManager = "margin-bottom: 100px;"; } else { $MarginManager = "margin-bottom: 20px;"; }
+		if ($totalRecordwithFilter < 2) { $MarginManager = "margin-bottom: 100px;"; } else { $MarginManager = "margin-bottom: 0px;"; }
 
 		$data[] = array(
 			"username" => $row['username'],
