@@ -136,7 +136,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         if ($hashcheck) {
             if (strpos($serverhash, $hash) === false) {
                 if (is_null($serverhash)) {
-                    include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                     mysqli_query($link, "UPDATE `apps` SET `hash` = '$hash' WHERE `secret` = '$secret'");
                     misc\cache\purge('KeyAuthApp:' . $name . ':' . $ownerid); // flush cache for application so new hash takes precedent
                 } else {
@@ -165,7 +165,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
         // session init
         $time = time() + $sessionexpiry;
-        include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', '$enckey', '$ip')");
         misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
 
@@ -246,7 +246,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             case 'key_banned':
-                include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if (strpos($keybanned, '{reason}') !== false) {
                     $result = mysqli_query($link, "SELECT `banned` FROM `keys` WHERE `app` = '$secret' AND `key` = '$checkkey'");
                     $row = mysqli_fetch_array($result);
@@ -271,7 +271,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if ($killOtherSessions) {
                     mysqli_query($link, "DELETE FROM `sessions` WHERE `id` != '$sessionid' AND `credential` = '$username' AND `app` = '$secret'");
                     misc\cache\purgePattern('KeyAuthState:' . $secret);
@@ -304,7 +304,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // Read in key
         $checkkey = misc\etc\sanitize($_POST['key'] ?? $_GET['key']);
 
-        include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 
         // search for key
         $result = mysqli_query($link, "SELECT `banned`, `expires`, `status`, `level` FROM `keys` WHERE `key` = '$checkkey' AND `app` = '$secret'");
@@ -441,7 +441,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 break;
             case 'user_banned':
                 if (strpos($userbanned, '{reason}') !== false) {
-                    include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                     $result = mysqli_query($link, "SELECT `banned` FROM `users` WHERE `app` = '$secret' AND `username` = '$username'");
                     $row = mysqli_fetch_array($result);
                     $reason = $row['banned'];
@@ -477,7 +477,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if ($killOtherSessions) {
                     mysqli_query($link, "DELETE FROM `sessions` WHERE `id` != '$sessionid' AND `credential` = '$username' AND `app` = '$secret'");
                     misc\cache\purgePattern('KeyAuthState:' . $secret);
@@ -522,7 +522,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 break;
             case 'user_banned':
                 if (strpos($userbanned, '{reason}') !== false) {
-                    include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                     $result = mysqli_query($link, "SELECT `banned` FROM `users` WHERE `app` = '$secret' AND `username` = '$checkkey'");
                     $row = mysqli_fetch_array($result);
                     $reason = $row['banned'];
@@ -558,7 +558,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if ($killOtherSessions) {
                     mysqli_query($link, "DELETE FROM `sessions` WHERE `id` != '$sessionid' AND `credential` = '$checkkey' AND `app` = '$secret'");
                     misc\cache\purgePattern('KeyAuthState:' . $secret);
@@ -617,7 +617,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 break;
             case 'key_banned':
                 if (strpos($keybanned, '{reason}') !== false) {
-                    include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                     $result = mysqli_query($link, "SELECT `banned` FROM `keys` WHERE `app` = '$secret' AND `key` = '$checkkey'");
                     $row = mysqli_fetch_array($result);
                     $reason = $row['banned'];
@@ -641,7 +641,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if ($killOtherSessions) {
                     mysqli_query($link, "DELETE FROM `sessions` WHERE `id` != '$sessionid' AND `credential` = '$checkkey' AND `app` = '$secret'");
                     misc\cache\purgePattern('KeyAuthState:' . $secret);
@@ -675,13 +675,14 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "success" => false,
                 "message" => "No online users found!"
             ));
-        } else {
-            $response = json_encode(array(
-                "success" => true,
-                "message" => "Successfully fetched online users.",
-                "users" => $rows
-            ));
         }
+		else {
+			$response = json_encode(array(
+				"success" => true,
+				"message" => "Successfully fetched online users.",
+				"users" => $rows
+			));
+		}
 
         if (isset($response)) {
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
@@ -707,7 +708,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $var = misc\etc\sanitize($_POST['var'] ?? $_GET['var']);
         $data = misc\etc\sanitize($_POST['data'] ?? $_GET['data']);
-        include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '" . $session["credential"] . "', '$secret')");
 
         if (mysqli_affected_rows($link) != 0) {
@@ -867,19 +868,15 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $channel = misc\etc\sanitize($_POST['channel'] ?? $_GET['channel']);
         $rows = misc\cache\fetch('KeyAuthChatMsgs:' . $secret . ':' . $channel, "SELECT `author`, `message`, `timestamp` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret'", 1);
 
-        if ($rows == "not_found") {
-            $response = json_encode(array(
-                "success" => false,
-                "message" => "No messages found"
-            ));
-        } else {
-            $response = json_encode(array(
-                "success" => true,
-                "message" => "Successfully retrieved chat messages",
-                "messages" => $rows
-            ));
+		if ($rows == "not_found") {
+            $rows = [];
         }
 
+        $response = json_encode(array(
+            "success" => true,
+            "message" => "Successfully retrieved chat messages",
+            "messages" => $rows
+        ));
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
 
@@ -901,7 +898,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $channel = misc\etc\sanitize($_POST['channel'] ?? $_GET['channel']);
-        include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $result = mysqli_query($link, "SELECT `delay` FROM `chats` WHERE `name` = '$channel' AND `app` = '$secret'");
 
         if (mysqli_num_rows($result) == 0) {
@@ -976,7 +973,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $pcuser = misc\etc\sanitize($_POST['pcuser'] ?? $_GET['pcuser']);
 
         if (is_null($webhook)) {
-            include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+            include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
             mysqli_query($link, "INSERT INTO `logs` (`logdate`, `logdata`, `credential`, `pcuser`,`logapp`) VALUES ('$currtime','$msg',NULLIF('$credential', ''),NULLIF('$pcuser', ''),'$secret')");
             die();
         }
@@ -1230,7 +1227,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             die($response);
         }
 
-        include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
         if (!empty($hwid)) {
             mysqli_query($link, "INSERT INTO `bans` (`hwid`, `type`, `app`) VALUES ('$hwid','hwid', '$secret')");
