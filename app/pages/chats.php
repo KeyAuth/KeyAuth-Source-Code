@@ -2,6 +2,7 @@
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
+
 if (isset($_POST['deletemsg'])) {
     $resp = misc\chat\deleteMessage($_POST['deletemsg']);
     switch ($resp) {
@@ -177,7 +178,7 @@ if (isset($_POST['deletechan'])) {
 ?>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-
+<script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
     <form method="POST">
         <button data-bs-toggle="modal" type="button" data-bs-target="#create-channel"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
@@ -647,11 +648,11 @@ if (isset($_POST['deletechan'])) {
 
 
 
-                <td><?php if (!$row["timestamp"] == NULL) {
-                                echo date('Y/m/d H:i', $row["timestamp"]);
-                            } else {
-                                echo "N/A";
-                            } ?></td>
+                <td>
+					<script>
+                    document.write(convertTimestamp(<?php echo $row["timestamp"]; ?>));
+                    </script>
+				</td>
 
 
 
