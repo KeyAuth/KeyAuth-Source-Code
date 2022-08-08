@@ -418,7 +418,9 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
         <!--end::Body-->
     </div>
     <?php
-	} ?>
+	} 
+	if($role != "Manager") {
+	?>
     <a class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#create_app">Create App</a>
     <a class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#rename_app">Rename App</a>
     <?php
@@ -473,7 +475,9 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
             </div>
         </div>
     </div>
-
+	<?php
+	}
+	?>
 
 
     <!--begin::Modal - Create App-->
@@ -619,13 +623,13 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                     <!--end::Close-->
                 </div>
                 <div class="modal-body">
-                    <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to pause app & all users? </p>
-                    </label>
+				    <label class="fs-5 fw-bold mb-2">
+					    <p> Are you sure you want to pause app & all users? </p>
+				    </label>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-light" data-bs-dismiss="modal">No</button>
-                    <form method="post">
+					<form method="post">
                         <button name="pauseapp" class="btn btn-danger">Yes</button>
                     </form>
                 </div>
