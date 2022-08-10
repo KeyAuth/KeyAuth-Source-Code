@@ -2,7 +2,9 @@
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
-
+if(!isset($_SESSION['app'])) {
+	die("Application not selected.");
+}
 if (isset($_POST['addhash'])) {
     $hash = misc\etc\sanitize($_POST['hash']);
     $result = mysqli_query($link, "SELECT `hash` FROM `apps` WHERE `secret` = '" . $_SESSION['app'] . "'");
@@ -474,7 +476,7 @@ if (isset($_POST['updatesettings'])) {
                     <label for="example-tel-input" class="col-2 col-form-label">Customer panel link</label>
                     <div class="col-10">
                         <label class="form-control" style="height:auto;"><?php
-                                                                            echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/panel/' . $_SESSION['username'] . '/' . $_SESSION['name'] . '" target="_blank">https://' . ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']) . '/panel/' . $_SESSION['username'] . '/' . $_SESSION['name'] . '</a>';
+                                                                            echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/panel/' . $_SESSION['username'] . '/' . $_SESSION['name'] . '" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/panel/' . $_SESSION['username'] . '/' . $_SESSION['name'] . '</a>';
                                                                             ?></label>
                     </div>
                 </div>
@@ -747,7 +749,7 @@ if (isset($_POST['updatesettings'])) {
                             title="This is the same if you're using Sellix or Shoppy, create webhook with this link for the event order:paid"></i></label>
                     <div class="col-10">
                         <label class="form-control"
-                            style="height:auto;"><?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/app/api/reseller/?app=' . $_SESSION['secret'] . '" target="target_" class="secretlink">https://' . ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']) . '/app/api/reseller/?app=' . $_SESSION['secret'] . '</a>'; ?></label>
+                            style="height:auto;"><?php echo '<a href="https://' . (($_SERVER['HTTP_HOST'] == "keyauth.cc") ? "keyauth.win" : $_SERVER['HTTP_HOST']) . '/api/reseller/?app=' . $_SESSION['secret'] . '" target="target_" class="secretlink">https://' . (($_SERVER['HTTP_HOST'] == "keyauth.cc") ? "keyauth.win" : $_SERVER['HTTP_HOST']) . '/api/reseller/?app=' . $_SESSION['secret'] . '</a>'; ?></label>
                     </div>
                 </div>
                 <br>
