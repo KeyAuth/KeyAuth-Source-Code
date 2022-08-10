@@ -8,7 +8,7 @@ use misc\cache;
 function deleteSingular($username, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $username = etc\sanitize($username);
 
   mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `user` = '$username'");
@@ -28,7 +28,7 @@ function deleteSingular($username, $secret = null)
 function resetSingular($username, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $username = etc\sanitize($username);
 
   mysqli_query($link, "UPDATE `users` SET `hwid` = NULL WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
@@ -46,7 +46,7 @@ function resetSingular($username, $secret = null)
 function setVariable($user, $var, $data, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $user = etc\sanitize($user);
   $var = etc\sanitize($var);
   $data = etc\sanitize($data);
@@ -80,7 +80,7 @@ function setVariable($user, $var, $data, $secret = null)
 function ban($username, $reason, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $username = etc\sanitize($username);
   $reason = etc\sanitize($reason);
 
@@ -112,7 +112,7 @@ function ban($username, $reason, $secret = null)
 function unban($username, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $username = etc\sanitize($username);
 
   $result = mysqli_query($link, "SELECT `hwid`, `ip` FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
@@ -138,7 +138,7 @@ function unban($username, $secret = null)
 function deleteVar($username, $var, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $username = etc\sanitize($username);
   $var = etc\sanitize($var);
 
@@ -156,7 +156,7 @@ function deleteVar($username, $var, $secret = null)
 function deleteSub($username, $sub, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $username = etc\sanitize($username);
   $sub = etc\sanitize($sub);
 
@@ -171,7 +171,7 @@ function deleteSub($username, $sub, $secret = null)
 function extend($username, $sub, $expiry, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $username = etc\sanitize($username);
   $sub = etc\sanitize($sub);
   $expiry = etc\sanitize($expiry);
@@ -224,7 +224,7 @@ function extend($username, $sub, $expiry, $secret = null)
 function add($username, $sub, $expiry, $secret = null, $password = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $username = etc\sanitize($username);
   if (!empty($password))
     $password = password_hash(etc\sanitize($password), PASSWORD_BCRYPT);
@@ -253,7 +253,7 @@ function add($username, $sub, $expiry, $secret = null, $password = null)
 function deleteExpiredUsers($secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
   if (mysqli_num_rows($result) == 0) {
     return 'missing';
@@ -284,7 +284,7 @@ function deleteExpiredUsers($secret = null)
 function deleteAll($secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   mysqli_query($link, "DELETE FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
   if (mysqli_affected_rows($link) > 0) {
     cache\purgePattern('KeyAuthUser:' . ($secret ?? $_SESSION['app']));
@@ -300,7 +300,7 @@ function deleteAll($secret = null)
 function resetAll($secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   mysqli_query($link, "UPDATE `users` SET `hwid` = NULL WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
   if (mysqli_affected_rows($link) > 0) {
     cache\purgePattern('KeyAuthUser:' . ($secret ?? $_SESSION['app']));

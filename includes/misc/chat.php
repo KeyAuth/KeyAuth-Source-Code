@@ -8,7 +8,7 @@ use misc\cache;
 function deleteMessage($id, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$id = etc\sanitize($id);
 
 	$result = mysqli_query($link, "SELECT `channel` FROM `chatmsgs` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `id` = '$id'");
@@ -25,7 +25,7 @@ function deleteMessage($id, $secret = null)
 function muteUser($user, $time, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$user = etc\sanitize($user);
 	$time = etc\sanitize($time);
 
@@ -46,7 +46,7 @@ function muteUser($user, $time, $secret = null)
 function unMuteUser($user, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$user = etc\sanitize($user);
 
 	mysqli_query($link, "DELETE FROM `chatmutes` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `user` = '$user'");
@@ -62,7 +62,7 @@ function unMuteUser($user, $secret = null)
 function clearChannel($channel, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$channel = etc\sanitize($channel);
 
 	mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `channel` = '$channel'");
@@ -76,7 +76,7 @@ function clearChannel($channel, $secret = null)
 function createChannel($name, $delay, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$name = etc\sanitize($name);
 	$delay = etc\sanitize($delay);
 
@@ -93,7 +93,7 @@ function createChannel($name, $delay, $secret = null)
 function deleteChannel($name, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$name = etc\sanitize($name);
 
 	mysqli_query($link, "DELETE FROM `chats` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `name` = '$name'");

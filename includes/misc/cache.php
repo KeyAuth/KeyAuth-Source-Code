@@ -5,12 +5,11 @@ namespace misc\cache;
 function fetch($redisKey, $sqlQuery, $multiRowed, $expiry = null)
 {
 	global $redis;
-	include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/redis.php'; // create connection with Redis
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/redis.php'; // create connection with redis
 	$data = $redis->get($redisKey);
-	// var_dump($redis);
 	if (!$data) {
 		global $link;
-		include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/connection.php'; // create connection with MySQL (if redis key not found)
+		include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 		$result = mysqli_query($link, $sqlQuery);
 		if (mysqli_num_rows($result) === 0) // check if MySQL found any rows
 		{
@@ -65,13 +64,13 @@ function fetch($redisKey, $sqlQuery, $multiRowed, $expiry = null)
 function purge($redisKey) // delete key from Redis cache (typically called when MySQL row(s) updated or deleted)
 {
 	global $redis;
-	include_once '/usr/share/nginx/html/includes/redis.php'; // create connection with Redis
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/redis.php'; // create connection with Redis
 	$redis->del($redisKey);
 }
 
 function purgePattern($redisKey)
 {
 	global $redis;
-	include_once '/usr/share/nginx/html/includes/redis.php'; // create connection with Redis
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/redis.php'; // create connection with Redis
 	$redis->delete($redis->keys($redisKey . '*'));
 }

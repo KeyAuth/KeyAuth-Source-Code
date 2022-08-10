@@ -19,7 +19,7 @@ function Decrypt($string, $enckey)
 function register($un, $key, $pw, $hwid, $secret)
 {
     global $link; // needed to refrence active MySQL connection
-    include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
     $result = mysqli_query($link, "SELECT `minUsernameLength`, `blockLeakedPasswords` FROM `apps` WHERE `secret` = '$secret'");
     $row = mysqli_fetch_array($result);
     $minUsernameLength = $row['minUsernameLength'];
@@ -130,7 +130,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
     $row = cache\fetch('KeyAuthBlacklist:' . $secret . ':' . $ip . ':' . $hwid, "SELECT 1 FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '$ip') AND `app` = '$secret'", 0);
     if ($row != "not_found") {
         global $link;
-        include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         mysqli_query($link, "UPDATE `users` SET `banned` = 'User is blacklisted' WHERE `username` = '$un' AND `app` = '$secret'");
         cache\purge('KeyAuthUser:' . $secret . ':' . $un);
         return 'hwid_blacked';
@@ -149,7 +149,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
     } else {
         $pass_encrypted = password_hash($pw, PASSWORD_BCRYPT);
         global $link;
-        include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         mysqli_query($link, "UPDATE `users` SET `password` = '$pass_encrypted' WHERE `username` = '$un' AND `app` = '$secret'");
         cache\purge('KeyAuthUser:' . $secret . ':' . $un);
     }
@@ -160,7 +160,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
             return 'hwid_mismatch';
         } else if ($hwidd == NULL && $hwid != NULL) {
             global $link;
-            include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+            include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
             mysqli_query($link, "UPDATE `users` SET `hwid` = NULLIF('$hwid', '') WHERE `username` = '$un' AND `app` = '$secret'");
             cache\purge('KeyAuthUser:' . $secret . ':' . $un);
         }
@@ -168,7 +168,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
     $rows = cache\fetch('KeyAuthSubs:' . $secret . ':' . $un, "SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "", 1);
     if ($rows == "not_found") {
         global $link;
-        include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $result = mysqli_query($link, "SELECT `paused` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `paused` = 1");
         if (mysqli_num_rows($result) >= 1) {
             return 'sub_paused';
@@ -184,7 +184,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
 	}
 
     global $link;
-    include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
     mysqli_query($link, "UPDATE `users` SET `ip` = NULLIF('$ip', ''),`lastlogin` = " . time() . " WHERE `username` = '$un' AND `app` = '$secret'");
 
     return array(

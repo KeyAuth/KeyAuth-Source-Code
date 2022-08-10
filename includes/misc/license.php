@@ -21,7 +21,7 @@ function license_masking($mask)
 function createLicense($amount, $mask, $duration, $level, $note, $expiry = null, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$amount = etc\sanitize($amount);
 	$mask = etc\sanitize($mask);
 	$duration = etc\sanitize($duration);
@@ -126,7 +126,7 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 function addTime($time, $expiry, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$time = etc\sanitize($time);
 	$expiry = etc\sanitize($expiry);
 
@@ -144,7 +144,7 @@ function addTime($time, $expiry, $secret = null)
 function deleteAll($secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 	if (mysqli_affected_rows($link) > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
@@ -158,7 +158,7 @@ function deleteAll($secret = null)
 function deleteAllUnused($secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `status` = 'Not Used'");
 	if (mysqli_affected_rows($link) > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
@@ -172,7 +172,7 @@ function deleteAllUnused($secret = null)
 function deleteAllUsed($secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `status` = 'Used'");
 	if (mysqli_affected_rows($link) > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
@@ -186,14 +186,14 @@ function deleteAllUsed($secret = null)
 function deleteSingular($key, $userToo, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$key = etc\sanitize($key);
 	$userToo = etc\sanitize($userToo);
 
 	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
+		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
 		if (mysqli_num_rows($result) === 0) {
-			return 'failure';
+			return 'nope';
 		}
 	}
 
@@ -221,15 +221,15 @@ function deleteSingular($key, $userToo, $secret = null)
 function ban($key, $reason, $userToo, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$key = etc\sanitize($key);
 	$reason = etc\sanitize($reason);
 	$userToo = etc\sanitize($userToo);
 
 	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
+		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
 		if (mysqli_num_rows($result) === 0) {
-			return 'failure';
+			return 'nope';
 		}
 	}
 
@@ -257,13 +257,13 @@ function ban($key, $reason, $userToo, $secret = null)
 function unban($key, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$key = etc\sanitize($key);
 
 	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
+		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
 		if (mysqli_num_rows($result) === 0) {
-			return 'failure';
+			return 'nope';
 		}
 	}
 

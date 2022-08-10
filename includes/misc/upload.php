@@ -8,7 +8,7 @@ use misc\cache;
 function add($url, $authed, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $url = etc\sanitize($url);
   $authed = etc\sanitize($authed);
 
@@ -43,7 +43,7 @@ function add($url, $authed, $secret = null)
 function deleteAll($secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   mysqli_query($link, "DELETE FROM `files` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
   if (mysqli_affected_rows($link) > 0) {
     cache\purgePattern('KeyAuthFile:' . ($secret ?? $_SESSION['app']));
@@ -58,7 +58,7 @@ function deleteAll($secret = null)
 function deleteSingular($file, $secret = null)
 {
   global $link;
-  include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $file = etc\sanitize($file);
 
   mysqli_query($link, "DELETE FROM `files` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `id` = '$file'");

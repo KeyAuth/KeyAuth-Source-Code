@@ -8,7 +8,7 @@ use misc\cache;
 function add($baseLink, $userAgent, $authed, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$baseLink = etc\sanitize($baseLink);
 	$userAgent = etc\sanitize($userAgent);
 	$authed = etc\sanitize($authed);
@@ -26,7 +26,7 @@ function add($baseLink, $userAgent, $authed, $secret = null)
 function deleteSingular($webhook, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$webhook = etc\sanitize($webhook);
 
 	mysqli_query($link, "DELETE FROM `webhooks` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `webid` = '$webhook'");

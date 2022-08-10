@@ -8,7 +8,7 @@ use misc\cache;
 function killAll($secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	mysqli_query($link, "DELETE FROM `sessions` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 	if (mysqli_affected_rows($link) > 0) {
 		cache\purgePattern('KeyAuthState:' . ($secret ?? $_SESSION['app']));
@@ -21,7 +21,7 @@ function killAll($secret = null)
 function killSingular($id, $secret = null)
 {
 	global $link;
-	include_once '/usr/share/nginx/html/includes/connection.php'; // create connection with MySQL
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$id = etc\sanitize($id);
 
 	$result = mysqli_query($link, "SELECT `ip` FROM `sessions` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `id` = '$id'");
