@@ -11,11 +11,20 @@ if ($_SESSION['role'] == "Reseller") {
 
 	if (isset($_POST['selectApp'])) {
 		$appName = misc\etc\sanitize($_POST['selectApp']);
-		$_SESSION["selectedApp"] = $appName;
 		($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appName'"));
+		
+		if (mysqli_num_rows($result) === 0) {
+			dashboard\primary\error("Application not found!");
+			return;
+		}
+		
 		$row = mysqli_fetch_array($result);
 		$_SESSION["app"] = $row["secret"];
 		$_SESSION["name"] = $appName;
+		$_SESSION["selectedApp"] = $appName;
+		
+		echo '<meta http-equiv="refresh" content="2">';
+        dashboard\primary\success("Successfully Selected the App!");
 	}
 
 	if (isset($_POST['create_app'])) {
@@ -221,7 +230,7 @@ if ($_SESSION['role'] == "Reseller") {
 		}
 	}
 
-	if ($_SESSION["app"]) {
+	if (isset($_SESSION["app"])) {
 		$appsecret = $_SESSION["app"];
 		($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '$appsecret'")) or die(mysqli_error($link));
 
@@ -456,7 +465,12 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
 					foreach ($rows as $row) {
 						$appName = $row['name'];
 						$paused = $row['paused'];
-						$appSelected = ($_SESSION["selectedApp"] == $appName);
+						
+						if (isset($_SESSION["selectedApp"])) {
+                            $appSelected = ($_SESSION["selectedApp"] == $appName);
+                        } else {
+                            $appSelected = 0;
+                        }
 					?>
                     <tr>
 

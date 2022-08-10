@@ -32,7 +32,7 @@
 						            </div>
 
 						            <?php
-									if ($_SESSION["app"]) {
+									if (isset($_SESSION["app"])) {
 									?>
 						            <div class="menu-item">
 						                <div class="menu-content pb-2">
@@ -207,7 +207,7 @@
 						                </a>
 						            </div>
 						            <?php
-									if ($role == "seller" && $_SESSION["app"]) {
+									if ($role == "seller" && isset($_SESSION["app"])) {
 									?>
 						            <div class="menu-item">
 						                <div class="menu-content pb-2">
