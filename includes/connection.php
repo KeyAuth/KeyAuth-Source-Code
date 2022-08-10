@@ -11,9 +11,12 @@ $link = mysqli_connect("localhost", "root", "", "main");
 // Check connection status
 
 if ($link === false) {
-    http_response_code(503);
+    http_response_code(503); // produce non-200 HTTP code so UptimeRobot notifies me MySQL is down
     die("ERROR: Could not connect. " . mysqli_connect_error());
 }
+
+// set character set to ensure greek characters don't cause issues
+mysqli_query($link, "SET NAMES 'utf8'");
 
 $logwebhook = ""; // discord webhook which receives login logs and keys created
 
