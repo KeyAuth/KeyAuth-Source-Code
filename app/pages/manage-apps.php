@@ -93,8 +93,8 @@ if ($_SESSION['role'] == "Reseller") {
 			dashboard\primary\error("You already have an application with this name!");
 			return;
 		}
-		mysqli_query($link, "UPDATE `apps` SET `name` = '$appname' WHERE `secret` = '" . $_SESSION['app'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
 		mysqli_query($link, "UPDATE `accounts` SET `app` = '$appname' WHERE `app` = '" . $_SESSION['name'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
+		mysqli_query($link, "UPDATE `apps` SET `name` = '$appname' WHERE `secret` = '" . $_SESSION['app'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
 		$oldName = $_SESSION['name'];
 		$_SESSION['name'] = $appname;
 		if (mysqli_affected_rows($link) != 0) {
