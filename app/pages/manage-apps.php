@@ -142,19 +142,20 @@ if ($_SESSION['role'] == "Reseller") {
 		$_SESSION['secret'] = $new_secret;
 		if (mysqli_affected_rows($link) != 0) {
 			mysqli_query($link, "UPDATE `bans` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+			mysqli_query($link, "UPDATE `buttons` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+			mysqli_query($link, "UPDATE `chatmsgs` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+			mysqli_query($link, "UPDATE `chatmutes` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+			mysqli_query($link, "UPDATE `chats` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `files` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `keys` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `logs` SET `logapp` = '$new_secret' WHERE `logapp` = '" . $_SESSION['app'] . "'");
+			mysqli_query($link, "UPDATE `sessions` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `subs` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `subscriptions` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `users` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+			mysqli_query($link, "UPDATE `uservars ` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `vars` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `webhooks` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
-			mysqli_query($link, "UPDATE `chatmsgs` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
-			mysqli_query($link, "UPDATE `chats` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
-			mysqli_query($link, "UPDATE `sessions` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
-			mysqli_query($link, "UPDATE `uservars` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
-			mysqli_query($link, "UPDATE `chatmutes` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			$_SESSION['app'] = $new_secret;
 			misc\cache\purge('KeyAuthApp:' . $_SESSION['name'] . ':' . $_SESSION['ownerid']);
 			if ($_SESSION['role'] == "seller" || $_SESSION['role'] == "developer") {
@@ -418,9 +419,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
         <!--end::Body-->
     </div>
     <?php
-	} 
-	if($role != "Manager") {
-	?>
+	} ?>
     <a class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#create_app">Create App</a>
     <a class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#rename_app">Rename App</a>
     <?php
@@ -475,9 +474,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
             </div>
         </div>
     </div>
-	<?php
-	}
-	?>
+
 
 
     <!--begin::Modal - Create App-->
@@ -623,13 +620,13 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                     <!--end::Close-->
                 </div>
                 <div class="modal-body">
-				    <label class="fs-5 fw-bold mb-2">
-					    <p> Are you sure you want to pause app & all users? </p>
-				    </label>
+                    <label class="fs-5 fw-bold mb-2">
+                        <p> Are you sure you want to pause app & all users? </p>
+                    </label>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-light" data-bs-dismiss="modal">No</button>
-					<form method="post">
+                    <form method="post">
                         <button name="pauseapp" class="btn btn-danger">Yes</button>
                     </form>
                 </div>
