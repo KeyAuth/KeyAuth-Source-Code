@@ -1,9 +1,10 @@
 <?php
-
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
-
+if(!isset($_SESSION['app'])) {
+	die("Application not selected.");
+}
 if (isset($_POST['deletekey'])) {
     $userToo = ($_POST['delUserToo'] == "on") ? 1 : 0;
     $resp = misc\license\deleteSingular($_POST['deletekey'], $userToo);

@@ -2,6 +2,9 @@
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
+if(!isset($_SESSION['app'])) {
+	die("Application not selected.");
+}
 
 if (isset($_POST['addfile'])) {
     $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;

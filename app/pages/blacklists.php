@@ -2,6 +2,9 @@
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
+if(!isset($_SESSION['app'])) {
+	die("Application not selected.");
+}
 if (isset($_POST['addblack'])) {
     $resp = misc\blacklist\add($_POST['blackdata'], $_POST['blacktype']);
     switch ($resp) {

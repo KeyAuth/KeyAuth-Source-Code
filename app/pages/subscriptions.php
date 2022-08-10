@@ -2,6 +2,9 @@
 if ($_SESSION['role'] == "Reseller") {
     die('Resellers Not Allowed Here');
 }
+if(!isset($_SESSION['app'])) {
+	die("Application not selected.");
+}
 if (isset($_POST['addsub'])) {
     $resp = misc\sub\add($_POST['subname'], $_POST['level']);
     switch ($resp) {
