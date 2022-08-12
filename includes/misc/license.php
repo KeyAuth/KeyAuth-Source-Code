@@ -63,7 +63,7 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 			$row = mysqli_fetch_array($result);
 			$keylevels = explode("|", $row['keylevels']);
 			$balance = explode("|", $row['balance']);
-			if ($keylevels != "N/A" && !in_array($level, $keylevels)) {
+			if ($row['keylevels'] != "N/A" && !in_array($level, $keylevels)) {
 				return 'unauthed_level';
 			}
 			$day = $balance[0];
