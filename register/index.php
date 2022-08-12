@@ -418,6 +418,7 @@ if (isset($_SESSION['username'])) {
 
         if(misc\etc\isPhonyEmail($email)) {
             dashboard\primary\error("Please use a real email. You will need email access if you want to change password, username or email ever.");
+			dashboard\primary\wh_log($logwebhook, "{$username} has failed email validation with `{$email}`", $webhookun);
 			return;
         }
 
@@ -448,7 +449,7 @@ if (isset($_SESSION['username'])) {
 
 
 		mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`) VALUES ('$username', SHA1('$email'), '$pass_encrypted', '$ownerid','tester', '$ip')") or die(mysqli_error($link));
-
+		dashboard\primary\wh_log($logwebhook, "{$username} has registered successfully", $webhookun);
 
 		$_SESSION['logindate'] = time();
 		$_SESSION['username'] = $username;

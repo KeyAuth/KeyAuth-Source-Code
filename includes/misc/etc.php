@@ -74,8 +74,22 @@ function isBreached($pw)
             return true;
 }
 function isPhonyEmail($email)
-{ 
+{
+	if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		return true;
+	}
+	
     $resp = file_get_contents("https://api.mailcheck.ai/email/" . $email);
     $json = json_decode($resp);
-    return $json->disposable;
+	
+	if($json->disposable || !$json->mx) {
+		return true;
+	}
+	
+	global $mail;
+	require_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/VerifyEmail.class.php'; 
+	
+    return (!$mail->check($email));
+	
+	// return false;
 }
