@@ -3,7 +3,7 @@ include '../includes/connection.php';
 include '../includes/misc/autoload.phtml';
 include '../includes/dashboard/autoload.phtml';
 
-//error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
+error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -105,15 +105,6 @@ if (!$_SESSION['app']) // no app selected yet
     }
     </script>
 
-    <script>
-        // @see https://docs.headwayapp.co/widget for more configuration options.
-        var HW_config = {
-            selector: ".noti", // CSS selector where to inject the badge
-            account: "yBgPqx"
-        }
-    </script>
-    <script async src="https://cdn.headwayapp.co/widget.js"></script>
-
     <!--end::Global Stylesheets Bundle-->
 </head>
 <!--end::Head-->
@@ -141,6 +132,15 @@ if (!$_SESSION['app']) // no app selected yet
 		<!--end::Javascript-->
 		<script src="https://cdn.keyauth.cc/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
 		<script src="https://cdn.keyauth.cc/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+		
+		<script>
+			// @see https://docs.headwayapp.co/widget for more configuration options.
+			var HW_config = {
+				selector: ".noti", // CSS selector where to inject the badge
+				account: "yBgPqx"
+			}
+		</script>
+		<script async src="https://cdn.headwayapp.co/widget.js"></script>
 	</body>
 	<!--end::Body-->
 </html>
