@@ -476,7 +476,7 @@ if (isset($_POST['updatesettings'])) {
                     <label for="example-tel-input" class="col-2 col-form-label">Customer panel link</label>
                     <div class="col-10">
                         <label class="form-control" style="height:auto;"><?php
-                                                                            echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/panel/' . $_SESSION['username'] . '/' . $_SESSION['name'] . '" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/panel/' . $_SESSION['username'] . '/' . $_SESSION['name'] . '</a>';
+                                                                            echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/panel/' . urlencode($_SESSION['username']) . '/' . urlencode($_SESSION['name']) . '" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/panel/' . $_SESSION['username'] . '/' . $_SESSION['name'] . '</a>';
                                                                             ?></label>
                     </div>
                 </div>
