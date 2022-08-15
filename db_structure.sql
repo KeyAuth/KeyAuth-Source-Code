@@ -1,5 +1,4 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -20,6 +19,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `acclogs` (
+  `id` int(11) NOT NULL,
   `username` varchar(49) NOT NULL,
   `date` varchar(10) NOT NULL,
   `ip` varchar(45) NOT NULL,
@@ -41,15 +41,18 @@ CREATE TABLE `accounts` (
   `app` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL,
   `owner` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
   `banned` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `locked` int(1) NOT NULL DEFAULT '0',
   `warning` varchar(999) COLLATE utf8_unicode_ci DEFAULT NULL,
   `admin` int(1) NOT NULL DEFAULT '0',
   `img` varchar(90) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://cdn.keyauth.win/assets/img/favicon.png',
   `pp` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `balance` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `balance` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
   `keylevels` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
   `expires` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
   `registrationip` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
   `lastip` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `region` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `asNum` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
   `twofactor` int(1) NOT NULL DEFAULT '0',
   `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci DEFAULT NULL,
   `darkmode` int(1) NOT NULL DEFAULT '0',
@@ -69,6 +72,7 @@ CREATE TABLE `accounts` (
 --
 
 CREATE TABLE `apps` (
+  `id` int(11) NOT NULL,
   `owner` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
   `name` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
   `secret` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
@@ -116,7 +120,20 @@ CREATE TABLE `apps` (
   `session` int(10) NOT NULL DEFAULT '21600',
   `hashcheck` int(1) NOT NULL DEFAULT '0',
   `webdownload` varchar(120) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `customDomain` varchar(253) COLLATE utf8_unicode_ci DEFAULT NULL
+  `customDomain` varchar(253) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `format` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX',
+  `amount` int(3) DEFAULT NULL,
+  `lvl` int(3) DEFAULT NULL,
+  `note` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `duration` int(3) DEFAULT NULL,
+  `unit` int(3) DEFAULT NULL,
+  `killOtherSessions` int(1) NOT NULL DEFAULT '0',
+  `cooldownUnit` int(1) NOT NULL DEFAULT '86400',
+  `sessionUnit` int(1) NOT NULL DEFAULT '3600',
+  `minUsernameLength` int(1) NOT NULL DEFAULT '0',
+  `blockLeakedPasswords` int(1) NOT NULL DEFAULT '0',
+  `forceEncryption` int(1) NOT NULL DEFAULT '0',
+  `customDomainAPI` varchar(253) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -126,6 +143,7 @@ CREATE TABLE `apps` (
 --
 
 CREATE TABLE `bans` (
+  `id` int(11) NOT NULL,
   `hwid` varchar(100) DEFAULT NULL,
   `ip` varchar(49) DEFAULT NULL,
   `type` varchar(5) NOT NULL,
@@ -139,6 +157,7 @@ CREATE TABLE `bans` (
 --
 
 CREATE TABLE `buttons` (
+  `id` int(11) NOT NULL,
   `text` varchar(99) NOT NULL,
   `value` varchar(99) NOT NULL,
   `app` varchar(64) NOT NULL
@@ -188,6 +207,24 @@ CREATE TABLE `chats` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `emailverify`
+--
+
+CREATE TABLE `emailverify` (
+  `id` int(11) NOT NULL,
+  `secret` varchar(32) NOT NULL,
+  `email` varchar(40) NOT NULL,
+  `time` int(1) NOT NULL,
+  `region` varchar(99) DEFAULT NULL,
+  `asNum` varchar(20) DEFAULT NULL,
+  `newEmail` varchar(40) DEFAULT NULL,
+  `newUsername` varchar(99) DEFAULT NULL,
+  `oldUsername` varchar(99) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `files`
 --
 
@@ -229,6 +266,7 @@ CREATE TABLE `keys` (
 --
 
 CREATE TABLE `logs` (
+  `id` int(1) NOT NULL,
   `logdate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `logdata` varchar(275) COLLATE utf8_unicode_ci NOT NULL,
   `credential` varchar(70) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -243,6 +281,7 @@ CREATE TABLE `logs` (
 --
 
 CREATE TABLE `resets` (
+  `id` int(11) NOT NULL,
   `secret` char(32) NOT NULL,
   `email` varchar(65) NOT NULL,
   `time` int(11) NOT NULL
@@ -259,7 +298,7 @@ CREATE TABLE `sessions` (
   `credential` varchar(255) DEFAULT NULL,
   `app` varchar(64) NOT NULL,
   `expiry` int(10) NOT NULL,
-  `enckey` varchar(64) NOT NULL,
+  `enckey` varchar(100) NOT NULL,
   `validated` int(1) NOT NULL DEFAULT '0',
   `ip` varchar(45) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -300,25 +339,7 @@ CREATE TABLE `subscriptions` (
 --
 
 CREATE TABLE `users` (
-  `username` varchar(70) NOT NULL,
-  `password` varchar(70) DEFAULT NULL,
-  `hwid` varchar(2000) DEFAULT NULL,
-  `app` varchar(64) NOT NULL,
-  `owner` varchar(65) DEFAULT NULL,
-  `createdate` int(10) DEFAULT NULL,
-  `lastlogin` int(10) DEFAULT NULL,
-  `banned` varchar(99) DEFAULT NULL,
-  `ip` varchar(49) DEFAULT NULL,
-  `cooldown` int(10) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `usersOld`
---
-
-CREATE TABLE `usersOld` (
+  `id` int(11) NOT NULL,
   `username` varchar(70) NOT NULL,
   `password` varchar(70) DEFAULT NULL,
   `hwid` varchar(2000) DEFAULT NULL,
@@ -338,6 +359,7 @@ CREATE TABLE `usersOld` (
 --
 
 CREATE TABLE `uservars` (
+  `id` int(11) NOT NULL,
   `name` varchar(99) NOT NULL,
   `data` varchar(500) NOT NULL,
   `user` varchar(70) NOT NULL,
@@ -364,6 +386,7 @@ CREATE TABLE `vars` (
 --
 
 CREATE TABLE `webhooks` (
+  `id` int(11) NOT NULL,
   `webid` varchar(10) NOT NULL,
   `baselink` varchar(200) NOT NULL,
   `useragent` varchar(49) NOT NULL DEFAULT 'KeyAuth',
@@ -376,15 +399,34 @@ CREATE TABLE `webhooks` (
 --
 
 --
+-- Indexes for table `acclogs`
+--
+ALTER TABLE `acclogs`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `accounts`
 --
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`username`);
 
 --
+-- Indexes for table `apps`
+--
+ALTER TABLE `apps`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `bans`
+--
+ALTER TABLE `bans`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `buttons`
 --
 ALTER TABLE `buttons`
+  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `value` (`value`,`app`);
 
 --
@@ -403,12 +445,31 @@ ALTER TABLE `chatmutes`
 -- Indexes for table `chats`
 --
 ALTER TABLE `chats`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `one name per app` (`name`,`app`);
+
+--
+-- Indexes for table `emailverify`
+--
+ALTER TABLE `emailverify`
   ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `keys`
 --
 ALTER TABLE `keys`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `logs`
+--
+ALTER TABLE `logs`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `resets`
+--
+ALTER TABLE `resets`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -433,29 +494,49 @@ ALTER TABLE `subscriptions`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD KEY `main index` (`username`,`app`) USING BTREE;
-
---
--- Indexes for table `usersOld`
---
-ALTER TABLE `usersOld`
-  ADD KEY `username` (`username`,`app`) USING BTREE;
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `uservars`
 --
 ALTER TABLE `uservars`
+  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `user vars` (`name`,`user`,`app`);
 
 --
 -- Indexes for table `webhooks`
 --
 ALTER TABLE `webhooks`
+  ADD PRIMARY KEY (`id`),
   ADD KEY `baselink` (`baselink`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `acclogs`
+--
+ALTER TABLE `acclogs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `apps`
+--
+ALTER TABLE `apps`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `bans`
+--
+ALTER TABLE `bans`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `buttons`
+--
+ALTER TABLE `buttons`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `chatmsgs`
@@ -476,9 +557,27 @@ ALTER TABLE `chats`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `emailverify`
+--
+ALTER TABLE `emailverify`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `keys`
 --
 ALTER TABLE `keys`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `logs`
+--
+ALTER TABLE `logs`
+  MODIFY `id` int(1) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `resets`
+--
+ALTER TABLE `resets`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -491,6 +590,24 @@ ALTER TABLE `subs`
 -- AUTO_INCREMENT for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `uservars`
+--
+ALTER TABLE `uservars`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `webhooks`
+--
+ALTER TABLE `webhooks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
