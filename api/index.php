@@ -1,3 +1,3 @@
 <?php
-header("Location: https://docs.keyauth.win/");
+header("Location: https://docs.keyauth.cc/");
 exit();
