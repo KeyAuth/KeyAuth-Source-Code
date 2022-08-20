@@ -357,15 +357,15 @@ $ownerid = "<?php echo $ownerid; ?>"; // your KeyAuth account's ownerid, located
                 </div>
                 <div class="tab-pane fade" id="kt_table_widget_5_tab_5">
                     <!--begin::Table container-->
-                    <code style="display: block;white-space:pre-wrap;">KeyAuth.api(
+                    <code style="display: block;white-space:pre-wrap;">const KeyAuthApp = new KeyAuth(
     "<?php echo $appname; ?>", // Application Name
     "<?php echo $ownerid; ?>", // OwnerID
     "<?php echo $secret; ?>", // Application Secret
     "<?php echo $version; ?>" // Application Version
 )</code>
                     <br>
-                    Repository: <a href="https://github.com/mazk5145/KeyAuth-JS-Example"
-                        target="_blank">https://github.com/mazk5145/KeyAuth-JS-Example</a>
+                    Repository: <a href="https://github.com/mazkdevf/KeyAuth-JS-Example"
+                        target="_blank">https://github.com/mazkdevf/KeyAuth-JS-Example</a>
                     <!--end::Table-->
                 </div>
                 <div class="tab-pane fade" id="kt_table_widget_5_tab_6">
@@ -408,8 +408,8 @@ Private Shared version As String = "<?php echo $version; ?>"</code>
 var ownerid = "<?php echo $ownerid; ?>"
 var version = "<?php echo $version; ?>"</code>
                     <br>
-                    Repository: <a href="https://github.com/mazk5145/KeyAuth-Go-Example"
-                        target="_blank">https://github.com/mazk5145/KeyAuth-Go-Example</a>
+                    Repository: <a href="https://github.com/mazkdevf/KeyAuth-Go-Example"
+                        target="_blank">https://github.com/mazkdevf/KeyAuth-Go-Example</a>
                     <!--end::Table-->
                 </div>
                 <div class="tab-pane fade" id="kt_table_widget_5_tab_10">
@@ -418,8 +418,8 @@ var version = "<?php echo $version; ?>"</code>
 Ownerid = "<?php echo $ownerid; ?>" --* OwnerID
 APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                     <br>
-                    Repository: <a href="https://github.com/mazk5145/KeyAuth-Lua-Examples"
-                        target="_blank">https://github.com/mazk5145/KeyAuth-Lua-Examples</a>
+                    Repository: <a href="https://github.com/mazkdevf/KeyAuth-Lua-Examples"
+                        target="_blank">https://github.com/mazkdevf/KeyAuth-Lua-Examples</a>
                     <!--end::Table-->
                 </div>
                 <!--end::Tap pane-->
