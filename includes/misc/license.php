@@ -190,7 +190,7 @@ function deleteSingular($key, $userToo, $secret = null)
 	$key = etc\sanitize($key);
 	$userToo = etc\sanitize($userToo);
 
-	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
+	if ($_SESSION['role'] == "Reseller") {
 		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
 		if (mysqli_num_rows($result) === 0) {
 			return 'nope';
@@ -226,7 +226,7 @@ function ban($key, $reason, $userToo, $secret = null)
 	$reason = etc\sanitize($reason);
 	$userToo = etc\sanitize($userToo);
 
-	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
+	if ($_SESSION['role'] == "Reseller") {
 		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
 		if (mysqli_num_rows($result) === 0) {
 			return 'nope';
@@ -260,7 +260,7 @@ function unban($key, $secret = null)
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$key = etc\sanitize($key);
 
-	if ($_SESSION['role'] == "Reseller" || !is_null($secret)) {
+	if ($_SESSION['role'] == "Reseller") {
 		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
 		if (mysqli_num_rows($result) === 0) {
 			return 'nope';

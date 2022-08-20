@@ -44,8 +44,7 @@ CREATE TABLE `accounts` (
   `locked` int(1) NOT NULL DEFAULT '0',
   `warning` varchar(999) COLLATE utf8_unicode_ci DEFAULT NULL,
   `admin` int(1) NOT NULL DEFAULT '0',
-  `img` varchar(90) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://cdn.keyauth.win/assets/img/favicon.png',
-  `pp` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `img` varchar(90) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://cdn.keyauth.cc/assets/img/favicon.png',
   `balance` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
   `keylevels` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
   `expires` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -57,11 +56,6 @@ CREATE TABLE `accounts` (
   `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci DEFAULT NULL,
   `darkmode` int(1) NOT NULL DEFAULT '0',
   `acclogs` int(1) NOT NULL DEFAULT '1',
-  `format` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `amount` int(3) DEFAULT NULL,
-  `lvl` int(3) DEFAULT NULL,
-  `note` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `duration` int(3) DEFAULT NULL,
   `lastreset` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -340,17 +334,17 @@ CREATE TABLE `subscriptions` (
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `username` varchar(70) NOT NULL,
-  `password` varchar(70) DEFAULT NULL,
-  `hwid` varchar(2000) DEFAULT NULL,
-  `app` varchar(64) NOT NULL,
-  `owner` varchar(65) DEFAULT NULL,
+  `username` varchar(70) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(70) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `hwid` varchar(2000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `app` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `owner` varchar(65) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `createdate` int(10) DEFAULT NULL,
   `lastlogin` int(10) DEFAULT NULL,
-  `banned` varchar(99) DEFAULT NULL,
-  `ip` varchar(49) DEFAULT NULL,
+  `banned` varchar(99) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip` varchar(49) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `cooldown` int(10) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -494,7 +488,8 @@ ALTER TABLE `subscriptions`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user index` (`username`,`app`);
 
 --
 -- Indexes for table `uservars`
