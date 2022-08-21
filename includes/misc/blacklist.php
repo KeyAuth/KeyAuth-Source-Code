@@ -15,11 +15,11 @@ function add($data, $type, $secret = null)
 	switch ($type) {
 		case 'IP Address':
 			mysqli_query($link, "INSERT INTO `bans`(`ip`, `type`, `app`) VALUES ('$data','ip','" . ($secret ?? $_SESSION['app']) . "')");
-			cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . $blacklist);
+			cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . $data);
 			break;
 		case 'Hardware ID':
 			mysqli_query($link, "INSERT INTO `bans`(`hwid`, `type`, `app`) VALUES ('$data','hwid','" . ($secret ?? $_SESSION['app']) . "')");
-			cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . '*' . ':' . $blacklist);
+			cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . '*' . ':' . $data);
 			break;
 		default:
 			return 'invalid';

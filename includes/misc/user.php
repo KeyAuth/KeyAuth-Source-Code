@@ -4,6 +4,7 @@ namespace misc\user;
 
 use misc\etc;
 use misc\cache;
+use misc\blacklist;
 
 function deleteSingular($username, $secret = null)
 {
@@ -93,11 +94,11 @@ function ban($username, $reason, $secret = null)
 	$hwid = $row["hwid"];
 	$ip = $row["ip"];
 	mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
-	if ($hwid != NULL) {
-		mysqli_query($link, "INSERT INTO `bans`(`hwid`,`type`, `app`) VALUES ('$hwid','hwid','" . ($secret ?? $_SESSION['app']) . "')");
+	if (!is_null($hwid)) {
+		blacklist\add($hwid, "Hardware ID", ($secret ?? $_SESSION['app']));
 	}
-	if ($ip != NULL) {
-		mysqli_query($link, "INSERT INTO `bans`(`ip`,`type`, `app`) VALUES ('$ip','ip','" . ($secret ?? $_SESSION['app']) . "')");
+	if (!is_null($ip)) {
+		blacklist\add($hwid, "IP Address", ($ip ?? $_SESSION['app']));
 	}
 	if (mysqli_affected_rows($link) > 0) {
 		cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
@@ -123,6 +124,10 @@ function unban($username, $secret = null)
 	$row = mysqli_fetch_array($result);
 	$hwid = $row["hwid"];
 	$ip = $row["ip"];
+	cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . $ip);
+	if(!is_null($hwid)) {
+		cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . '*' . ':' . $hwid);
+	}
 	mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 	mysqli_query($link, "UPDATE `users` SET `banned` = NULL WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
 	if (mysqli_affected_rows($link) > 0) {
