@@ -70,6 +70,7 @@ if (isset($_POST['updatesettings'])) {
     $sellixmonth = misc\etc\sanitize($_POST['sellixmonthproduct']);
     $sellixlife = misc\etc\sanitize($_POST['sellixlifetimeproduct']);
     $killOtherSessions = misc\etc\sanitize($_POST['killOtherSessions']);
+    $customerPanelIcon = misc\etc\sanitize($_POST['customerPanelIcon']);
 
     if (!empty($customDomain) && $_SESSION['role'] == "seller") {
         if (strpos($customDomain, "http") === 0) {
@@ -183,6 +184,7 @@ if (isset($_POST['updatesettings'])) {
 		`shoppyweekproduct` = NULLIF('$shoppyweek', ''),
 		`shoppymonthproduct` = NULLIF('$shoppymonth', ''),
 		`shoppylifetimeproduct` = NULLIF('$shoppylife', ''),
+		`customerPanelIcon` = '$customerPanelIcon',
 		`panelstatus` = '$panelstatus' 
 	WHERE `secret` = '" . $_SESSION['app'] . "'");
 
@@ -334,6 +336,7 @@ if (isset($_POST['updatesettings'])) {
                 $minUsernameLength  = $row['minUsernameLength'];
                 $blockLeakedPasswords  = $row['blockLeakedPasswords'];
                 $killOtherSessions  = $row['killOtherSessions'];
+                $customerPanelIcon  = $row['customerPanelIcon'];
             }
         }
     }
@@ -489,6 +492,17 @@ if (isset($_POST['updatesettings'])) {
                     <div class="col-10">
                         <input class="form-control" name="customDomain" value="<?php echo $customDomain; ?>"
                             placeholder="panel.example.com" type="text">
+                    </div>
+                </div>
+                <br>
+				<div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">Customer panel icon <i
+                            class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Image shown in SEO and next to title in browser tab"></i></label>
+                    <div class="col-10">
+                        <input class="form-control" name="customerPanelIcon" value="<?php echo $customerPanelIcon; ?>"
+                            placeholder="https://cdn.keyauth.cc/front/assets/img/favicon.png" type="text">
                     </div>
                 </div>
                 <br>

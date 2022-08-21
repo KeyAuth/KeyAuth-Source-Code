@@ -23,7 +23,7 @@ if ($_SESSION['role'] == "Reseller") {
 		$_SESSION["name"] = $appName;
 		$_SESSION["selectedApp"] = $appName;
 		
-		echo '<meta http-equiv="refresh" content="2">';
+		echo '<meta http-equiv="refresh" content="0">';
         dashboard\primary\success("Successfully Selected the App!");
 	}
 

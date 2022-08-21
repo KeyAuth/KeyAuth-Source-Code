@@ -2,21 +2,11 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
---
--- Database: `main`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `acclogs`
---
 
 CREATE TABLE `acclogs` (
   `id` int(11) NOT NULL,
@@ -25,12 +15,6 @@ CREATE TABLE `acclogs` (
   `ip` varchar(45) NOT NULL,
   `useragent` varchar(199) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `accounts`
---
 
 CREATE TABLE `accounts` (
   `username` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
@@ -58,12 +42,6 @@ CREATE TABLE `accounts` (
   `acclogs` int(1) NOT NULL DEFAULT '1',
   `lastreset` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `apps`
---
 
 CREATE TABLE `apps` (
   `id` int(11) NOT NULL,
@@ -127,14 +105,9 @@ CREATE TABLE `apps` (
   `minUsernameLength` int(1) NOT NULL DEFAULT '0',
   `blockLeakedPasswords` int(1) NOT NULL DEFAULT '0',
   `forceEncryption` int(1) NOT NULL DEFAULT '0',
-  `customDomainAPI` varchar(253) COLLATE utf8_unicode_ci DEFAULT NULL
+  `customDomainAPI` varchar(253) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `customerPanelIcon` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://cdn.keyauth.cc/front/assets/img/favicon.png'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `bans`
---
 
 CREATE TABLE `bans` (
   `id` int(11) NOT NULL,
@@ -144,24 +117,12 @@ CREATE TABLE `bans` (
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `buttons`
---
-
 CREATE TABLE `buttons` (
   `id` int(11) NOT NULL,
   `text` varchar(99) NOT NULL,
   `value` varchar(99) NOT NULL,
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `chatmsgs`
---
 
 CREATE TABLE `chatmsgs` (
   `id` int(255) NOT NULL,
@@ -172,12 +133,6 @@ CREATE TABLE `chatmsgs` (
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `chatmutes`
---
-
 CREATE TABLE `chatmutes` (
   `id` int(11) NOT NULL,
   `user` varchar(70) NOT NULL,
@@ -185,24 +140,12 @@ CREATE TABLE `chatmutes` (
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `chats`
---
-
 CREATE TABLE `chats` (
   `id` int(11) NOT NULL,
   `name` varchar(50) NOT NULL,
   `delay` int(10) NOT NULL,
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `emailverify`
---
 
 CREATE TABLE `emailverify` (
   `id` int(11) NOT NULL,
@@ -216,12 +159,6 @@ CREATE TABLE `emailverify` (
   `oldUsername` varchar(99) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `files`
---
-
 CREATE TABLE `files` (
   `name` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `id` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
@@ -231,12 +168,6 @@ CREATE TABLE `files` (
   `app` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `authed` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `keys`
---
 
 CREATE TABLE `keys` (
   `id` int(11) NOT NULL,
@@ -253,12 +184,6 @@ CREATE TABLE `keys` (
   `banned` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `logs`
---
-
 CREATE TABLE `logs` (
   `id` int(1) NOT NULL,
   `logdate` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
@@ -268,24 +193,12 @@ CREATE TABLE `logs` (
   `logapp` varchar(64) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `resets`
---
-
 CREATE TABLE `resets` (
   `id` int(11) NOT NULL,
   `secret` char(32) NOT NULL,
   `email` varchar(65) NOT NULL,
   `time` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `sessions`
---
 
 CREATE TABLE `sessions` (
   `id` varchar(10) NOT NULL,
@@ -297,12 +210,6 @@ CREATE TABLE `sessions` (
   `ip` varchar(45) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `subs`
---
-
 CREATE TABLE `subs` (
   `id` int(255) NOT NULL,
   `user` varchar(49) NOT NULL,
@@ -313,24 +220,12 @@ CREATE TABLE `subs` (
   `paused` int(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `subscriptions`
---
-
 CREATE TABLE `subscriptions` (
   `id` int(11) NOT NULL,
   `name` varchar(49) NOT NULL,
   `level` varchar(49) NOT NULL,
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
@@ -346,12 +241,6 @@ CREATE TABLE `users` (
   `cooldown` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `uservars`
---
-
 CREATE TABLE `uservars` (
   `id` int(11) NOT NULL,
   `name` varchar(99) NOT NULL,
@@ -360,24 +249,12 @@ CREATE TABLE `uservars` (
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `vars`
---
-
 CREATE TABLE `vars` (
   `varid` varchar(49) NOT NULL,
   `msg` varchar(20000) NOT NULL,
   `app` varchar(64) NOT NULL,
   `authed` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `webhooks`
---
 
 CREATE TABLE `webhooks` (
   `id` int(11) NOT NULL,
@@ -388,220 +265,112 @@ CREATE TABLE `webhooks` (
   `authed` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
---
--- Indexes for dumped tables
---
 
---
--- Indexes for table `acclogs`
---
 ALTER TABLE `acclogs`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `accounts`
---
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`username`);
 
---
--- Indexes for table `apps`
---
 ALTER TABLE `apps`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `bans`
---
 ALTER TABLE `bans`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `buttons`
---
 ALTER TABLE `buttons`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `value` (`value`,`app`);
 
---
--- Indexes for table `chatmsgs`
---
 ALTER TABLE `chatmsgs`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `chatmutes`
---
 ALTER TABLE `chatmutes`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `chats`
---
 ALTER TABLE `chats`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `one name per app` (`name`,`app`);
 
---
--- Indexes for table `emailverify`
---
 ALTER TABLE `emailverify`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `keys`
---
 ALTER TABLE `keys`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `logs`
---
 ALTER TABLE `logs`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `resets`
---
 ALTER TABLE `resets`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `sessions`
---
 ALTER TABLE `sessions`
   ADD KEY `session index` (`id`,`app`);
 
---
--- Indexes for table `subs`
---
 ALTER TABLE `subs`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `subscriptions`
---
 ALTER TABLE `subscriptions`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `users`
---
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user index` (`username`,`app`);
 
---
--- Indexes for table `uservars`
---
 ALTER TABLE `uservars`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `user vars` (`name`,`user`,`app`);
 
---
--- Indexes for table `webhooks`
---
 ALTER TABLE `webhooks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `baselink` (`baselink`);
 
---
--- AUTO_INCREMENT for dumped tables
---
 
---
--- AUTO_INCREMENT for table `acclogs`
---
 ALTER TABLE `acclogs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `apps`
---
 ALTER TABLE `apps`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `bans`
---
 ALTER TABLE `bans`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `buttons`
---
 ALTER TABLE `buttons`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `chatmsgs`
---
 ALTER TABLE `chatmsgs`
   MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `chatmutes`
---
 ALTER TABLE `chatmutes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `chats`
---
 ALTER TABLE `chats`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `emailverify`
---
 ALTER TABLE `emailverify`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `keys`
---
 ALTER TABLE `keys`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `logs`
---
 ALTER TABLE `logs`
   MODIFY `id` int(1) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `resets`
---
 ALTER TABLE `resets`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `subs`
---
 ALTER TABLE `subs`
   MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `subscriptions`
---
 ALTER TABLE `subscriptions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `users`
---
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `uservars`
---
 ALTER TABLE `uservars`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `webhooks`
---
 ALTER TABLE `webhooks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
