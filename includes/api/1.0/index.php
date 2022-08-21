@@ -65,6 +65,7 @@ function register($un, $key, $pw, $hwid, $secret)
         $hwidBlackCheck = mysqli_query($link, "SELECT 1 FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '$ip') AND `app` = '$secret'");
         if (mysqli_num_rows($hwidBlackCheck) > 0) {
             mysqli_query($link, "UPDATE `keys` SET `status` = 'Banned',`banned` = 'This key has been banned as the client was blacklisted.' WHERE `key` = '$un' AND `app` = '$secret'");
+			cache\purge('KeyAuthKeys:' . $secret);
             return 'hwid_blacked';
         }
         // add current time to key time
@@ -76,6 +77,7 @@ function register($un, $key, $pw, $hwid, $secret)
         }
         // update key to used
         mysqli_query($link, "UPDATE `keys` SET `status` = 'Used',`usedon` = '" . time() . "',`usedby` = '$un' WHERE `key` = '$key'");
+		cache\purge('KeyAuthKeys:' . $secret);
         while ($row = mysqli_fetch_array($result)) {
             // add each subscription that user's key applies to
             $subname = $row['name'];
