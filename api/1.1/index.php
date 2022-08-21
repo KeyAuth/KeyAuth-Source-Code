@@ -1,5 +1,6 @@
 <?php
-//error_reporting(0);
+
+error_reporting(0);
 include '../../includes/misc/autoload.phtml';
 include '../../includes/api/shared/autoload.phtml';
 include '../../includes/api/1.0/autoload.phtml';
@@ -148,7 +149,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "numUsers" => $numUsers,
                 "numOnlineUsers" => $numOnlineUsers,
                 "numKeys" => $numKeys,
-                "version" => $ver,
+                "version" => $currentver,
                 "customerPanelLink" => "https://keyauth.cc/panel/$owner/$name/"
             )
         )));
@@ -715,7 +716,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $channel = misc\etc\sanitize($_POST['channel'] ?? $_GET['channel']);
-        include_once include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
+        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $result = mysqli_query($link, "SELECT `delay` FROM `chats` WHERE `name` = '$channel' AND `app` = '$secret'");
 
         if (mysqli_num_rows($result) == 0) {
@@ -957,6 +958,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 )));
             }
         }
+		
+		ini_set('memory_limit', '-1');
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);

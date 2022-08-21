@@ -51,16 +51,6 @@ if (isset($_POST['deletevar']))
 if (isset($_POST['deletesub']))
 {
     $sub = misc\etc\sanitize($_POST['sub']);
-    function get_string_between($string, $start, $end)
-    {
-        $string = ' ' . $string;
-        $ini = strpos($string, $start);
-        if ($ini == 0) return '';
-        $ini += strlen($start);
-        $len = strpos($string, $end, $ini) - $ini;
-        return substr($string, $ini, $len);
-    }
-    $sub = get_string_between($sub, '[', ']');
 	
 	$resp = misc\user\deleteSub($_POST['deletesub'], $sub);
     switch ($resp)
@@ -1068,11 +1058,11 @@ $rows[] = $r;
 }
 foreach ($rows as $subrow)
 {
-if(!$subrow["expiry"] == NULL) { $expiry = date('Y/m/d @ H:i', $subrow["expiry"]); } else { $expiry = "N/A"; }
-$value = "[" . $subrow['subscription'] . "]" . " - Expires: " . $expiry ;
+$sub = $subrow['subscription'];
+$value = "[" . $subrow['subscription'] . "]" . " - Expires: <script>document.write(convertTimestamp(" . $subrow["expiry"] . "));</script>";
 ?>
 
-                                <option value="<?php echo $value; ?>"><?php echo $value; ?></option>
+                                <option value="<?php echo $sub; ?>"><?php echo $value; ?></option>
 
                                 <?php
 }

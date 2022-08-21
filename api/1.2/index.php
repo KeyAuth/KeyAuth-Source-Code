@@ -185,7 +185,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "numUsers" => $numUsers,
                 "numOnlineUsers" => $numOnlineUsers,
                 "numKeys" => $numKeys,
-                "version" => $ver,
+                "version" => $currentver,
                 "customerPanelLink" => "https://keyauth.cc/panel/$owner/$name/"
             )
         ));
@@ -676,13 +676,12 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "message" => "No online users found!"
             ));
         }
-		else {
-			$response = json_encode(array(
-				"success" => true,
-				"message" => "Successfully fetched online users.",
-				"users" => $rows
-			));
-		}
+
+        $response = json_encode(array(
+            "success" => true,
+            "message" => "Successfully fetched online users.",
+            "users" => $rows
+        ));
 
         if (isset($response)) {
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
@@ -1178,6 +1177,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 die($response);
             }
         }
+		
+		ini_set('memory_limit', '-1');
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);

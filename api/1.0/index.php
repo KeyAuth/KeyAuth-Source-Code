@@ -1,4 +1,7 @@
 <?php
+
+
+
 error_reporting(0);
 include '../../includes/misc/autoload.phtml';
 include '../../includes/api/shared/autoload.phtml';
@@ -134,7 +137,7 @@ switch (hex2bin($_POST['type'])) {
                 "numUsers" => $numUsers,
                 "numOnlineUsers" => $numOnlineUsers,
                 "numKeys" => $numKeys,
-                "version" => $ver,
+                "version" => $currentver,
                 "customerPanelLink" => "https://keyauth.cc/panel/$owner/$name/"
             )
         )), $secret));
@@ -722,8 +725,8 @@ switch (hex2bin($_POST['type'])) {
 
         $message = misc\etc\sanitize(api\v1_0\Decrypt($_POST['message'], $enckey));
         mysqli_query($link, "INSERT INTO `chatmsgs` (`author`, `message`, `timestamp`, `channel`,`app`) VALUES ('$credential','$message','" . time() . "','$channel','$secret')");
-	mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '$secret' AND `channel` = '$channel' AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret' ORDER BY `id` DESC LIMIT 20) foo );");
-	misc\cache\purge('KeyAuthChatMsgs:' . $secret . ':' . $channel);
+        mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '$secret' AND `channel` = '$channel' AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret' ORDER BY `id` DESC LIMIT 20) foo );");
+        misc\cache\purge('KeyAuthChatMsgs:' . $secret . ':' . $channel);
         die(api\v1_0\Encrypt(json_encode(array(
             "success" => true,
             "message" => "Successfully sent chat message"
@@ -927,6 +930,8 @@ switch (hex2bin($_POST['type'])) {
                 )), $enckey));
             }
         }
+		
+		ini_set('memory_limit', '-1');
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
