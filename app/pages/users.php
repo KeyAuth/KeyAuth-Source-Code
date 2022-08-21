@@ -30,7 +30,7 @@ if (isset($_POST['saveuser']))
         mysqli_query($link, "UPDATE `users` SET `password` = '" . password_hash($pass, PASSWORD_BCRYPT) . "' WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
     }
     dashboard\primary\success("Successfully Updated User");
-	cache\purge('KeyAuthUser:'.$_SESSION['app'].':'.$un);
+	misc\cache\purge('KeyAuthUser:'.$_SESSION['app'].':'.$un);
 }
 if (isset($_POST['deletevar']))
 {
@@ -311,7 +311,7 @@ if (isset($_POST['pauseuser']))
         mysqli_query($link, "UPDATE `subs` SET `paused` = 1, `expiry` = '$exp' WHERE `app` = '" . $_SESSION['app'] . "' AND `id` = '" . $row['id'] . "'");
     }
     if (mysqli_affected_rows($link) > 0) {
-		cache\purge('KeyAuthSubs:'.$_SESSION['app'].':'.$user);
+		misc\cache\purge('KeyAuthSubs:'.$_SESSION['app'].':'.$user);
         dashboard\primary\success("Successfully paused user", $format);
     } else {
         dashboard\primary\error("Failed to pause user", $format);
@@ -327,7 +327,7 @@ if (isset($_POST['unpauseuser']))
         mysqli_query($link, "UPDATE `subs` SET `paused` = 0, `expiry` = '$exp' WHERE `app` = '" . $_SESSION['app'] . "' AND `id` = '" . $row['id'] . "'");
     }
     if (mysqli_affected_rows($link) > 0) {
-		cache\purge('KeyAuthSubs:'.$_SESSION['app'].':'.$user);
+		misc\cache\purge('KeyAuthSubs:'.$_SESSION['app'].':'.$user);
         dashboard\primary\success("Successfully paused user", $format);
     } else {
         dashboard\primary\error("Failed to pause user", $format);
