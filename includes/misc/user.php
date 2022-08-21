@@ -184,7 +184,11 @@ function extend($username, $sub, $expiry, $secret = null)
 		return 'date_past';
 	}
 	if ($username == "all") {
-		$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `username` NOT IN(SELECT `user` FROM `subs` WHERE `subscription` = '$sub' AND `expiry` > " . time() . " AND `app` = '" . ($secret ?? $_SESSION['app']) . "') AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		$result = mysqli_query($link, "SELECT GROUP_CONCAT(`user`) AS `existingUsers` FROM `subs` WHERE `subscription` = 'default' AND `expiry` > " . time() . " AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		$row = mysqli_fetch_array($result);
+		$existingUsers = $row['existingUsers'];
+		
+		$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `username` NOT IN('$existingUsers') AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 		$rows = array();
 		while ($r = mysqli_fetch_assoc($result)) {
 			$rows[] = $r;
