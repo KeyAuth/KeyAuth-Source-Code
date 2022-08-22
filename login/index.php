@@ -223,17 +223,17 @@ if (isset($_SESSION['username'])) {
             $id = $row['ownerid'];
             $email = $row['email'];
             $role = $row['role'];
-            $app = $row['app'];
+            $app = misc\etc\sanitize($row['app']);
             $banned = $row['banned'];
             $locked = $row['locked'];
             $img = $row['img'];
 
-            $owner = $row['owner'];
+            $owner = misc\etc\sanitize($row['owner']);
             $twofactor_optional = $row['twofactor'];
             $acclogs = $row['acclogs'];
             $google_Code = $row['googleAuthCode'];
 
-            $regionNameSaved = $row['regionName'];
+            $regionSaved = $row['region'];
             $asNumSaved = $row['asNum'];
         }
 
@@ -253,10 +253,52 @@ if (isset($_SESSION['username'])) {
             return;
         }
         $ip = api\shared\primary\getIp();
+		
+        if (in_array($role, array("developer", "seller")) && $username != "demoseller" && $username != "demodeveloper") {
+            $url = "http://ip-api.com/json/{$ip}?fields=2052"; // returns fields: region,as
+
+            $curl = curl_init($url);
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+            $resp = curl_exec($curl);
+            $json = json_decode($resp, true);
+            $region = $json["region"];
+            $asNum = explode(" ", $json["as"])[0];
+            if (!is_null($asNumSaved)) {
+                if ($asNum != $asNumSaved || $region != $regionSaved) {
+                    if ($twofactor_optional) {
+                        // 2FA verification on new login location
+                        $twofactor = misc\etc\sanitize($_POST['keyauthtwofactor']);
+                        if (empty($twofactor)) {
+                            dashboard\primary\error("Please enter 2FA code!");
+                            return;
+                        }
+
+                        require_once '../auth/GoogleAuthenticator.php';
+                        $gauth = new GoogleAuthenticator();
+                        $checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
+
+                        if (!$checkResult) {
+                            dashboard\primary\error("2FA code Invalid!");
+                            return;
+                        }
+						
+						mysqli_query($link, "UPDATE `accounts` SET `region` = '$region',`asNum` = '$asNum' WHERE `username` = '$username'");
+                    } else {
+                        // email verification on new login location
+                        header("location: ./emailVerify/");
+                        die();
+                    }
+                }
+            }
+            else {
+                mysqli_query($link, "UPDATE `accounts` SET `region` = '$region',`asNum` = '$asNum' WHERE `username` = '$username'");
+            }
+        }
 
         $_SESSION['username'] = $username;
         $_SESSION['ownerid'] = $id;
-        $_SESSION['owner'] = $owner;
         $_SESSION['role'] = $role;
         $_SESSION['logindate'] = time();
 

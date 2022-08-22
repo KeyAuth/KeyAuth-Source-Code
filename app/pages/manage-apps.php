@@ -11,7 +11,7 @@ if ($_SESSION['role'] == "Reseller") {
 
 	if (isset($_POST['selectApp'])) {
 		$appName = misc\etc\sanitize($_POST['selectApp']);
-		($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appName'"));
+		($result = mysqli_query($link, "SELECT `secret`, `name` FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appName'"));
 		
 		if (mysqli_num_rows($result) === 0) {
 			dashboard\primary\error("Application not found!");
@@ -21,7 +21,7 @@ if ($_SESSION['role'] == "Reseller") {
 		$row = mysqli_fetch_array($result);
 		$_SESSION["app"] = $row["secret"];
 		$_SESSION["name"] = $appName;
-		$_SESSION["selectedApp"] = $appName;
+		$_SESSION["selectedApp"] = $row["name"];
 		
 		echo '<meta http-equiv="refresh" content="0">';
         dashboard\primary\success("Successfully Selected the App!");
