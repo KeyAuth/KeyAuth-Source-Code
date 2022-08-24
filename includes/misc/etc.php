@@ -82,7 +82,7 @@ function isPhonyEmail($email)
     $resp = file_get_contents("https://api.mailcheck.ai/email/" . $email);
     $json = json_decode($resp);
 	
-	if($json->disposable || !$json->mx) {
+	if($json->disposable) {
 		return true;
 	}
 	
