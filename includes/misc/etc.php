@@ -86,10 +86,17 @@ function isPhonyEmail($email)
 		return true;
 	}
 	
-	global $mail;
-	require_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/VerifyEmail.class.php'; 
+	ini_set("default_socket_timeout", 1);
+	$connection = @fsockopen("gmail-smtp-in.l.google.com", 25);
 	
-    return (!$mail->check($email));
-	
-	// return false;
+	// check if port 25 is open (many hosts have it closed inherently)
+	if (is_resource($connection)) {
+		global $mail;
+		require_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/VerifyEmail.class.php'; 
+		
+		return (!$mail->check($email));
+	}
+	else {
+	    return false;
+	}
 }
