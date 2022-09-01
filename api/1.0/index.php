@@ -124,7 +124,7 @@ switch (hex2bin($_POST['type'])) {
         mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`,`ip`) VALUES ('$sessionid','$secret', '$time', '$enckey', '$ip')");
 
         $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT(select count(1) FROM `users` WHERE `app` = '$secret') AS 'numUsers',(select count(1) FROM `sessions` WHERE `app` = '$secret' AND `validated` = 1 AND `expiry` > " . time() . ") AS 'numOnlineUsers',(select count(1) FROM `keys` WHERE `app` = '$secret') AS 'numKeys';", 0, 1800);
-
+		
         $numUsers = $row['numUsers'];
         $numOnlineUsers = $row['numOnlineUsers'];
         $numKeys = $row['numKeys'];
