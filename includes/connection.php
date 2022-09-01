@@ -1,18 +1,22 @@
 <?php
 
-error_reporting(0); // disable PHP errors, you can comment out or turn on logs if you need to fix issue
+//error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
 
 /* Attempt MySQL server connection. Assuming you are running MySQL
 
 server with default setting (user 'root' with no password) */
 
-$link = mysqli_connect("localhost", "root", "", "keyauth");
+$link = mysqli_connect("localhost", "root", "", "main");
 
 // Check connection status
 
 if ($link === false) {
+    http_response_code(503); // produce non-200 HTTP code so UptimeRobot notifies me MySQL is down
     die("ERROR: Could not connect. " . mysqli_connect_error());
 }
+
+// set character set to ensure greek characters don't cause issues
+mysqli_query($link, "SET NAMES 'utf8'");
 
 $logwebhook = ""; // discord webhook which receives login logs and keys created
 
@@ -22,9 +26,8 @@ $webhookun = "KeyAuth Logs"; // webhook username
 
 $adminwebhookun = "KeyAuth Admin Logs"; // admin webhook's username
 
-$adminapikey = ""; // api key for api/admin (an api only my staff can use)
 
-$shoppyAPIkey = ""; // shoppy.gg API key for my staff to look up orders
+$adminapikey = ""; // api key for api/admin (an api only my staff can use)
 
 $proxycheckapikey = ""; // proxycheck.io API key to check if IP is considered a VPN
 
