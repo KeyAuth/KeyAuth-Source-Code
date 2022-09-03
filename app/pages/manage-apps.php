@@ -296,6 +296,14 @@ if ($_SESSION['role'] == "Reseller") {
                         <a class="nav-link btn btn-sm btn-color-muted btn-active btn-active-secondary fw-bolder px-4"
                             data-bs-toggle="tab" href="#kt_table_widget_5_tab_10">Lua</a>
                     </li>
+					<li class="nav-item">
+                        <a class="nav-link btn btn-sm btn-color-muted btn-active btn-active-secondary fw-bolder px-4"
+                            data-bs-toggle="tab" href="#kt_table_widget_5_tab_11">Ruby</a>
+                    </li>
+					<li class="nav-item">
+                        <a class="nav-link btn btn-sm btn-color-muted btn-active btn-active-secondary fw-bolder px-4"
+                            data-bs-toggle="tab" href="#kt_table_widget_5_tab_12">Perl</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -422,14 +430,46 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                         target="_blank">https://github.com/mazkdevf/KeyAuth-Lua-Examples</a>
                     <!--end::Table-->
                 </div>
+                <div class="tab-pane fade" id="kt_table_widget_5_tab_11">
+                    <!--begin::Table container-->
+                    <code style="display: block;white-space:pre-wrap;">KeyAuth.new.Api(
+    "<?php echo $appname; ?>", # Application Name
+    "<?php echo $ownerid; ?>", # Application OwnerID
+    "<?php echo $secret; ?>", # Application Secret
+    "<?php echo $version; ?>" # Applicaiton Version
+)</code>
+                    <br>
+                    Repository: <a href="https://github.com/mazkdevf/KeyAuth-Ruby-Example"
+                        target="_blank">https://github.com/mazkdevf/KeyAuth-Ruby-Example</a>
+                    <!--end::Table-->
+                </div>
+				<div class="tab-pane fade" id="kt_table_widget_5_tab_12">
+                    <!--begin::Table container-->
+                    <code style="display: block;white-space:pre-wrap;">KeyAuth::Api(
+    "<?php echo $appname; ?>",
+    "<?php echo $ownerid; ?>",
+    "<?php echo $secret; ?>",
+    "<?php echo $version; ?>"
+);</code>
+                    <br>
+                    Repository: <a href="https://github.com/mazkdevf/KeyAuth-Perl-Example"
+                        target="_blank">https://github.com/mazkdevf/KeyAuth-Perl-Example</a>
+                    <!--end::Table-->
+                </div>
                 <!--end::Tap pane-->
             </div>
         </div>
         <!--end::Body-->
     </div>
     <?php
-	} ?>
+	} 
+	if($_SESSION['role'] != "Manager") {
+	?>
     <a class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#create_app">Create App</a>
+	<?php
+	}
+	if(isset($_SESSION['app']) && $_SESSION['role'] != "Manager") {
+	?>
     <a class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#rename_app">Rename App</a>
     <?php
 	($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
@@ -446,7 +486,10 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
 	?>
     <a class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#refresh_app">Refresh App Secret</a>
     <a class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#delete_app">Delete App</a>
-
+	<?php
+	}
+	if($_SESSION['role'] != "Manager") {
+	?>
     <br></br>
     <div class="card">
         <div class="card-body">
@@ -488,7 +531,9 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
             </div>
         </div>
     </div>
-
+	<?php
+	}
+	?>
 
 
     <!--begin::Modal - Create App-->
