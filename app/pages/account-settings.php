@@ -189,7 +189,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                             <div class="col-10">
 
                                 <div class="form-control">Change password here
-                                    <?php echo '<a href="https://' . ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']) . '/forgot/" target="_blank">https://' . ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']) . '/forgot/</a>'; ?>
+                                    <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/forgot/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/forgot/</a>'; ?>
                                 </div>
 
                             </div>
@@ -218,7 +218,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                             <div class="col-10">
 
                                 <div class="form-control">Change email here
-                                    <?php echo '<a href="https://' . ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']) . '/changeEmail/" target="_blank">https://' . ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']) . '/changeEmail/</a>'; ?>
+                                    <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeEmail/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeEmail/</a>'; ?>
                                 </div>
 
                             </div>
@@ -233,7 +233,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                             <div class="col-10">
 
                                 <div class="form-control">Change username here
-                                    <?php echo '<a href="https://' . ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']) . '/changeUsername/" target="_blank">https://' . ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST']) . '/changeUsername/</a>'; ?>
+                                    <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeUsername/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeUsername/</a>'; ?>
                                 </div>
 
                             </div>

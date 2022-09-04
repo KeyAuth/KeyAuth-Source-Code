@@ -65,6 +65,7 @@ if (!$_SESSION['app']) // no app selected yet
     <base href="">
     <title>Keyauth - Open Source Auth</title>
     <link rel="shortcut icon" href="https://cdn.keyauth.cc/v2/assets/media/logos/favicon.ico" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
     <!--begin::Page Vendor Stylesheets(used by this page)-->
     <link href="https://cdn.keyauth.cc/v2/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet"
         type="text/css" />
