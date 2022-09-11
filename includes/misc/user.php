@@ -150,7 +150,7 @@ function deleteVar($username, $var, $secret = null)
 
 	mysqli_query($link, "DELETE FROM `uservars` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `user` = '$username' AND `name` = '$var'");
 	if (mysqli_affected_rows($link) > 0) {
-		cache\purge('KeyAuthUserVar:' . ($secret ?? $_SESSION['app']) . ':' . $var . ':' . $user);
+		cache\purge('KeyAuthUserVar:' . ($secret ?? $_SESSION['app']) . ':' . $var . ':' . $username);
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthUserVars:' . ($secret ?? $_SESSION['app']));
 		}
