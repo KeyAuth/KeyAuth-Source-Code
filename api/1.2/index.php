@@ -1232,10 +1232,10 @@ switch ($_POST['type'] ?? $_GET['type']) {
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
         if (!empty($hwid)) {
-            mysqli_query($link, "INSERT INTO `bans` (`hwid`, `type`, `app`) VALUES ('$hwid','hwid', '$secret')");
+            misc\blacklist\add($hwid, "Hardware ID", $secret);
         }
         $ip = api\shared\primary\getIp();
-        mysqli_query($link, "INSERT INTO `bans` (`ip`, `type`, `app`) VALUES ('$ip','ip', '$secret')");
+        misc\blacklist\add($ip, "IP Address", $secret);
 
         mysqli_query($link, "UPDATE `users` SET `banned` = 'User banned from triggering ban function in the client' WHERE `username` = '$credential'");
         if (mysqli_affected_rows($link) != 0) {
