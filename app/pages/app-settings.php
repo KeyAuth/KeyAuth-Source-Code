@@ -69,6 +69,11 @@ if (isset($_POST['updatesettings'])) {
     $sellixweek = misc\etc\sanitize($_POST['sellixweekproduct']);
     $sellixmonth = misc\etc\sanitize($_POST['sellixmonthproduct']);
     $sellixlife = misc\etc\sanitize($_POST['sellixlifetimeproduct']);
+	$sellappwebhooksecret = misc\etc\sanitize($_POST['sellappwebhooksecret']);
+    $sellappday = misc\etc\sanitize($_POST['sellappdayproduct']);
+    $sellappweek = misc\etc\sanitize($_POST['sellappweekproduct']);
+    $sellappmonth = misc\etc\sanitize($_POST['sellappmonthproduct']);
+    $sellapplife = misc\etc\sanitize($_POST['sellapplifetimeproduct']);
     $killOtherSessions = misc\etc\sanitize($_POST['killOtherSessions']);
     $customerPanelIcon = misc\etc\sanitize($_POST['customerPanelIcon']);
 
@@ -179,6 +184,11 @@ if (isset($_POST['updatesettings'])) {
 		`sellixweekproduct` = NULLIF('$sellixweek', ''),
 		`sellixmonthproduct` = NULLIF('$sellixmonth', ''),
 		`sellixlifetimeproduct` = NULLIF('$sellixlife', ''),
+		`sellappsecret` = NULLIF('$sellappwebhooksecret', ''),
+		`sellappdayproduct` = NULLIF('$sellappday', ''),
+		`sellappweekproduct` = NULLIF('$sellappweek', ''),
+		`sellappmonthproduct` = NULLIF('$sellappmonth', ''),
+		`sellapplifetimeproduct` = NULLIF('$sellapplife', ''),
 		`shoppysecret` = NULLIF('$shoppywebhooksecret', ''),
 		`shoppydayproduct` = NULLIF('$shoppyday', ''),
 		`shoppyweekproduct` = NULLIF('$shoppyweek', ''),
@@ -306,6 +316,11 @@ if (isset($_POST['updatesettings'])) {
                 $webdll = $row['webdownload'];
                 $wh = $row['webhook'];
                 $rs = $row['resellerstore'];
+				$sellappwhsecret = $row['sellappsecret'];
+                $sellappdayproduct = $row['sellappdayproduct'];
+                $sellappweekproduct = $row['sellappweekproduct'];
+                $sellappmonthproduct = $row['sellappmonthproduct'];
+                $sellapplifetimeproduct = $row['sellapplifetimeproduct'];
                 $sellixwhsecret = $row['sellixsecret'];
                 $sellixdayproduct = $row['sellixdayproduct'];
                 $sellixweekproduct = $row['sellixweekproduct'];
@@ -858,6 +873,53 @@ if (isset($_POST['updatesettings'])) {
                         <input class="form-control" maxlength="13" name="sellixlifetimeproduct"
                             value="<?php echo $sellixlifetimeproduct; ?>" id="defaultconfig-3"
                             placeholder="Product ID of Lifetime Reseller Key Sellix Product">
+                    </div>
+                </div>
+				<br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">SellApp Webhook Secret <i
+                            class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="SellApp webhook secret for reseller system"></i></label>
+                    <div class="col-10">
+                        <input class="form-control secret" maxlength="64" name="sellappwebhooksecret"
+                            value="<?php echo $sellappwhsecret; ?>" id="defaultconfig-3"
+                            placeholder="Webhook secret found in Developer Settings on SellApp">
+                    </div>
+                </div>
+                <br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">SellApp Day Product URL</label>
+                    <div class="col-10">
+                        <input class="form-control" name="sellappdayproduct"
+                            value="<?php echo $sellappdayproduct; ?>" id="defaultconfig-3"
+                            placeholder="URL for Day Reseller Key SellApp Product">
+                    </div>
+                </div>
+                <br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">SellApp Week Product URL</label>
+                    <div class="col-10">
+                        <input class="form-control" name="sellappweekproduct"
+                            value="<?php echo $sellappweekproduct; ?>" id="defaultconfig-3"
+                            placeholder="URL for Week Reseller Key SellApp Product">
+                    </div>
+                </div>
+                <br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">SellApp Month Product URL</label>
+                    <div class="col-10">
+                        <input class="form-control" name="sellappmonthproduct"
+                            value="<?php echo $sellappmonthproduct; ?>" id="defaultconfig-3"
+                            placeholder="URL for Month Reseller Key SellApp Product">
+                    </div>
+                </div>
+                <br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">SellApp Lifetime Product URL</label>
+                    <div class="col-10">
+                        <input class="form-control" name="sellapplifetimeproduct"
+                            value="<?php echo $sellapplifetimeproduct; ?>" id="defaultconfig-3"
+                            placeholder="URL for Lifetime Reseller Key SellApp Product">
                     </div>
                 </div>
             </form>
