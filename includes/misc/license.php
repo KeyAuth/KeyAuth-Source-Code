@@ -18,7 +18,7 @@ function license_masking($mask)
 	}
 	return implode('', $mask_arr);
 }
-function createLicense($amount, $mask, $duration, $level, $note, $expiry = null, $secret = null)
+function createLicense($amount, $mask, $duration, $level, $note, $expiry = null, $secret = null, $owner = null)
 {
 	global $link;
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
@@ -117,7 +117,7 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 	for ($i = 0; $i < $amount; $i++) {
 
 		$license = license_masking($mask);
-		mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license',NULLIF('$note', ''), '$duration','Not Used','$level','" . ($_SESSION['username'] ?? 'SellerAPI') . "', '" . time() . "', '" . ($secret ?? $_SESSION['app']) . "')");
+		mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license',NULLIF('$note', ''), '$duration','Not Used','$level','" . ($owner ?? $_SESSION['username']) . "', '" . time() . "', '" . ($secret ?? $_SESSION['app']) . "')");
 		$licenses[] = $license;
 	}
 
