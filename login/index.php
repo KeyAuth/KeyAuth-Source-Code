@@ -213,7 +213,7 @@ if (isset($_SESSION['username'])) {
 
         ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
 
-        if (mysqli_num_rows($result) == 0) {
+        if (mysqli_num_rows($result) < 1) {
             dashboard\primary\error("Account doesn\'t exist!");
             return;
         }

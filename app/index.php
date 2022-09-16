@@ -23,7 +23,7 @@ $row = mysqli_fetch_array($result);
 
 $banned = $row['banned'];
 $lastreset = $row['lastreset'];
-if (!is_null($banned) || $_SESSION['logindate'] < $lastreset || mysqli_num_rows($result) === 0) {
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset || mysqli_num_rows($result) < 1) {
     echo "<meta http-equiv='Refresh' Content='0; url=../login/'>";
     session_destroy();
     exit();
