@@ -192,7 +192,7 @@ function deleteSingular($key, $userToo, $secret = null)
 
 	if ($_SESSION['role'] == "Reseller") {
 		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
-		if (mysqli_num_rows($result) === 0) {
+		if (mysqli_num_rows($result) < 1) {
 			return 'nope';
 		}
 	}

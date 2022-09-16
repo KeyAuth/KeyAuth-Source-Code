@@ -11,7 +11,7 @@ function fetch($redisKey, $sqlQuery, $multiRowed, $expiry = null)
 		global $link;
 		include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 		$result = mysqli_query($link, $sqlQuery);
-		if (mysqli_num_rows($result) === 0) // check if MySQL found any rows
+		if (mysqli_num_rows($result) < 1) // check if MySQL found any rows
 		{
 			$redis->set($redisKey, 'not_found'); // save redis key indicating record not found
 			return 'not_found';
@@ -48,6 +48,53 @@ function fetch($redisKey, $sqlQuery, $multiRowed, $expiry = null)
 		if (strpos($redisKey, 'KeyAuthStateDuplicates:') !== false) { // ensure no users stay logged in for longer than they're supposed to
 			$ttl = $data["expiry"] - time();
 			$redis->expire($redisKey, $ttl);
+		}
+		
+		if($redisKey == "KeyAuthStats") {
+			$channels = [1014706457654079520, 1014706498552733756, 1014706542764892230, 1014706585345462293];
+			$values = [$data['numAccs'], $data['numApps'], $data['numKeys'], $data['numOnlineUsers']];
+			
+			$i = 0;
+			while($i < 4) {
+				$url = "https://discord.com/api/v9/channels/$channels[$i]";
+			
+				$curl = curl_init($url);
+				curl_setopt($curl, CURLOPT_URL, $url);
+				curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+				
+				$headers = array(
+				"user-agent: KeyAuth",
+				"Authorization: Bot MTAxNDY5OTA0NDAzMzAxOTk5NQ.GADQ-6.IkkVy_sJ3ggiNNhASj7eKpjXDKL41UqcGKYlyM",
+				"Content-Type: application/json",
+				);
+				curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+				
+				$prefix = "";
+				switch($i) {
+					case 0:
+						$prefix = "Accounts";
+						break;
+					case 1:
+						$prefix = "Applications";
+						break;
+					case 2:
+						$prefix = "Licenses";
+						break;
+					case 3:
+						$prefix = "Active Users";
+						break;
+				}
+				
+				$body = '{"name":"'.$prefix.': '.$values[$i].'"}';
+				
+				curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+			
+				$resp = curl_exec($curl);
+				curl_close($curl);
+				
+				$i++;
+			}
 		}
 
 		if (!is_null($expiry)) {

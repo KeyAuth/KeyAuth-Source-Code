@@ -46,7 +46,7 @@ if (isset($_POST['editwebhook'])) {
     $webhook = misc\etc\sanitize($_POST['editwebhook']);
 
     $result = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `webid` = '$webhook' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) == 0) {
+    if (mysqli_num_rows($result) < 1) {
         mysqli_close($link);
         dashboard\primary\error("Webhook not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";

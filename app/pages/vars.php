@@ -61,7 +61,7 @@ if (isset($_POST['editvar'])) // edit modal
     $variable = misc\etc\sanitize($_POST['editvar']);
 
     $result = mysqli_query($link, "SELECT * FROM `vars` WHERE `varid` = '$variable' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) == 0) {
+    if (mysqli_num_rows($result) < 1) {
         mysqli_close($link);
         dashboard\primary\error("Variable not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";

@@ -13,7 +13,7 @@ if ($_SESSION['role'] == "Reseller") {
 		$appName = misc\etc\sanitize($_POST['selectApp']);
 		($result = mysqli_query($link, "SELECT `secret`, `name` FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appName'"));
 		
-		if (mysqli_num_rows($result) === 0) {
+		if (mysqli_num_rows($result) < 1) {
 			dashboard\primary\error("Application not found!");
 			return;
 		}
@@ -321,8 +321,8 @@ if ($_SESSION['role'] == "Reseller") {
     version: "<?php echo $version; ?>"
 );</code>
                     <br>
-                    Repository: <a href="https://github.com/KeyAuth/KeyAuth-CS-Example"
-                        target="_blank">https://github.com/KeyAuth/KeyAuth-CS-Example</a>
+                    Repository: <a href="https://github.com/KeyAuth/KeyAuth-CSHARP-Example"
+                        target="_blank">https://github.com/KeyAuth/KeyAuth-CSHARP-Example</a>
                     <!--end::Table-->
                 </div>
                 <!--end::Tap pane-->
@@ -370,7 +370,7 @@ $ownerid = "<?php echo $ownerid; ?>"; // your KeyAuth account's ownerid, located
     "<?php echo $ownerid; ?>", // OwnerID
     "<?php echo $secret; ?>", // Application Secret
     "<?php echo $version; ?>" // Application Version
-)</code>
+);</code>
                     <br>
                     Repository: <a href="https://github.com/mazkdevf/KeyAuth-JS-Example"
                         target="_blank">https://github.com/mazkdevf/KeyAuth-JS-Example</a>

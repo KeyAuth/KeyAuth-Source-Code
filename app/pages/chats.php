@@ -72,7 +72,7 @@ if (isset($_POST['clearchannel'])) {
 if (isset($_POST['editchan'])) {
     $chan = misc\etc\sanitize($_POST['editchan']);
     $result = mysqli_query($link, "SELECT * FROM `chats` WHERE `name` = '$chan' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) == 0) {
+    if (mysqli_num_rows($result) < 1) {
         mysqli_close($link);
         dashboard\primary\error("Channel not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";

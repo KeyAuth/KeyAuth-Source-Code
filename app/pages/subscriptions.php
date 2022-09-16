@@ -37,7 +37,7 @@ if (isset($_POST['deletesub'])) {
 if (isset($_POST['editsub'])) {
     $subscription = misc\etc\sanitize($_POST['editsub']);
     $result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `name` = '$subscription' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) == 0) {
+    if (mysqli_num_rows($result) < 1) {
         mysqli_close($link);
         dashboard\primary\error("Subscription not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";

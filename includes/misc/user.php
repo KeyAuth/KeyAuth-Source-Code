@@ -55,7 +55,7 @@ function setVariable($user, $var, $data, $secret = null)
 
 	if ($user == "all") {
 		$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-		if (mysqli_num_rows($result) == 0) {
+		if (mysqli_num_rows($result) < 1) {
 			return 'missing';
 		}
 		$rows = array();
@@ -87,7 +87,7 @@ function ban($username, $reason, $secret = null)
 	$reason = etc\sanitize($reason);
 
 	$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
-	if (mysqli_num_rows($result) == 0) {
+	if (mysqli_num_rows($result) < 1) {
 		return 'missing';
 	}
 	$row = mysqli_fetch_array($result);
@@ -118,7 +118,7 @@ function unban($username, $secret = null)
 	$username = etc\sanitize($username);
 
 	$result = mysqli_query($link, "SELECT `hwid`, `ip` FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
-	if (mysqli_num_rows($result) == 0) {
+	if (mysqli_num_rows($result) < 1) {
 		return 'missing';
 	}
 	$row = mysqli_fetch_array($result);
@@ -183,7 +183,7 @@ function extend($username, $sub, $expiry, $secret = null)
 	$expiry = etc\sanitize($expiry);
 
 	$result = mysqli_query($link, "SELECT 1 FROM `subscriptions` WHERE `name` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-	if (mysqli_num_rows($result) == 0) {
+	if (mysqli_num_rows($result) < 1) {
 		return 'sub_missing';
 	} else if ($expiry < time()) {
 		return 'date_past';
@@ -206,7 +206,7 @@ function extend($username, $sub, $expiry, $secret = null)
 		cache\purgePattern('KeyAuthSubs:' . ($secret ?? $_SESSION['app']));
 	} else {
 		$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `username` = '$username' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-		if (mysqli_num_rows($result) == 0) {
+		if (mysqli_num_rows($result) < 1) {
 			return 'missing';
 		}
 		$result = mysqli_query($link, "SELECT `id` FROM `subs` WHERE `user` = '$username' AND `subscription` = '$sub' AND `expiry` > " . time() . " AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
@@ -235,7 +235,7 @@ function add($username, $sub, $expiry, $secret = null, $password = null)
 	$expiry = etc\sanitize($expiry);
 
 	$result = mysqli_query($link, "SELECT 1 FROM `subscriptions` WHERE `name` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-	if (mysqli_num_rows($result) == 0) {
+	if (mysqli_num_rows($result) < 1) {
 		return 'sub_missing';
 	} else if ($expiry < time()) {
 		return 'date_past';
@@ -258,7 +258,7 @@ function deleteExpiredUsers($secret = null)
 	global $link;
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-	if (mysqli_num_rows($result) == 0) {
+	if (mysqli_num_rows($result) < 1) {
 		return 'missing';
 	}
 	$rows = array();
@@ -268,7 +268,7 @@ function deleteExpiredUsers($secret = null)
 	$success = 0;
 	foreach ($rows as $row) {
 		$result = mysqli_query($link, "SELECT 1 FROM `subs` WHERE `user` = '" . $row['username'] . "' AND `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `expiry` > '" . time() . "'");
-		if (mysqli_num_rows($result) == 0) {
+		if (mysqli_num_rows($result) < 1) {
 			$success = 1;
 			mysqli_query($link, "DELETE FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '" . $row['username'] . "'");
 			cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $row['username']);

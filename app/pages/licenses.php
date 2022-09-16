@@ -52,7 +52,7 @@ if (isset($_POST['unbankey'])) {
 if (isset($_POST['editkey'])) {
     $key = misc\etc\sanitize($_POST['editkey']);
     $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) == 0) {
+    if (mysqli_num_rows($result) < 1) {
         mysqli_close($link);
         error("Key not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";

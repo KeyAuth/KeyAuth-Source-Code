@@ -1,13 +1,12 @@
 <?php
+header("Access-Control-Allow-Origin: *"); // allow browser applications to request API
+error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
 
-
-header("Access-Control-Allow-Origin: *");
-error_reporting(0);
 include '../../includes/misc/autoload.phtml';
 include '../../includes/api/shared/autoload.phtml';
 include '../../includes/api/1.0/autoload.phtml';
 
-if (isset($_SERVER['HTTP_CDN_HOST'])) {
+if (isset($_SERVER['HTTP_CDN_HOST'])) { // custom domains https://www.youtube.com/watch?v=a2SROFJ0eYc
     $row = misc\cache\fetch('KeyAuthApp:' . misc\etc\sanitize($_SERVER['HTTP_CDN_HOST']), "SELECT * FROM `apps` WHERE `customDomainAPI` = '" . misc\etc\sanitize($_SERVER['HTTP_CDN_HOST']) . "'", 0);
 } else {
     $ownerid = misc\etc\sanitize(hex2bin($_POST['ownerid'])); // ownerid of account that owns application
@@ -34,6 +33,7 @@ $serverhash = $row['hash'];
 
 $banned = $row['banned'];
 $owner = $row['owner'];
+$name = $row['name'];
 
 // custom error messages
 $usernametaken = $row['usernametaken'];
@@ -241,7 +241,7 @@ switch (hex2bin($_POST['type'])) {
         $result = mysqli_query($link, "SELECT `banned`, `expires`, `status`, `level` FROM `keys` WHERE `key` = '$checkkey' AND `app` = '$secret'");
 
         // check if key exists
-        if (mysqli_num_rows($result) === 0) {
+        if (mysqli_num_rows($result) < 1) {
             die(api\v1_0\Encrypt(json_encode(array(
                 "success" => false,
                 "message" => "$keynotfound"
@@ -448,7 +448,7 @@ switch (hex2bin($_POST['type'])) {
                     misc\cache\purgePattern('KeyAuthState:' . $secret);
                 }
                 mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$checkkey' WHERE `id` = '$sessionid'");
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);			
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => true,
                     "message" => "Logged in!",
@@ -690,7 +690,7 @@ switch (hex2bin($_POST['type'])) {
         $channel = misc\etc\sanitize(api\v1_0\Decrypt($_POST['channel'], $enckey));
         $result = mysqli_query($link, "SELECT `delay` FROM `chats` WHERE `name` = '$channel' AND `app` = '$secret'");
 
-        if (mysqli_num_rows($result) == 0) {
+        if (mysqli_num_rows($result) < 1) {
             die(api\v1_0\Encrypt(json_encode(array(
                 "success" => false,
                 "message" => "Chat channel not found"
@@ -757,65 +757,26 @@ switch (hex2bin($_POST['type'])) {
 
         $ip = api\shared\primary\getIp();
 
-        $timestamp = date("c", strtotime("now"));
-
         $json_data = json_encode([
-
-            // Message
-            //"content" => "Hello World! This is message line ;) And here is the mention, use userID <@12341234123412341>",
-
-
             // Username
             "username" => "KeyAuth",
 
             // Avatar URL.
             // Uncoment to replace image set in webhook
-            "avatar_url" => "https://keyauth.com/assets/img/favicon.png",
-
-            // Text-to-speech
-            "tts" => false,
-
-            // File upload
-            // "file" => "",
-
+            "avatar_url" => "https://cdn.keyauth.cc/front/assets/img/favicon.png",
 
             // Embeds Array
             "embeds" => [
-
                 [
-
                     // Embed Title
                     "title" => $msg,
-
-                    // Embed Type
-                    "type" => "rich",
-
-                    // Embed Description
-                    //"description" => "Description will be here, someday, you can mention users here also by calling userID <@12341234123412341>",
-
-
-                    // URL of title link
-                    // "url" => "https://gist.github.com/Mo45/cb0813cb8a6ebcd6524f6a36d4f8862c",
-
-
-                    // Timestamp of embed must be formatted as ISO8601
-                    "timestamp" => $timestamp,
 
                     // Embed left border color in HEX
                     "color" => hexdec("00ffe1"),
 
-                    // Footer
-                    "footer" => [
-
-                        "text" => $name
-
-                    ],
-
                     // Additional Fields array
-                    "fields" => [["name" => "🔐 Credential:", "value" => "```" . $credential . "```"], ["name" => "💻 PC Name:", "value" => "```" . $pcuser . "```", "inline" => true], ["name" => "🌎 Client IP:", "value" => "```" . $ip . "```", "inline" => true], ["name" => "📈 Level:", "value" => "```1```", "inline" => true]]
-
+                    "fields" => [["name" => "🔐 Credential:", "value" => "```" . $credential . "```"], ["name" => "💻 PC Name:", "value" => "```" . $pcuser . "```", "inline" => true], ["name" => "🌎 Client IP:", "value" => "```" . $ip . "```", "inline" => true]]
                 ]
-
             ]
 
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -838,8 +799,6 @@ switch (hex2bin($_POST['type'])) {
 
         $response = curl_exec($ch);
 
-        // If you need to debug, or find out why you can't send message uncomment line below, and execute script.
-        // echo $response;
         curl_close($ch);
         die();
 
