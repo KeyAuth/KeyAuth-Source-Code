@@ -193,7 +193,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
         "username" => "$un",
         "subscriptions" => $rowsFinal,
         "ip" => $ip,
-        "hwid" => $hwid,
+        "hwid" => $hwidd,
         "createdate" => $createdate,
         "lastlogin" => "" . time() . ""
     );
