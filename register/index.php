@@ -235,7 +235,6 @@ if (isset($_SESSION['username'])) {
                 <!--begin::Links-->
                 <div class="d-flex align-items-center fw-bold fs-6">
                     <a href="https://keyauth.cc" class="text-muted text-hover-primary px-2">About</a>
-                    <a href="mailto:contact@keyauth.com" class="text-muted text-hover-primary px-2">Contact</a>
                     <a href="https://discord.gg/keyauth" class="text-muted text-hover-primary px-2">Contact Us</a>
                 </div>
                 <!--end::Links-->
