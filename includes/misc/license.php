@@ -212,6 +212,7 @@ function deleteSingular($key, $userToo, $secret = null)
 	if (mysqli_affected_rows($link) > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
+			cache\purge('KeyAuthKey:' . ($secret ?? $_SESSION['app']) . ':' . $key);
 		}
 		return 'success';
 	} else {
