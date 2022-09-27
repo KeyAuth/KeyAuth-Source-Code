@@ -116,7 +116,7 @@ CREATE TABLE `apps` (
 
 CREATE TABLE `bans` (
   `id` int(11) NOT NULL,
-  `hwid` varchar(100) DEFAULT NULL,
+  `hwid` varchar(2000) DEFAULT NULL,
   `ip` varchar(49) DEFAULT NULL,
   `type` varchar(5) NOT NULL,
   `app` varchar(64) NOT NULL
