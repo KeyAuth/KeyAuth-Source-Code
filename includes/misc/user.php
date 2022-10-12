@@ -98,7 +98,7 @@ function ban($username, $reason, $secret = null)
 		blacklist\add($hwid, "Hardware ID", ($secret ?? $_SESSION['app']));
 	}
 	if (!is_null($ip)) {
-		blacklist\add($hwid, "IP Address", ($ip ?? $_SESSION['app']));
+		blacklist\add($ip, "IP Address", ($secret ?? $_SESSION['app']));
 	}
 	if (mysqli_affected_rows($link) > 0) {
 		cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
