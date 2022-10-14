@@ -247,20 +247,21 @@ class VerifyEmail {
         //$this->_streamResponse(); 
         $this->_streamQuery("RSET"); 
         //$this->_streamResponse();
-        $code2 = $this->_streamCode($this->_streamResponse()); 
         $this->_streamQuery("QUIT"); 
         fclose($this->stream); 
-        
-        $code = !empty($code2)?$code2:$code;
+       
         switch ($code) { 
             case '250': 
             /** 
              * http://www.ietf.org/rfc/rfc0821.txt 
              * 250 Requested mail action okay, completed 
              * email address was accepted 
-             */ 
+             */
+				return TRUE;
             case '450': 
+				return FALSE;
             case '451': 
+				return FALSE;
             case '452': 
                 /** 
                  * http://www.ietf.org/rfc/rfc0821.txt 
@@ -273,7 +274,7 @@ class VerifyEmail {
                  * email address was greylisted (or some temporary error occured on the MTA) 
                  * i believe that e-mail exists 
                  */ 
-                return TRUE;
+                return FALSE;
             case '550':
                 return FALSE; 
             default : 
