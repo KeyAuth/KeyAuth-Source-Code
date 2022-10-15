@@ -93,7 +93,7 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 					$duration = 1.572e+7;
 					$sixmonth = $sixmonth - $amount;
 					break;
-				case 'Lifetime':
+				case '1 Lifetime':
 					$duration = 8.6391e+8;
 					$lifetime = $lifetime - $amount;
 					break;
