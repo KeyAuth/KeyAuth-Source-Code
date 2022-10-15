@@ -1,6 +1,7 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
-    die('Resellers Not Allowed Here');
+    header("location: ./?page=reseller-licenses");
+	die();
 }
 if(!isset($_SESSION['app'])) {
 	die("Application not selected.");

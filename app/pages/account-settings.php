@@ -241,6 +241,20 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                         </div>
                         <br>
 
+						<div class="form-group row">
+
+                            <label for="example-password-input" class="col-2 col-form-label">Account Deletion</label>
+
+                            <div class="col-10">
+
+                                <div class="form-control">Delete account here
+                                    <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/deleteAccount/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/deleteAccount/</a>'; ?>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <br>
 
                         <button name="updatesettings" class="btn btn-success"> <i class="fa fa-check"></i> Save</button>
                         <a type="button" class="btn btn-info" target="popup"

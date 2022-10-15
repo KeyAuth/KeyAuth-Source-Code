@@ -1,6 +1,7 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
-	die('Resellers Not Allowed Here');
+	header("location: ./?page=reseller-licenses");
+	die();
 }
 ?>
 
@@ -11,20 +12,27 @@ if ($_SESSION['role'] == "Reseller") {
 
 	if (isset($_POST['selectApp'])) {
 		$appName = misc\etc\sanitize($_POST['selectApp']);
-		($result = mysqli_query($link, "SELECT `secret`, `name` FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appName'"));
+		($result = mysqli_query($link, "SELECT `secret`, `name`, `banned` FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appName'"));
 		
 		if (mysqli_num_rows($result) < 1) {
 			dashboard\primary\error("Application not found!");
-			return;
 		}
-		
-		$row = mysqli_fetch_array($result);
-		$_SESSION["app"] = $row["secret"];
-		$_SESSION["name"] = $appName;
-		$_SESSION["selectedApp"] = $row["name"];
-		
-		echo '<meta http-equiv="refresh" content="0">';
-        dashboard\primary\success("Successfully Selected the App!");
+		else {
+			$row = mysqli_fetch_array($result);
+			$banned = $row["banned"];
+			
+			if($banned) {
+				dashboard\primary\error("Application is banned!");
+			}
+			else {
+				$_SESSION["app"] = $row["secret"];
+				$_SESSION["name"] = $appName;
+				$_SESSION["selectedApp"] = $row["name"];
+				
+				echo '<meta http-equiv="refresh" content="0">'; // needed to refresh nav sidebar
+				dashboard\primary\success("Successfully Selected the App!");
+			}
+		}
 	}
 
 	if (isset($_POST['create_app'])) {

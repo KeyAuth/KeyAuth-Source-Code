@@ -1,7 +1,8 @@
 <?php
 if ($_SESSION['role'] == "Reseller")
 {
-    die('Resellers Not Allowed Here');	
+    header("location: ./?page=reseller-licenses");
+	die();
 }
 if(!isset($_SESSION['app'])) {
 	die("Application not selected.");
@@ -24,7 +25,7 @@ if (isset($_POST['saveuser']))
     {
         mysqli_query($link, "UPDATE `users` SET `username` = '$username' WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
         mysqli_query($link, "UPDATE `subs` SET `user` = '$username' WHERE `user` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
-	mysqli_query($link, "UPDATE `keys` SET `usedby` = '$username' WHERE `usedby` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
+		mysqli_query($link, "UPDATE `keys` SET `usedby` = '$username' WHERE `usedby` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
     }
     if (isset($pass) && trim($pass) != '')
     {
