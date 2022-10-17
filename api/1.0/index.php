@@ -302,6 +302,7 @@ switch (hex2bin($_POST['type'])) {
                     // set key to used, and set usedby
                     mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `usedon` = '" . time() . "', `usedby` = '$username' WHERE `key` = '$checkkey' AND `app` = '$secret'");
                     misc\cache\purge('KeyAuthKeys:' . $secret . ':' . $checkkey);
+					misc\cache\purge('KeyAuthSubs:' . $secret . ':' . $username);
                     die(api\v1_0\Encrypt(json_encode(array(
                         "success" => true,
                         "message" => "Upgraded successfully"

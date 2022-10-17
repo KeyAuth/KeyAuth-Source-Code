@@ -95,6 +95,7 @@ function register($un, $key, $pw, $hwid, $secret)
             $rows[] = $r;
         }
         cache\purge('KeyAuthUser:' . $secret . ':' . $un);
+		cache\purge('KeyAuthSubs:' . $secret . ':' . $un);
         // success
         return array(
             "username" => "$un",
