@@ -452,7 +452,6 @@ if (isset($_SESSION['username'])) {
 
 		$_SESSION['logindate'] = time();
 		$_SESSION['username'] = $username;
-		$_SESSION['email'] = $email;
 		$_SESSION['ownerid'] = $ownerid;
 		$_SESSION['role'] = 'tester';
 		$_SESSION['img'] = 'https://cdn.keyauth.cc/front/assets/img/favicon.png';

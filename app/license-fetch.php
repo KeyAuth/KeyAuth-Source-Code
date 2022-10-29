@@ -49,6 +49,7 @@ if (isset($_POST['draw'])) {
 	$empQuery = "select * from `keys` WHERE 1 " . $searchQuery . " and app = '" . $_SESSION['app'] . "' order by `" . $columnName . "` " . $columnSortOrder . " limit " . $row . "," . $rowperpage;
 	// echo $empQuery;
 	$empRecords = mysqli_query($link, $empQuery);
+	
 	$data = array();
 
 	while ($row = mysqli_fetch_assoc($empRecords)) {
@@ -58,7 +59,7 @@ if (isset($_POST['draw'])) {
 		if ($row['status'] == "Banned") { $banBtns = '<button class="btn menu-link px-3" style="font-size:0.95rem;" name="unbankey" value="' . $row['key'] . '">Unban</button>'; } else { $banBtns = '<a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#ban-key" onclick="bankey(\'' . $row["key"] . '\')">Ban</a>'; }
 
 		$MarginManager = "";
-		if ($totalRecordwithFilter < 2) { $MarginManager = "margin-bottom: 50px;"; } else { $MarginManager = "margin-bottom: 0px;"; }
+		if ($totalRecordwithFilter < 2) { $MarginManager = "margin-bottom: 20px;"; } else { $MarginManager = "margin-bottom: 0px;"; }
 
 		$data[] = array(
 			"key" => $row['key'],

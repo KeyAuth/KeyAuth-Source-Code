@@ -51,7 +51,6 @@ function expireCheck($username, $expires)
 }
 function wh_log($webhook_url, $msg, $un)
 {
-    $timestamp = date("c", strtotime("now"));
     $json_data = json_encode([
         // Message
         "content" => $msg,

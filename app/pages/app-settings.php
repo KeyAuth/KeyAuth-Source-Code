@@ -406,7 +406,7 @@ if (isset($_POST['updatesettings'])) {
                     <label for="example-text-input" class="col-2 col-form-label">VPN Block <i
                             class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
                             data-bs-placement="top"
-                            title="Block suspected VPNs. Message DisMail if you need us to whitelist an IP if it's being falsely detected as a VPN. Provide the IPV4 address, not IPV6."></i></label>
+                            title="Block IP addresses associated with VPNs"></i></label>
                     <div class="col-10">
                         <select class="form-control" name="vpninput">
                             <option value="0" <?= $vpnblock == 0 ? ' selected="selected"' : ''; ?>>Disabled</option>
