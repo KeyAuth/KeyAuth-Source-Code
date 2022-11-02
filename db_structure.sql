@@ -40,7 +40,8 @@ CREATE TABLE `accounts` (
   `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci DEFAULT NULL,
   `darkmode` int(1) NOT NULL DEFAULT '0',
   `acclogs` int(1) NOT NULL DEFAULT '1',
-  `lastreset` int(10) DEFAULT NULL
+  `lastreset` int(10) DEFAULT NULL,
+  `emailVerify` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE TABLE `apps` (

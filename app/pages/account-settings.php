@@ -29,16 +29,19 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
         while ($row = mysqli_fetch_array($result)) {
             $acclogs = $row['acclogs'];
             $expiry = $row["expires"];
+            $emailVerify = $row["emailVerify"];
         }
     }
 
     if (isset($_POST['updatesettings'])) {
         $pfp = misc\etc\sanitize($_POST['pfp']);
         $acclogs = misc\etc\sanitize($_POST['acclogs']);
+        $emailVerify = misc\etc\sanitize($_POST['emailVerify']);
         mysqli_query($link, "UPDATE `accounts` SET `acclogs` = '$acclogs' WHERE `username` = '" . $_SESSION['username'] . "'");
         if ($acclogs == 0) {
             mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '" . $_SESSION['username'] . "'"); // delete all account logs   
         }
+		mysqli_query($link, "UPDATE `accounts` SET `emailVerify` = '$emailVerify' WHERE `username` = '" . $_SESSION['username'] . "'");
         if (isset($_POST['pfp']) && trim($_POST['pfp']) != '') {
             if (!filter_var($pfp, FILTER_VALIDATE_URL)) {
                 dashboard\primary\error("Invalid Url For Profile Image!");
@@ -174,6 +177,24 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                                     <option value="1" <?= $acclogs == 1 ? ' selected="selected"' : ''; ?>>Enabled
                                     </option>
                                     <option value="0" <?= $acclogs == 0 ? ' selected="selected"' : ''; ?>>Disabled
+                                    </option>
+                                </select>
+
+                            </div>
+
+                        </div>
+                        <br>
+						
+						<div class="form-group row">
+
+                            <label for="example-tel-input" class="col-2 col-form-label">New Login Location Verification</label>
+
+                            <div class="col-10">
+
+                                <select class="form-control" name="emailVerify">
+                                    <option value="1" <?= $emailVerify == 1 ? ' selected="selected"' : ''; ?>>Enabled
+                                    </option>
+                                    <option value="0" <?= $emailVerify == 0 ? ' selected="selected"' : ''; ?>>Disabled
                                     </option>
                                 </select>
 

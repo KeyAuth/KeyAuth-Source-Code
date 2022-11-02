@@ -234,6 +234,7 @@ if (isset($_SESSION['username'])) {
 
             $regionSaved = $row['region'];
             $asNumSaved = $row['asNum'];
+            $emailVerify = $row['emailVerify'];
         }
 
         if (!is_null($banned)) {
@@ -253,7 +254,7 @@ if (isset($_SESSION['username'])) {
         }
         $ip = api\shared\primary\getIp();
 		
-        if (in_array($role, array("developer", "seller")) && $username != "demoseller" && $username != "demodeveloper") {
+        if (in_array($role, array("developer", "seller")) && $username != "demoseller" && $username != "demodeveloper" && $emailVerify) {
             $url = "http://ip-api.com/json/{$ip}?fields=2052"; // returns fields: region,as
 
             $curl = curl_init($url);
