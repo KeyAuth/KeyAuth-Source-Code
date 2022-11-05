@@ -281,7 +281,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                         <a type="button" class="btn btn-info" target="popup"
                             onclick="window.open('https://discord.com/api/oauth2/authorize?client_id=866538681308545054&redirect_uri=https%3A%2F%2F<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>%2Fapi%2Fdiscord%2F&response_type=code&scope=identify%20guilds.join','popup','width=600,height=600'); return false;">
                             <i class="fab fa-discord"></i> Link Discord</a>
-                        <?php if ($twofactor == 0) {
+                        <?php if (!$twofactor) {
                             echo '                <a class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#twofa"><i class="fa fa-lock"></i>Enable 2FA</a>';
                         } else {
                             echo '                <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#disabletwofa"><i class="fa fa-lock"></i>Disable 2FA</a>';
@@ -290,7 +290,9 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                     </form>
 
 
-
+					<?php
+					if(!$twofactor) {
+					?>
                     <!--begin::Modal - 2fa App-->
                     <div class="modal fade" id="twofa" tabindex="-1" aria-hidden="true">
                         <!--begin::Modal dialog-->
@@ -358,6 +360,9 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                         <!--end::Modal dialog-->
                     </div>
                     <!--end::Modal - 2fa App-->
+					<?php
+					}
+					?>
 
                     <!--begin::Modal - disable 2fa App-->
                     <div class="modal fade" id="disabletwofa" tabindex="-1" aria-hidden="true">
