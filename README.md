@@ -26,7 +26,7 @@ View #suggestions and #bugs channel in Discord server if you want to suggest new
 
 No setup support given to non-enterprise users. However for $79.99 you can purchase access to the source code of paid features (developer and seller plan features), setup support one-on-one with the Founder of KeyAuth, and a tutorial video on how to host KeyAuth for 100% free forever (good preformance & secure also) 
 
-Purchase enterprise today --> https://shop.keyauth.cc/product/keyauth-enterprise
+Purchase enterprise today --> https://shop.keyauth.cc/product/6361c20e415e9
 
 Some pages such as the API endpoint that upgrades users after they purchase a subscription have been omitted to prevent violation of the license (No Commercial Access Allowed)
 
