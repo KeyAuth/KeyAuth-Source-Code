@@ -229,6 +229,11 @@ function add($username, $sub, $expiry, $secret = null, $password = null)
 	global $link;
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$username = etc\sanitize($username);
+	$result = mysqli_query($link, "SELECT 1 FROM `users` WHERE `username` = '$username' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+	if (mysqli_num_rows($result) > 0) {
+		return 'already_exist';
+	}
+	
 	if (!empty($password))
 		$password = password_hash(etc\sanitize($password), PASSWORD_BCRYPT);
 	$sub = etc\sanitize($sub);

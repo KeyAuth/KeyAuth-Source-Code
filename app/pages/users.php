@@ -135,6 +135,9 @@ if (isset($_POST['adduser']))
 	$resp = misc\user\add($_POST['username'], $_POST['sub'], strtotime($_POST['expiry']), NULL, $_POST['password']);
     switch ($resp)
     {
+		case 'already_exist':
+			dashboard\primary\error("Username already exists!");
+			break;
 		case 'sub_missing':
 			dashboard\primary\error("Subscription not found!");
 			break;
