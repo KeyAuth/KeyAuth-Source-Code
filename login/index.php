@@ -5,7 +5,6 @@ require '../includes/dashboard/autoload.phtml';
 require '../includes/api/shared/autoload.phtml';
 
 ob_start();
-error_reporting(1);
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -296,6 +295,18 @@ if (isset($_SESSION['username'])) {
                 mysqli_query($link, "UPDATE `accounts` SET `region` = '$region',`asNum` = '$asNum' WHERE `username` = '$username'");
             }
         }
+		
+		if((!$emailVerify || $role == "tester") && $twofactor_optional) {
+			require_once '../auth/GoogleAuthenticator.php';
+            $gauth = new GoogleAuthenticator();
+			$twofactor = misc\etc\sanitize($_POST['keyauthtwofactor']);
+            $checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
+
+            if (!$checkResult) {
+                dashboard\primary\error("2FA code Invalid!");
+                return;
+            }
+		}
 
         $_SESSION['username'] = $username;
         $_SESSION['ownerid'] = $id;
