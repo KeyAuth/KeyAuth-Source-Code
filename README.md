@@ -1,13 +1,7 @@
 # KeyAuth-Source-Code
-KeyAuth is an open source authentication system with cloud-hosted subscriptions available aswell, view at https://keyauth.cc
+KeyAuth is an open source authentication system with cloud-hosted subscriptions available aswell https://keyauth.cc
 <br>
 *You're not allowed to sell KeyAuth. source made avaliable only for you to use*
-
-Credits to https://github.com/fingu/c_auth for his client examples he gave me permission to use. Much appreciated <3
-<br>
-
-You may purchase a subscription for cheaper than the cost of hosting this yourself at https://keyauth.cc
-You may also use our tester subscription which is completley free with less features.
 
 View #suggestions and #bugs channel in Discord server if you want to suggest new feature or submit bug https://discord.gg/keyauth
 
@@ -16,6 +10,12 @@ View #suggestions and #bugs channel in Discord server if you want to suggest new
 [![Twitter](https://img.shields.io/twitter/follow/KeyAuth?cacheSeconds=3600)](https://twitter.com/KeyAuth)
 
 [![Screenshot](https://i.imgur.com/rige1nM.png)](https://keyauth.cc)
+
+## Bugs ##
+
+If the default example not added to your software isn't functioning how it should, please join the Discord server https://discord.gg/keyauth and submit the issue in the `#bugs` channel.
+
+However, we do **NOT** provide support for adding KeyAuth to your project. If you can't figure this out you should use Google or YouTube to learn more about the programming language you want to sell a program in.
 
 ## Requirements ##
 
