@@ -41,8 +41,7 @@ function expireCheck($username, $expires)
         $_SESSION['role'] = "tester";
         mysqli_query($link, "UPDATE `accounts` SET `role` = 'tester' WHERE `username` = '$username'");
     }
-    if ($expires - time() < 2629743) // account expires in month
-
+    if ($expires - time() < 2629743) // check if account expires in month or less
     {
         return true;
     } else {

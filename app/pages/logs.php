@@ -3,6 +3,9 @@ if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
 	die();
 }
+if($role == "Manager" && !($permissions & 256)) {
+	die('You weren\'t granted permissions to view this page.');
+}
 if(!isset($_SESSION['app'])) {
 	die("Application not selected.");
 }

@@ -21,6 +21,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
+    <script src="https://cdn.keyauth.cc/dashboard/webauthn.js"></script>
     <?php
 
     ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
@@ -111,6 +112,22 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
             dashboard\primary\error("The code entered is incorrect");
         }
     }
+	
+	if (isset($_POST['deleteWebauthn'])) {
+		$name = misc\etc\sanitize($_POST['deleteWebauthn']);
+		
+		mysqli_query($link, "DELETE FROM `securityKeys` WHERE `name` = '$name' AND `username` = '".$_SESSION['username']."'");
+		
+		if (mysqli_affected_rows($link) > 0) {
+			$result = mysqli_query($link, "SELECT 1 FROM `securityKeys` WHERE `username` = '".$_SESSION['username']."'");
+			if (mysqli_num_rows($result) == 0) {
+				mysqli_query($link, "UPDATE `accounts` SET `securityKey` = 0 WHERE `username` = '" . $_SESSION['username'] . "'");
+			}
+            dashboard\primary\success("Successfully deleted security key");
+        } else {
+            dashboard\primary\error("Failed to delete security key!");
+        }
+	}
 
     ?>
 
@@ -286,6 +303,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                         } else {
                             echo '                <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#disabletwofa"><i class="fa fa-lock"></i>Disable 2FA</a>';
                         } ?>
+						<a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#webauthn"><i class="fab fa-usb"></i>FIDO2 WebAuthn (Security Keys)</a>
 
                     </form>
 
@@ -410,6 +428,74 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                                         </div>
                                         <div class="modal-footer">
                                             <button name="submit_code_disable" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <!--end::Modal header-->
+                            </div>
+                            <!--end::Modal content-->
+                        </div>
+                        <!--end::Modal dialog-->
+                    </div>
+                    <!--end::Modal - disable 2fa App-->
+					
+					
+					
+					<!--begin::Modal - disable 2fa App-->
+                    <div class="modal fade" id="webauthn" tabindex="-1" aria-hidden="true">
+                        <!--begin::Modal dialog-->
+                        <div class="modal-dialog modal-dialog-centered mw-900px">
+                            <!--begin::Modal content-->
+                            <div class="modal-content">
+                                <!--begin::Modal header-->
+                                <div class="modal-header">
+                                    <h2 class="modal-title">FIDO2 WebAuthn (Security Keys)</h2>
+
+                                    <!--begin::Close-->
+                                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                                        <span class="svg-icon svg-icon-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none">
+                                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
+                                                    transform="rotate(-45 6 17.3137)" fill="black" />
+                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
+                                                    transform="rotate(45 7.41422 6)" fill="black" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <!--end::Close-->
+                                </div>
+                                <form method="post">
+                                    <div class="modal-body">
+                                        <div class="current" data-kt-stepper-element="content">
+                                            <div class="w-100">
+                                                <!--begin::Input group-->
+                                                <div class="fv-row mb-10">
+                                                    <!--begin::Label-->
+													<?php
+													$result = mysqli_query($link, "SELECT * FROM `securityKeys` WHERE `username` = '".$_SESSION['username']."'");
+													if (mysqli_num_rows($result) > 0) {
+														while ($row = mysqli_fetch_array($result)) {
+															echo $row["name"]."  <button style=\"border: none;padding:0;background:0;color:#FF0000;padding-left:5px;\" value=\"".$row["name"]."\"name=\"deleteWebauthn\" onclick=\"return confirm('Are you sure you want to delete security key?')\">Delete</button><br>";
+														}
+														echo "<br>";
+													}
+													?>
+                                                    <label class="d-flex align-items-center fs-5 fw-bold mb-2">
+                                                        <span class="required">Name</span>
+                                                    </label>
+                                                    <!--end::Label-->
+                                                    <!--begin::Input-->
+                                                    <input type="text" name="webauthn_name" id="webauthn_name" maxlength="99"
+                                                        placeholder="Pick a name for security key"
+                                                        class="form-control mb-4">
+                                                    <!--end::Input-->
+                                                </div>
+                                                <!--end::Input group-->
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" onclick="newregistration()" class="btn btn-primary">Register</button>
                                         </div>
                                     </div>
                                 </form>

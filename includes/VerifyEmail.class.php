@@ -70,7 +70,7 @@ class VerifyEmail {
      * * `log` Output to error log as configured in php.ini 
      * @type string 
      */ 
-    public $Debugoutput = 'echo'; 
+    public $Debugoutput = 'html'; 
 
     /** 
      * SMTP RFC standard line ending. 
@@ -243,7 +243,19 @@ class VerifyEmail {
         $this->_streamQuery("MAIL FROM: <{$this->from}>"); 
         $this->_streamResponse(); 
         $this->_streamQuery("RCPT TO: <{$email}>"); 
-        $code = $this->_streamCode($this->_streamResponse()); 
+		$resp = $this->_streamResponse();
+        $code = $this->_streamCode($resp); 
+		if (strpos($resp, "Client host rejected") !== false) {
+			$this->edebug("The email server doesn't like us :(");
+			return TRUE;
+			// server is blocking our server. AWS is far less likely to have these issues, so allow it
+		}
+		if (strpos($resp, "Protocol error") !== false) {
+			$this->edebug("Allowing exception for protonmail");
+			return TRUE;
+			// protonmail returning this
+		}
+		
         //$this->_streamResponse(); 
         $this->_streamQuery("RSET"); 
         //$this->_streamResponse();

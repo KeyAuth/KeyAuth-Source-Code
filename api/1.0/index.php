@@ -55,10 +55,17 @@ $hashcheckfail = $row['hashcheckfail'];
 $sessionexpiry = $row['session'];
 $killOtherSessions = $row['killOtherSessions'];
 
+// why using null coalescing operators? because if I add a field and it's not in redis cache, it'll be NULL
+$loggedInMsg = $row['loggedInMsg'] ?? "Logged in!";
+$pausedApp = $row['pausedApp'] ?? "Application is currently paused, please wait for the developer to say otherwise.";
+$unTooShort = $row['unTooShort'] ?? "Username too short, try longer one.";
+$pwLeaked = $row['pwLeaked'] ?? "This password has been leaked in a data breach (not from us), please use a different one.";
+$chatHitDelay = $row['chatHitDelay'] ?? "Chat slower, you've hit the delay limit";
+
 if ($banned) {
     die(api\v1_0\Encrypt(json_encode(array(
         "success" => false,
-        "message" => "This application has been banned from KeyAuth.com for violating terms." // yes we self promote to customers of those who break ToS. Should've followed terms :shrug:
+        "message" => "This application has been banned from KeyAuth.cc for violating terms." // yes we self promote to customers of those who break ToS. Should've followed terms :shrug:
     )), $secret));
 }
 
@@ -84,7 +91,7 @@ switch (hex2bin($_POST['type'])) {
         if ($paused) {
             die(api\v1_0\Encrypt(json_encode(array(
                 "success" => false,
-                "message" => "Application is currently paused, please wait for the developer to say otherwise."
+                "message" => "$pausedApp"
             )), $secret));
         }
 
@@ -175,12 +182,12 @@ switch (hex2bin($_POST['type'])) {
             case 'un_too_short':
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "Username too short, try longer one."
+                    "message" => "$unTooShort"
                 )), $enckey));
             case 'pw_leaked':
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "This password has been leaked in a data breach (not from us), please use a different one."
+                    "message" => "$pwLeaked"
                 )), $enckey));
             case 'key_already_used':
                 die(api\v1_0\Encrypt(json_encode(array(
@@ -219,7 +226,7 @@ switch (hex2bin($_POST['type'])) {
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => true,
-                    "message" => "Logged in!",
+                    "message" => "$loggedInMsg",
                     "info" => $resp
                 )), $enckey));
         }
@@ -264,11 +271,14 @@ switch (hex2bin($_POST['type'])) {
                     "message" => "$keyused"
                 )), $enckey));
             }
-
+			
             if (!is_null($banned)) {
+				if (strpos($keybanned, '{reason}') !== false) {
+                   $keybanned = str_replace("{reason}", $banned, $keybanned);
+				}
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "Key banned: {$banned}"
+                    "message" => "$keybanned"
                 )), $enckey));
             }
 
@@ -278,7 +288,7 @@ switch (hex2bin($_POST['type'])) {
             $result = mysqli_query($link, "SELECT `name` FROM `subscriptions` WHERE `app` = '$secret' AND `level` = '$level'");
             $subName = mysqli_fetch_array($result)['name'];
 
-            $resp = misc\user\extend($username, $subName, $expiry, $secret);
+            $resp = misc\user\extend($username, $subName, $expiry, 0, $secret);
             switch ($resp) {
                 case 'missing':
                     die(api\v1_0\Encrypt(json_encode(array(
@@ -386,7 +396,7 @@ switch (hex2bin($_POST['type'])) {
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => true,
-                    "message" => "Logged in!",
+                    "message" => "$loggedInMsg",
                     "info" => $resp
                 )), $enckey));
         }
@@ -452,7 +462,7 @@ switch (hex2bin($_POST['type'])) {
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);			
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => true,
-                    "message" => "Logged in!",
+                    "message" => "$loggedInMsg",
                     "info" => $resp
                 )), $enckey));
         }
@@ -478,7 +488,7 @@ switch (hex2bin($_POST['type'])) {
             case 'pw_leaked':
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => false,
-                    "message" => "This password has been leaked in a data breach (not from us), please use a different one."
+                    "message" => "$pwLeaked"
                 )), $enckey));
             case 'key_already_used':
                 die(api\v1_0\Encrypt(json_encode(array(
@@ -517,7 +527,7 @@ switch (hex2bin($_POST['type'])) {
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => true,
-                    "message" => "Logged in!",
+                    "message" => "$loggedInMsg",
                     "info" => $resp
                 )), $enckey));
         }
@@ -709,7 +719,7 @@ switch (hex2bin($_POST['type'])) {
         if (time() - $time < $delay) {
             die(api\v1_0\Encrypt(json_encode(array(
                 "success" => false,
-                "message" => "Chat slower, you've hit the delay limit"
+                "message" => "$chatHitDelay"
             )), $enckey));
         }
 
@@ -925,6 +935,8 @@ switch (hex2bin($_POST['type'])) {
                 "message" => "$sessionunauthed"
             )), $enckey));
         }
+		
+		$reason = misc\etc\sanitize($_POST['reason']) ?? "User banned from triggering ban function in the client";
 
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $hwid = misc\etc\sanitize(api\v1_0\Decrypt($_POST['hwid'], $enckey));
@@ -934,7 +946,7 @@ switch (hex2bin($_POST['type'])) {
         $ip = api\shared\primary\getIp();
 		misc\blacklist\add($ip, "IP Address", $secret);
 
-        mysqli_query($link, "UPDATE `users` SET `banned` = 'User banned from triggering ban function in the client' WHERE `username` = '$credential'");
+        mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `username` = '$credential'");
 
         if (mysqli_affected_rows($link) != 0) {
             misc\cache\purge('KeyAuthUser:' . $secret . ':' . $credential);

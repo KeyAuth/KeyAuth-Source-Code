@@ -24,7 +24,7 @@
    <!-- Twitter Card data -->
    <meta name="twitter:card" content="product">
    <meta name="twitter:site" content="@keyauth">
-   <meta name="twitter:title" content="KeyAuth - Open Source Auth">
+   <meta name="twitter:title" content="KeyAuth - Terms of Service">
 
    <meta name="twitter:description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing &amp; Features not seen in competitors">
    <meta name="twitter:creator" content="@keyauth">
@@ -32,7 +32,7 @@
 
 
    <!-- Open Graph data -->
-   <meta property="og:title" content="KeyAuth - Open Source Auth">
+   <meta property="og:title" content="KeyAuth - Terms of Service">
    <meta property="og:type" content="website">
    <meta property="og:url" content="./">
    
@@ -53,15 +53,15 @@
 <h1>Terms of Service</h1>
 <p>This may be modified at any time without further consent of the user.<br>Property of Nelson Cybersecurity LLC. Headquartered in Florida, hosted in New York.</p>
 <h2>Copyright</h2>
-<p>KeyAuth is an open-source service, the source can be found on https://github.com/KeyAuth/KeyAuth-Source-Code . You are NOT allowed to sell KeyAuth source or sell subscriptions using the KeyAuth source. The source code is for personal and educational use only! Failure to abide by this will result in a DMCA takedown request.</p>
+<p>KeyAuth is an open-source service, the source can be found at <a href="https://github.com/KeyAuth/KeyAuth-Source-Code" target="_blank">https://github.com/KeyAuth/KeyAuth-Source-Code</a> . You are NOT allowed to sell KeyAuth source or sell subscriptions using the KeyAuth source. The source code is for personal and educational use only! Failure to abide by this will result in a DMCA takedown request.</p>
 <h2>Third-Party Copyright File Uploads/Downloads</h2>
-<p>We do not host any user files. Instead, we allow our users to download via our API which acts as a proxy. The files are never stored on the server's disk. Given this information, if you are the owner of any copyrighted material that is found on KeyAuth you must contact the file host and notify them of the alleged infringement. </p>
+<p>We do not host any user files. Instead, we allow our users to download via our API which acts as a proxy. The files are never stored on our server. Given this information, if you are the owner of any copyrighted material that is found on KeyAuth; you must contact the file host and notify them of the alleged infringement. </p>
 <h2>Account</h2>
 <p>Account owners have the sole responsibility for their credentials. KeyAuth is not responsible for the loss, leaking and/or use of user credentials unless through a security breach on our platform. We make available numerous options to protect your account, including 2FA. Accounts are for individual use only, any multiple-party use is prohibited and may result in the termination of your account (without refund).</p>
 <h2>Payment Issues</h2>
-<p>If you are experiencing any issues while making a payment, you did not receive your subscription after payment, or you have a question about a payment please create a ticket via discord (https://discord.gg/keyauth). Please do this BEFORE creating a dispute on your payment platform. </p>
+<p>If you are experiencing any issues while making a payment, you did not receive your subscription after payment, or you have a question about a payment please create a ticket via discord <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>. Please do this BEFORE creating a dispute on your payment platform. </p>
 <h2>Subscription Gifting</h2>
-<p>If you would like to purchase a subscription for another user you may do so by creating a ticket via discord (https://discord.gg/keyauth). You will be given a purchase link so that you can purchase the appropriate subscription. You must provide the username of the account that you wish to be upgraded. Please DO NOT login to anyones account that is NOT yours. Any third-party use on an account may result in termination of your KeyAuth account. </p>
+<p>If you would like to purchase a subscription for another user you may do so by entering their username at checkout on <a href="https://shop.keyauth.cc/" target="_blank">https://shop.keyauth.cc/</a> or <a href="https://paddle.keyauth.cc/" target="_blank">https://paddle.keyauth.cc/</a>. Please DO NOT login to anyones account that is NOT yours. Any third-party use on an account may result in termination of your KeyAuth account. </p>
 <h4>Applications</h4>
 <p>You are responsible for the content uploaded or that communicates with KeyAuth. While we will remove illegal content if we're made aware of it, "KeyAuth" is provided immunity from any legal action held against anything uploaded by users on our service (<a href="https://uscode.house.gov/view.xhtml?req=(title:47%20section:230%20edition:prelim)" target="section230">KeyAuth 230 of the Communications Decency Act</a>). Emails from law enforcement or legal counsel regarding illegal content using our service should be directed to <a href="mailto:contact@keyauth.com">contact@keyauth.com</a>.</p>
 <h4>Acceptable Use</h4>
@@ -71,7 +71,7 @@
 <p>Attacks against our webserver, including DDoS attacks and exploitative attempts.</p>
 </li>
 <li>
-<p>Creating a dispute after the refund period, seven days.</p>
+<p>Creating a dispute after the refund period, seven days (or thirty days if you paid via Paddle)</p>
 </li>
 <li>
 <p>Attempting to libel KeyAuth to hurt its reputation.</p>
@@ -83,7 +83,7 @@
 <p>Violating KeyAuth's open-source license, i.e monetarily benefitting from KeyAuth source by selling it as if you own it</p>
 </li>
 </ul>
-<h3>Privacy</h3>
+<h3 id="privacy">Privacy</h3>
 <p>It is pretty much necessary to store these details to fight fraudulent disputes. Otherwise, we'll have insufficient evidence to win the dispute. Also I highly recommend you use the password manager <a href="https://bitwarden.com" target="_blank">https://bitwarden.com</a>. You can use Bitwarden for free on multiple devices, and you can also purchase their premium to unlock the ability to store 2FA codes in their browser extension or mobile app. </p>
 <p>We collect the below-listed details. We'll try to keep this updated, you can also view <a href="https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/db_structure.sql" target="_blank">https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/db_structure.sql</a></p>
 <ul>
@@ -91,7 +91,7 @@
 <p>IP address used to register account, last IP address to login to account, and only if account logs are enabled on your account (they are by default), every IP address that has logged into your account in the past week is saved in database. Also, regardless of whether account logs are enabled, every IP address used to login to an account is sent to a private Discord webhook.</p>
 </li>
 <li>
-<p>Passwords are hashed with BCrypt prior to being stored in the database. We do not log plain-text passwords. With today's technology, BCrypt passwords are considered unable to decrypt to their plain-text form.</p>
+<p>Passwords are hashed with BCrypt prior to being stored in the database. We do not log plain-text passwords. With today's technology, BCrypt passwords are considered unable to decrypt to a plain-text form.</p>
 </li>
 <li>
 <p>Email (hashed with SHA1, not plain-text) used to register is stored in database, 2FA secret is stored if enabled.</p>
@@ -99,8 +99,23 @@
 <li>
 <p>Your customer's Windows SID (hwid) is stored in database if sent to our API, their IP address is stored, and their password is stored after being hashed with BCrypt. You're unable to get your customer's plain-text password from our server.</p>
 </li>
+</ul>
+<p>List of dependencies</p>
+<ul>
 <li>
-<p>We use E-commerce platforms to handle our payments. From the orders on those platforms, we can identify which person made the order. Though, we do not store any of your payment information in our database.</p>
+<p>E-commerce systems Sellix <a href="https://sellix.io/privacy" target="_blank">https://sellix.io/privacy</a> and Paddle <a href="https://www.paddle.com/privacy" target="_blank">https://www.paddle.com/privacy</a> used to process payments</p>
+</li>
+<li>
+<p>Cloudflare used to proxy traffic, offer DDoS protection, and collect analytics on page views <a href="https://www.cloudflare.com/privacy" target="_blank">https://www.cloudflare.com/privacy</a></p>
+</li>
+<li>
+<p>Have I Been Pwned used to send only the first five characters of SHA1 hashed password to their API to see if it's been in a data breach <a href="https://haveibeenpwned.com/privacy" target="_blank">https://haveibeenpwned.com/privacy</a></p>
+</li>
+<li>
+<p>ip-api used to query approximate location of IP address & whether the IP address is from a known VPN <a href="https://ip-api.com/docs/legal" target="_blank">https://ip-api.com/docs/legal</a></p>
+</li>
+<li>
+<p>Bunny CDN used for custom domains (panel.keyauth.win & api.keyauth.win) to proxy traffic & offer DDoS protection <a href="https://bunny.net/privacy/" target="_blank">https://bunny.net/privacy/</a></p>
 </li>
 </ul>
 </div>
@@ -140,8 +155,9 @@
                </div>
                <div class="col-sm-2 mb-right">
                   <ul class="all-links">
-                     <li class="link-title">Rules</li>
-                     <li><a href="https://keyauth.cc/terms" target="_blank" class="link-footer">Terms</a></li>
+                     <li class="link-title">Documents</li>
+                     <li><a href="https://keyauth.cc/terms" target="_blank" class="link-footer">Terms of Service</a></li>
+                     <li><a href="https://keyauth.cc/terms/#privacy" class="link-footer">Privacy Policy</a></li>
                   </ul>
                </div>
             </div>

@@ -4,8 +4,9 @@ namespace misc\license;
 
 use misc\etc;
 use misc\cache;
+use misc\user;
 
-function license_masking($mask)
+function license_masking($mask) // subsitute random characters for upper-case and lower-case random character variables, X or x
 {
 	$mask_arr = str_split($mask);
 	$size_of_mask = count($mask_arr);
@@ -111,6 +112,10 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
 			break;
 	}
+	
+	if(!is_null($secret)) {
+		cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
+	}
 
 	$licenses = array();
 
@@ -198,14 +203,11 @@ function deleteSingular($key, $userToo, $secret = null)
 	}
 
 	if ($userToo) {
-		mysqli_query($link, "DELETE FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = (SELECT `usedby` FROM `keys` WHERE `key` = '$key')");
-		if (mysqli_affected_rows($link) > 0) {
-			$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
-			$row = mysqli_fetch_array($result);
-			$usedby = $row['usedby'];
-
-			cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $usedby);
-		}
+		$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
+		$row = mysqli_fetch_array($result);
+		$usedby = $row['usedby'];
+		
+		user\deleteSingular($usedby, $secret);
 	}
 	mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'"); // delete any subscriptions created with key
 	mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
@@ -235,14 +237,11 @@ function ban($key, $reason, $userToo, $secret = null)
 	}
 
 	if ($userToo) {
-		mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = (SELECT `usedby` FROM `keys` WHERE `key` = '$key')");
-		if (mysqli_affected_rows($link) > 0) {
-			$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
-			$row = mysqli_fetch_array($result);
-			$usedby = $row['usedby'];
-
-			cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $usedby);
-		}
+		$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
+		$row = mysqli_fetch_array($result);
+		$usedby = $row['usedby'];
+		
+		user\ban($usedby, $reason, $secret);
 	}
 
 	mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
@@ -269,14 +268,13 @@ function unban($key, $secret = null)
 	}
 
 	$status = "Not Used";
-	mysqli_query($link, "UPDATE `users` SET `banned` = NULL WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = (SELECT `usedby` FROM `keys` WHERE `key` = '$key')");
-	if (mysqli_affected_rows($link) > 0) {
-		$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
+	$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
+	if (mysqli_num_rows($result) > 0) {
 		$row = mysqli_fetch_array($result);
 		$usedby = $row['usedby'];
 		$status = "Used";
-
-		cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $usedby);
+		
+		user\unban($usedby, $secret);
 	}
 
 

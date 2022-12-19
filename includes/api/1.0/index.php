@@ -1,5 +1,4 @@
 <?php
-
 namespace api\v1_0;
 
 use api\shared\primary;

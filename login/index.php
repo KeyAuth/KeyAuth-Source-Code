@@ -15,7 +15,6 @@ if (isset($_SESSION['username'])) {
     exit();
 }
 ?>
-
 <html>
 <!--begin::Head-->
 
@@ -43,7 +42,7 @@ if (isset($_SESSION['username'])) {
     <!-- Twitter Card data -->
     <meta name="twitter:card" content="product">
     <meta name="twitter:site" content="@keyauth">
-    <meta name="twitter:title" content="KeyAuth - Open Source Auth">
+    <meta name="twitter:title" content="Keyauth - Login">
 
     <meta name="twitter:description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors">
     <meta name="twitter:creator" content="@keyauth">
@@ -51,7 +50,7 @@ if (isset($_SESSION['username'])) {
 
 
     <!-- Open Graph data -->
-    <meta property="og:title" content="KeyAuth - Open Source Auth" />
+    <meta property="og:title" content="Keyauth - Login" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="./" />
     <link rel="shortcut icon" href="https://cdn.keyauth.cc/v2/assets/media/logos/favicon.ico" />
@@ -234,6 +233,8 @@ if (isset($_SESSION['username'])) {
             $regionSaved = $row['region'];
             $asNumSaved = $row['asNum'];
             $emailVerify = $row['emailVerify'];
+			$afCode = $row['afCode'];
+			$securityKey = $row['securityKey'];
         }
 
         if (!is_null($banned)) {
@@ -312,6 +313,15 @@ if (isset($_SESSION['username'])) {
         $_SESSION['ownerid'] = $id;
         $_SESSION['role'] = $role;
         $_SESSION['logindate'] = time();
+        $_SESSION['afCode'] = $afCode;
+		$_SESSION['img'] = $img;
+		
+		if($securityKey) {
+			unset($_SESSION['username']);
+			$_SESSION['pendingUsername'] = $username;
+			header("location: ./securityKey.html");
+			die();
+		}
 
         if ($role == "Reseller" || $role == "Manager") {
             ($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `name` = '$app' AND `owner` = '$owner'")) or die(mysqli_error($link));
@@ -324,8 +334,7 @@ if (isset($_SESSION['username'])) {
             }
             $_SESSION['app'] = $app;
         }
-
-        $_SESSION['img'] = $img;
+		
         if ($acclogs) // check if account logs enabled
         {
             $ua = misc\etc\sanitize($_SERVER['HTTP_USER_AGENT']);
@@ -344,10 +353,7 @@ if (isset($_SESSION['username'])) {
             header("location: ../app/");
         }
     }
-
     ?>
-
 </body>
 <!--end::Body-->
-
 </html>

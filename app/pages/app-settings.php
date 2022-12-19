@@ -3,26 +3,40 @@ if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
 	die();
 }
+if($role == "Manager" && !($permissions & 1024)) {
+	die('You weren\'t granted permissions to view this page.');
+}
 if(!isset($_SESSION['app'])) {
 	die("Application not selected.");
 }
 if (isset($_POST['addhash'])) {
-    $hash = misc\etc\sanitize($_POST['hash']);
-    $result = mysqli_query($link, "SELECT `hash` FROM `apps` WHERE `secret` = '" . $_SESSION['app'] . "'");
-    $row = mysqli_fetch_array($result);
-    $oldHash = $row["hash"];
-
-    $newHash = $oldHash .= $hash;
-
-    mysqli_query($link, "UPDATE `apps` SET `hash` = '$newHash' WHERE `secret` = '" . $_SESSION['app'] . "'");
-    misc\cache\purge('KeyAuthApp:' . $_SESSION["name"] . ':' . $_SESSION['ownerid']);
-    dashboard\primary\success("Successfully added hash!");
+	$resp = misc\app\addHash($_POST['hash']);
+	switch ($resp) {
+		case 'failure':
+			dashboard\primary\error("Failed add hash!");
+			break;
+		case 'success':
+			dashboard\primary\success("Added hash successfully");
+			break;
+		default:
+			dashboard\primary\error("Unhandled Error! Contact us if you need help");
+			break;
+	}
 }
 
 if (isset($_POST['resethash'])) {
-    mysqli_query($link, "UPDATE `apps` SET `hash` = NULL WHERE `secret` = '" . $_SESSION['app'] . "'");
-    misc\cache\purge('KeyAuthApp:' . $_SESSION["name"] . ':' . $_SESSION['ownerid']);
-    dashboard\primary\success("Successfully reset hash!");
+    $resp = misc\app\resetHash();
+	switch ($resp) {
+		case 'failure':
+			dashboard\primary\error("Failed reset hash!");
+			break;
+		case 'success':
+			dashboard\primary\success("Reset hash successfully");
+			break;
+		default:
+			dashboard\primary\error("Unhandled Error! Contact us if you need help");
+			break;
+	}
 }
 
 if (isset($_POST['updatesettings'])) {
@@ -77,13 +91,25 @@ if (isset($_POST['updatesettings'])) {
     $sellapplife = misc\etc\sanitize($_POST['sellapplifetimeproduct']);
     $killOtherSessions = misc\etc\sanitize($_POST['killOtherSessions']);
     $customerPanelIcon = misc\etc\sanitize($_POST['customerPanelIcon']);
+    $loggedInMsg = misc\etc\sanitize($_POST['loggedInMsg']);
+    $pausedApp = misc\etc\sanitize($_POST['pausedApp']);
+    $unTooShort = misc\etc\sanitize($_POST['unTooShort']);
+    $pwLeaked = misc\etc\sanitize($_POST['pwLeaked']);
+    $chatHitDelay = misc\etc\sanitize($_POST['chatHitDelay']);
 
-    if (!empty($customDomain) && $_SESSION['role'] == "seller") {
+    if (!is_null($customDomain) && $_SESSION['role'] == "seller") {
         if (strpos($customDomain, "http") === 0) {
             dashboard\primary\error("Do not include protocol. Your custom domain should be entered as panel.example.com not https://panel.example.com or http://panel.example.com");
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
+		$result = mysqli_query($link, "SELECT 1 FROM `apps` WHERE `customDomain` = '$customDomain' AND `secret` != '" . $_SESSION['app'] . "'");
+		if(mysqli_num_rows($result)) {
+			dashboard\primary\error("You can\'t have more than one app with a custom domain. Use a different domain or subdomain please.");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+            return;
+		}
+		
         $url = "https://api.bunny.net/pullzone/783238/addHostname";
 
         $curl = curl_init($url);
@@ -114,12 +140,19 @@ if (isset($_POST['updatesettings'])) {
         return;
     }
 
-    if (!empty($customDomainAPI) && $_SESSION['role'] != "tester") {
+    if (!is_null($customDomainAPI) && $_SESSION['role'] != "tester") {
         if (strpos($customDomainAPI, "http") === 0) {
             dashboard\primary\error("Do not include protocol. Your custom domain should be entered as api.example.com not https://api.example.com or http://api.example.com");
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
+		$result = mysqli_query($link, "SELECT 1 FROM `apps` WHERE `customDomainAPI` = '$customDomainAPI' AND `secret` != '" . $_SESSION['app'] . "'");
+		if(mysqli_num_rows($result)) {
+			dashboard\primary\error("You can\'t have more than one app with a custom domain. Use a different domain or subdomain please.");
+            echo "<meta http-equiv='Refresh' Content='2;'>";
+            return;
+		}
+		
         $url = "https://api.bunny.net/pullzone/876754/addHostname";
 
         $curl = curl_init($url);
@@ -147,8 +180,8 @@ if (isset($_POST['updatesettings'])) {
 
     mysqli_query($link, "UPDATE `apps` SET 
 		`cooldown` = '$cooldownduration',
-		`customDomain` = '$customDomain',
-		`customDomainAPI` = '$customDomainAPI',
+		`customDomain` = NULLIF('$customDomain', ''),
+		`customDomainAPI` = NULLIF('$customDomainAPI', ''),
 		`killOtherSessions` = '$killOtherSessions',
 		`session` = '$sessionduration',
 		`cooldownUnit` = '$cooldownexpiry',
@@ -196,7 +229,12 @@ if (isset($_POST['updatesettings'])) {
 		`shoppymonthproduct` = NULLIF('$shoppymonth', ''),
 		`shoppylifetimeproduct` = NULLIF('$shoppylife', ''),
 		`customerPanelIcon` = '$customerPanelIcon',
-		`panelstatus` = '$panelstatus' 
+		`panelstatus` = '$panelstatus',
+		`loggedInMsg` = '$loggedInMsg',
+		`pausedApp` = '$pausedApp',
+		`unTooShort` = '$unTooShort',
+		`pwLeaked` = '$pwLeaked',
+		`chatHitDelay` = '$chatHitDelay'
 	WHERE `secret` = '" . $_SESSION['app'] . "'");
 
     if (mysqli_affected_rows($link) > 0) {
@@ -353,6 +391,11 @@ if (isset($_POST['updatesettings'])) {
                 $blockLeakedPasswords  = $row['blockLeakedPasswords'];
                 $killOtherSessions  = $row['killOtherSessions'];
                 $customerPanelIcon  = $row['customerPanelIcon'];
+                $loggedInMsg  = $row['loggedInMsg'];
+                $pausedApp  = $row['pausedApp'];
+                $unTooShort  = $row['unTooShort'];
+                $pwLeaked  = $row['pwLeaked'];
+                $chatHitDelay  = $row['chatHitDelay'];
             }
         }
     }
@@ -766,6 +809,51 @@ if (isset($_POST['updatesettings'])) {
                     <div class="col-10">
                         <input class="form-control" maxlength="100" name="sessionunauthed" id="defaultconfig-3"
                             value="<?php echo $sessionunauthed; ?>"
+                            placeholder="Custom response you'd like. Max 100 chars">
+                    </div>
+                </div>
+				<br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">Successful login Msg</label>
+                    <div class="col-10">
+                        <input class="form-control" maxlength="100" name="loggedInMsg" id="defaultconfig-3"
+                            value="<?php echo $loggedInMsg; ?>"
+                            placeholder="Custom response you'd like. Max 100 chars">
+                    </div>
+                </div>
+				<br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">Paused application Msg</label>
+                    <div class="col-10">
+                        <input class="form-control" maxlength="100" name="pausedApp" id="defaultconfig-3"
+                            value="<?php echo $pausedApp; ?>"
+                            placeholder="Custom response you'd like. Max 100 chars">
+                    </div>
+                </div>
+				<br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">Username too short Msg</label>
+                    <div class="col-10">
+                        <input class="form-control" maxlength="100" name="unTooShort" id="defaultconfig-3"
+                            value="<?php echo $unTooShort; ?>"
+                            placeholder="Custom response you'd like. Max 100 chars">
+                    </div>
+                </div>
+				<br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">Password leaked Msg</label>
+                    <div class="col-10">
+                        <input class="form-control" maxlength="100" name="pwLeaked" id="defaultconfig-3"
+                            value="<?php echo $pwLeaked; ?>"
+                            placeholder="Custom response you'd like. Max 100 chars">
+                    </div>
+                </div>
+				<br>
+                <div class="form-group row">
+                    <label for="example-tel-input" class="col-2 col-form-label">Chat delay hit Msg</label>
+                    <div class="col-10">
+                        <input class="form-control" maxlength="100" name="chatHitDelay" id="defaultconfig-3"
+                            value="<?php echo $chatHitDelay; ?>"
                             placeholder="Custom response you'd like. Max 100 chars">
                     </div>
                 </div>

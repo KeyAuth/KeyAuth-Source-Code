@@ -3,8 +3,6 @@ include '../includes/connection.php';
 include '../includes/misc/autoload.phtml';
 include '../includes/dashboard/autoload.phtml';
 
-error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -29,6 +27,7 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset || mysqli_num_rows(
     exit();
 }
 $role = $row['role'];
+$permissions = $row['permissions'];
 $admin = $row['admin'];
 $twofactor = $row['twofactor'];
 $_SESSION['role'] = $role;

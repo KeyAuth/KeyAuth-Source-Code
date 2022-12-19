@@ -3,6 +3,9 @@ if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
 	die();
 }
+if($role == "Manager" && !($permissions & 64)) {
+	die('You weren\'t granted permissions to view this page.');
+}
 if(!isset($_SESSION['app'])) {
 	die("Application not selected.");
 }
@@ -107,8 +110,12 @@ if (isset($_POST['savefile'])) {
         dashboard\primary\error("Users with tester plan may only upload files up to 10MB. Paid plans may upload up to 50MB.");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
-    } else if ($filesize > 50000000) {
+    } else if ($filesize > 50000000 && ($role == "developer" || $role == "Manager")) {
         dashboard\primary\error("File size limit is 50 MB.");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        return;
+    } else if ($filesize > 75000000) {
+        dashboard\primary\error("File size limit is 75 MB.");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     }

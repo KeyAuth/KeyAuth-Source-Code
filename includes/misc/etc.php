@@ -4,14 +4,14 @@ namespace misc\etc;
 
 function sanitize($input)
 {
-    if (empty($input) & !is_numeric($input)) {
+    if (empty($input) & !is_numeric($input)) { // in the event the input can't be sanitized
         return NULL;
     }
     $search = array("\\",  "\x00", "\n",  "\r",  "'",  '"', "\x1a");
     $replace = array("\\\\", "\\0", "\\n", "\\r", "\'", '\"', "\\Z");
-    return str_replace($search, $replace, strip_tags(trim($input))); // return string with quotes escaped to prevent SQL injection, script tags stripped to prevent XSS attach, and trimmed to remove whitespace
+    return str_replace($search, $replace, strip_tags(trim($input))); // return string with quotes escaped to prevent SQL injection, script tags stripped to prevent XSS attack, and trimmed to remove whitespace
 }
-function random_string_upper($length = 10, $keyspace = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'): string
+function random_string_upper($length = 10, $keyspace = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'): string // replaces upper-case X characters in key mask
 { // https://github.com/FinGu/c_auth/blob/cfbd7036e69561e538e26dc47f7690dbc0d8ba53/functions/general/functions.php#L55
     $out = '';
     for ($i = 0; $i < $length; $i++) {
@@ -20,7 +20,7 @@ function random_string_upper($length = 10, $keyspace = '0123456789ABCDEFGHIJKLMN
     }
     return $out;
 }
-function random_string_lower($length = 10, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyz'): string
+function random_string_lower($length = 10, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyz'): string // replaces lower-case X characters in key mask
 { // https://github.com/FinGu/c_auth/blob/cfbd7036e69561e538e26dc47f7690dbc0d8ba53/functions/general/functions.php#L55
     $out = '';
     for ($i = 0; $i < $length; $i++) {
@@ -29,7 +29,7 @@ function random_string_lower($length = 10, $keyspace = '0123456789abcdefghijklmn
     }
     return $out;
 }
-function formatBytes($bytes, $precision = 2)
+function formatBytes($bytes, $precision = 2) // convert number of file bytes to human-recognizable unit
 { // https://stackoverflow.com/a/2510459
     $units = array(
         'B',
@@ -41,8 +41,7 @@ function formatBytes($bytes, $precision = 2)
     $bytes = max($bytes, 0);
     $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
     $pow = min($pow, count($units) - 1);
-    // Uncomment one of the following alternatives
-    // $bytes /= pow(1024, $pow);
+
     $bytes /= (1 << (10 * $pow));
     return round($bytes, $precision) . ' ' . $units[$pow];
 }
@@ -66,14 +65,14 @@ function generateRandomNum($length = 6)
     }
     return $randomString;
 }
-function isBreached($pw)
+function isBreached($pw) // query HaveIBeenPwned's API (huge dataset, FBI and many other agencies worldwide contrubute) to see if pass has been leaked. This only supplies their API with SHA1 hash prefix
 { // from https://github.com/Mikjaer/haveibeenpwned/blob/main/p0wned.php
     $hash = strtoupper(sha1($pw));
     foreach (explode("\n", file_get_contents("https://api.pwnedpasswords.com/range/" . substr($hash, 0, 5))) as $pmatch)
         if (substr($hash, 0, 5) . substr($pmatch, 0, strpos($pmatch, ":")) == $hash)
             return true;
 }
-function isPhonyEmail($email)
+function isPhonyEmail($email) // check if valid email format, if known temporary email, if email server online, and if mailbox found on email server
 {
 	if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 		return true;
@@ -84,6 +83,16 @@ function isPhonyEmail($email)
 	
 	if($json->disposable) {
 		return true;
+	}
+	
+	if (strpos($email, ".ru") !== false) {
+		return false; 
+		// russian email services either have a lot of downtime or heavy rate limits, because every other time I make SMTP connection with an .ru email it fails
+	}
+	
+	if (strpos($email, "proton") !== false) {
+		return false; 
+		// protonmail is also giving us issues
 	}
 	
 	ini_set("default_socket_timeout", 1);

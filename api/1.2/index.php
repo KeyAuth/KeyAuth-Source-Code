@@ -56,10 +56,17 @@ $sessionexpiry = $row['session'];
 $killOtherSessions = $row['killOtherSessions'];
 $forceEncryption = $row['forceEncryption'];
 
+// why using null coalescing operators? because if I add a field and it's not in redis cache, it'll be NULL
+$loggedInMsg = $row['loggedInMsg'] ?? "Logged in!";
+$pausedApp = $row['pausedApp'] ?? "Application is currently paused, please wait for the developer to say otherwise.";
+$unTooShort = $row['unTooShort'] ?? "Username too short, try longer one.";
+$pwLeaked = $row['pwLeaked'] ?? "This password has been leaked in a data breach (not from us), please use a different one.";
+$chatHitDelay = $row['chatHitDelay'] ?? "Chat slower, you've hit the delay limit";
+
 if ($banned) {
     die(json_encode(array(
         "success" => false,
-        "message" => "This application has been banned from KeyAuth.com for violating terms." // yes we self promote to customers of those who break ToS. Should've followed terms :shrug:
+        "message" => "This application has been banned from KeyAuth.cc for violating terms." // yes we self promote to customers of those who break ToS. Should've followed terms :shrug:
     )));
 }
 
@@ -108,7 +115,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         if ($paused) {
             $response = json_encode(array(
                 "success" => false,
-                "message" => "Application is currently paused, please wait for the developer to say otherwise."
+                "message" => "$pausedApp"
             ));
 
             $sig = hash_hmac('sha256', $response, $secret);
@@ -169,7 +176,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // session init
         $time = time() + $sessionexpiry;
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', '$enckey', '$ip')");
+        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', NULLIF('$enckey', ''), '$ip')");
         misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
 
         dupe:
@@ -233,13 +240,13 @@ switch ($_POST['type'] ?? $_GET['type']) {
             case 'un_too_short':
                 $response = json_encode(array(
                     "success" => false,
-                    "message" => "Username too short, try longer one."
+                    "message" => "$unTooShort"
                 ));
                 break;
             case 'pw_leaked':
                 $response = json_encode(array(
                     "success" => false,
-                    "message" => "This password has been leaked in a data breach (not from us), please use a different one."
+                    "message" => "$pwLeaked"
                 ));
                 break;
             case 'key_already_used':
@@ -286,7 +293,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 $response = json_encode(array(
                     "success" => true,
-                    "message" => "Logged in!",
+                    "message" => "$loggedInMsg",
                     "info" => $resp
                 ));
                 break;
@@ -350,9 +357,12 @@ switch ($_POST['type'] ?? $_GET['type']) {
             }
 
             if (!is_null($banned)) {
+				if (strpos($keybanned, '{reason}') !== false) {
+                   $keybanned = str_replace("{reason}", $banned, $keybanned);
+				}
                 $response = json_encode(array(
                     "success" => false,
-                    "message" => "Key banned: {$banned}"
+                    "message" => "$keybanned"
                 ));
 
                 $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : NULL;
@@ -367,7 +377,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             $result = mysqli_query($link, "SELECT `name` FROM `subscriptions` WHERE `app` = '$secret' AND `level` = '$level'");
             $subName = mysqli_fetch_array($result)['name'];
 
-            $resp = misc\user\extend($username, $subName, $expiry, $secret);
+            $resp = misc\user\extend($username, $subName, $expiry, 0, $secret);
             switch ($resp) {
                 case 'missing':
                     $response = json_encode(array(
@@ -493,7 +503,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 $response = json_encode(array(
                     "success" => true,
-                    "message" => "Logged in!",
+                    "message" => "$loggedInMsg",
                     "info" => $resp
                 ));
         }
@@ -574,7 +584,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 $response = json_encode(array(
                     "success" => true,
-                    "message" => "Logged in!",
+                    "message" => "$loggedInMsg",
                     "info" => $resp
                 ));
                 break;
@@ -604,13 +614,13 @@ switch ($_POST['type'] ?? $_GET['type']) {
             case 'un_too_short':
                 $response = json_encode(array(
                     "success" => false,
-                    "message" => "Username too short, try longer one."
+                    "message" => "$unTooShort"
                 ));
                 break;
             case 'pw_leaked':
                 $response = json_encode(array(
                     "success" => false,
-                    "message" => "This password has been leaked in a data breach (not from us), please use a different one."
+                    "message" => "$pwLeaked"
                 ));
                 break;
             case 'key_already_used':
@@ -657,7 +667,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 $response = json_encode(array(
                     "success" => true,
-                    "message" => "Logged in!",
+                    "message" => "$loggedInMsg",
                     "info" => $resp
                 ));
         }
@@ -926,7 +936,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         if (time() - $time < $delay) {
             $response = json_encode(array(
                 "success" => false,
-                "message" => "Chat slower, you've hit the delay limit"
+                "message" => "$chatHitDelay"
             ));
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
             header("signature: {$sig}");
@@ -1192,6 +1202,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
             die($response);
         }
+		
+		$reason = misc\etc\sanitize($_POST['reason'] ?? $_GET['reason']) ?? "User banned from triggering ban function in the client";
 
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
@@ -1201,7 +1213,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $ip = api\shared\primary\getIp();
         misc\blacklist\add($ip, "IP Address", $secret);
 
-        mysqli_query($link, "UPDATE `users` SET `banned` = 'User banned from triggering ban function in the client' WHERE `username` = '$credential'");
+        mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `username` = '$credential'");
         if (mysqli_affected_rows($link) != 0) {
             misc\cache\purge('KeyAuthUser:' . $secret . ':' . $credential);
             $response = json_encode(array(

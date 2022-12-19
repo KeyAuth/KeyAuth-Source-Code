@@ -14,6 +14,7 @@ function fetch($redisKey, $sqlQuery, $multiRowed, $expiry = null)
 		if (mysqli_num_rows($result) < 1) // check if MySQL found any rows
 		{
 			$redis->set($redisKey, 'not_found'); // save redis key indicating record not found
+			$redis->expire($redisKey, 300); // if the data doesn't exist, only keep Redis key for 5 minutes to mitigate against spam
 			return 'not_found';
 		}
 		if ($multiRowed) { // return multi-rowed response for applications such as chat channels where multiple rows containing messages
@@ -49,6 +50,53 @@ function fetch($redisKey, $sqlQuery, $multiRowed, $expiry = null)
 			$ttl = $data["expiry"] - time();
 			$redis->expire($redisKey, $ttl);
 		}
+		
+		if($redisKey == "KeyAuthStats") {
+			$channels = [1014706457654079520, 1014706498552733756, 1014706542764892230, 1014706585345462293];
+			$values = [$data['numAccs'], $data['numApps'], $data['numKeys'], $data['numOnlineUsers']];
+			
+			$i = 0;
+			while($i < 4) {
+				$url = "https://discord.com/api/v9/channels/$channels[$i]";
+			
+				$curl = curl_init($url);
+				curl_setopt($curl, CURLOPT_URL, $url);
+				curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+				
+				$headers = array(
+				"user-agent: KeyAuth",
+				"Authorization: Bot MTAxNDY5OTA0NDAzMzAxOTk5NQ.G5CnLP.W4iLyMr-Sd2CIvT2nPvtreXJT2VIJzL51F_4og",
+				"Content-Type: application/json",
+				);
+				curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+				
+				$prefix = "";
+				switch($i) {
+					case 0:
+						$prefix = "Accounts";
+						break;
+					case 1:
+						$prefix = "Applications";
+						break;
+					case 2:
+						$prefix = "Licenses";
+						break;
+					case 3:
+						$prefix = "Active Users";
+						break;
+				}
+				
+				$body = '{"name":"'.$prefix.': '.$values[$i].'"}';
+				
+				curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+			
+				$resp = curl_exec($curl);
+				curl_close($curl);
+				
+				$i++;
+			}
+		}
 
 		if (!is_null($expiry)) {
 			$redis->expire($redisKey, $expiry); // set TTL if specified
@@ -68,7 +116,7 @@ function purge($redisKey) // delete key from Redis cache (typically called when 
 	$redis->del($redisKey);
 }
 
-function purgePattern($redisKey)
+function purgePattern($redisKey) // purge all data starting with, ending with, or both and unknown text in between
 {
 	global $redis;
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/redis.php'; // create connection with Redis

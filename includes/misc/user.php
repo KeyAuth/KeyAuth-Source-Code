@@ -12,6 +12,12 @@ function deleteSingular($username, $secret = null)
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$username = etc\sanitize($username);
 
+	if ($_SESSION['role'] == "Reseller") {
+		$result = mysqli_query($link, "SELECT 1 FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username' AND `owner` = '" . $_SESSION['username'] . "'");
+		if (mysqli_num_rows($result) < 1) {
+			return 'nope';
+		}
+	}
 	
 	mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `user` = '$username'");
 	mysqli_query($link, "DELETE FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
@@ -32,6 +38,13 @@ function resetSingular($username, $secret = null)
 	global $link;
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$username = etc\sanitize($username);
+	
+	if ($_SESSION['role'] == "Reseller") {
+		$result = mysqli_query($link, "SELECT 1 FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username' AND `owner` = '" . $_SESSION['username'] . "'");
+		if (mysqli_num_rows($result) < 1) {
+			return 'nope';
+		}
+	}
 
 	mysqli_query($link, "UPDATE `users` SET `hwid` = NULL WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
 	if (mysqli_affected_rows($link) > 0) {
@@ -85,6 +98,13 @@ function ban($username, $reason, $secret = null)
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$username = etc\sanitize($username);
 	$reason = etc\sanitize($reason);
+	
+	if ($_SESSION['role'] == "Reseller") {
+		$result = mysqli_query($link, "SELECT 1 FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username' AND `owner` = '" . $_SESSION['username'] . "'");
+		if (mysqli_num_rows($result) < 1) {
+			return 'nope';
+		}
+	}
 
 	$result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
 	if (mysqli_num_rows($result) < 1) {
@@ -116,6 +136,13 @@ function unban($username, $secret = null)
 	global $link;
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$username = etc\sanitize($username);
+	
+	if ($_SESSION['role'] == "Reseller") {
+		$result = mysqli_query($link, "SELECT 1 FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username' AND `owner` = '" . $_SESSION['username'] . "'");
+		if (mysqli_num_rows($result) < 1) {
+			return 'nope';
+		}
+	}
 
 	$result = mysqli_query($link, "SELECT `hwid`, `ip` FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
 	if (mysqli_num_rows($result) < 1) {
@@ -174,7 +201,7 @@ function deleteSub($username, $sub, $secret = null)
 		return 'failure';
 	}
 }
-function extend($username, $sub, $expiry, $secret = null)
+function extend($username, $sub, $expiry, $activeOnly = 0, $secret = null)
 {
 	global $link;
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
@@ -189,20 +216,22 @@ function extend($username, $sub, $expiry, $secret = null)
 		return 'date_past';
 	}
 	if ($username == "all") {
-		$result = mysqli_query($link, "SELECT GROUP_CONCAT(`user`) AS `existingUsers` FROM `subs` WHERE `subscription` = 'default' AND `expiry` > " . time() . " AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-		$row = mysqli_fetch_array($result);
-		$existingUsers = $row['existingUsers'];
-		
-		$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `username` NOT IN('$existingUsers') AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-		$rows = array();
-		while ($r = mysqli_fetch_assoc($result)) {
-			$rows[] = $r;
+		if(!$activeOnly) {
+			$result = mysqli_query($link, "SELECT GROUP_CONCAT(`user`) AS `existingUsers` FROM `subs` WHERE `subscription` = 'default' AND `expiry` > " . time() . " AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+			$row = mysqli_fetch_array($result);
+			$existingUsers = $row['existingUsers'];
+			
+			$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `username` NOT IN('$existingUsers') AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+			$rows = array();
+			while ($r = mysqli_fetch_assoc($result)) {
+				$rows[] = $r;
+			}
+			foreach ($rows as $row) {
+				mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('" . $row['username'] . "','$sub', '$expiry', '" . ($secret ?? $_SESSION['app']) . "')");
+			}
 		}
 		$appendExpiry = $expiry - time();
 		mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`+$appendExpiry WHERE `subscription` = '$sub' AND `expiry` > " . time() . " AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-		foreach ($rows as $row) {
-			mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('" . $row['username'] . "','$sub', '$expiry', '" . ($secret ?? $_SESSION['app']) . "')");
-		}
 		cache\purgePattern('KeyAuthSubs:' . ($secret ?? $_SESSION['app']));
 	} else {
 		$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `username` = '$username' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
@@ -219,6 +248,27 @@ function extend($username, $sub, $expiry, $secret = null)
 		cache\purge('KeyAuthSubs:' . ($secret ?? $_SESSION['app']) . ':' . $username);
 	}
 	if (mysqli_affected_rows($link) > 0) {
+		return 'success';
+	} else {
+		return 'failure';
+	}
+}
+function subtract($username, $sub, $seconds, $secret = null)
+{
+	global $link;
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
+	$username = etc\sanitize($username);
+	$sub = etc\sanitize($sub);
+	$seconds = etc\sanitize($seconds);
+
+	if ($seconds <= 0) {
+		return 'invalid_seconds';
+	}
+	
+	mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`-$seconds WHERE `user` = '$username' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		
+	if (mysqli_affected_rows($link) > 0) {
+		cache\purge('KeyAuthSubs:' . ($secret ?? $_SESSION['app']) . ':' . $username);
 		return 'success';
 	} else {
 		return 'failure';

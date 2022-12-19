@@ -20,7 +20,7 @@ function add($url, $authed, $secret = null)
   if ($filesize > 10000000 && $role == "tester") {
     error("Users with tester plan may only upload files up to 10MB. Paid plans may upload up to 50MB.");
     return;
-  } else if ($filesize > 50000000 && $role == "developer") {
+  } else if ($filesize > 50000000 && ($role == "developer" || $role == "Manager")) {
     error("File size limit is 50 MB.");
     return;
   } else if ($filesize > 75000000) {

@@ -4,6 +4,9 @@ if ($_SESSION['role'] == "Reseller")
     header("location: ./?page=reseller-licenses");
 	die();
 }
+if($role == "Manager" && !($permissions & 2)) {
+	die('You weren\'t granted permissions to view this page.');
+}
 if(!isset($_SESSION['app'])) {
 	die("Application not selected.");
 }
@@ -98,7 +101,7 @@ if (isset($_POST['importusers']))
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
-        $expiry = $third * 86400;
+        $expiry = ($third * 86400) + time();
         mysqli_query($link, "INSERT INTO `users` (`username`, `hwid`, `app`,`owner`, `createdate`) VALUES ('$first','$second','" . $_SESSION['app'] . "','" . $_SESSION['username'] . "','" . time() . "')");
 		mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$first','default','$expiry','" . $_SESSION['app'] . "')");
     }
@@ -106,8 +109,9 @@ if (isset($_POST['importusers']))
 }
 if (isset($_POST['extenduser']))
 {	
+	$activeOnly = ($_POST['activeOnly'] == "on") ? 1 : 0;
 	$expiry = time() + $_POST['time'] * $_POST['expiry'];
-	$resp = misc\user\extend($_POST['user'], $_POST['sub'], $expiry);
+	$resp = misc\user\extend($_POST['user'], $_POST['sub'], $expiry, $activeOnly);
     switch ($resp)
     {
 		case 'missing':
@@ -323,9 +327,9 @@ if (isset($_POST['unpauseuser']))
     }
     if (mysqli_affected_rows($link) > 0) {
 		misc\cache\purge('KeyAuthSubs:'.$_SESSION['app'].':'.$user);
-        dashboard\primary\success("Successfully paused user", $format);
+        dashboard\primary\success("Successfully unpaused user", $format);
     } else {
-        dashboard\primary\error("Failed to pause user", $format);
+        dashboard\primary\error("Failed to unpause user", $format);
     }
 }
 ?>
@@ -709,6 +713,14 @@ if (mysqli_num_rows($result) > 0)
                             <label for="recipient-name" class="control-label">Time To Add:</label>
                             <input class="form-control" name="time" placeholder="Multiplied by selected unit of time">
                         </div>
+						<br>
+						<input class="form-check-input" style="color:white;border-color:white;" name="activeOnly"
+                            type="checkbox" id="flexCheckChecked">
+                        <label class="form-check-label" for="flexCheckChecked">
+                            Active users only <i class="fas fa-question-circle fa-lg text-white-50"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Extend only users who have an active subscription of the exact subscription you're extending"></i>
+                        </label>
 
 
                 </div>

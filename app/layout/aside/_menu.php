@@ -39,6 +39,9 @@
 						                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">Dashboard</span>
 						                </div>
 						            </div>
+									<?php
+									if(!($role == "Manager" && !($permissions & 1))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'licenses') {
 																	echo 'active';
@@ -49,6 +52,10 @@
 						                    <span class="menu-title">Licenses</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 2))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'users') {
 																	echo 'active';
@@ -59,6 +66,10 @@
 						                    <span class="menu-title">Users</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 4))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'subscriptions') {
 																	echo 'active';
@@ -69,6 +80,10 @@
 						                    <span class="menu-title">Subscriptions</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 8))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'chats') {
 																	echo 'active';
@@ -79,6 +94,10 @@
 						                    <span class="menu-title">Chats</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 16))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'sessions') {
 																	echo 'active';
@@ -89,6 +108,10 @@
 						                    <span class="menu-title">Sessions</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 32))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'webhooks') {
 																	echo 'active';
@@ -99,6 +122,10 @@
 						                    <span class="menu-title">Webhooks</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 64))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'files') {
 																	echo 'active';
@@ -109,6 +136,10 @@
 						                    <span class="menu-title">Files</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 128))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'vars') {
 																	echo 'active';
@@ -119,6 +150,10 @@
 						                    <span class="menu-title">Variables</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 256))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'logs') {
 																	echo 'active';
@@ -129,6 +164,10 @@
 						                    <span class="menu-title">Logs</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 512))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'blacklists') {
 																	echo 'active';
@@ -139,6 +178,10 @@
 						                    <span class="menu-title">Blacklists</span>
 						                </a>
 						            </div>
+									<?php
+									}
+									if(!($role == "Manager" && !($permissions & 1024))) {
+									?>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'app-settings') {
 																	echo 'active';
@@ -150,6 +193,7 @@
 						                </a>
 						            </div>
 						            <?php
+									}
 
 									}
 									?>
@@ -163,6 +207,16 @@
 						            <?php
 									if ($role == "developer" || $role == "seller") {
 									?>
+									<div class="menu-item">
+						                <a class="menu-link <?php if ($page == "affiliate") {
+																	echo "active";
+																} ?> " href="?page=affiliate">
+						                    <span class="menu-icon">
+						                        <i data-feather="share-2"></i>
+						                    </span>
+						                    <span class="menu-title">Affiliate</span>
+						                </a>
+						            </div>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == "manage-accs") {
 																	echo "active";
@@ -237,7 +291,16 @@
 						                    <span class="menu-title">Web Loader</span>
 						                </a>
 						            </div>
-
+									<div class="menu-item">
+						                <a class="menu-link <?php if ($page == 'seller-logs') {
+																	echo 'active';
+																} ?>" href="?page=seller-logs">
+						                    <span class="menu-icon">
+						                        <i data-feather="database"></i>
+						                    </span>
+						                    <span class="menu-title">Logs</span>
+						                </a>
+						            </div>
 						            <?php
 									}
 									?>
