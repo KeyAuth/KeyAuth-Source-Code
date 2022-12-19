@@ -41,8 +41,21 @@ CREATE TABLE `accounts` (
   `darkmode` int(1) NOT NULL DEFAULT '0',
   `acclogs` int(1) NOT NULL DEFAULT '1',
   `lastreset` int(10) DEFAULT NULL,
-  `emailVerify` int(1) NOT NULL DEFAULT '1'
+  `emailVerify` int(1) NOT NULL DEFAULT '1',
+  `permissions` bit(64) NOT NULL DEFAULT b'11111111111',
+  `afCode` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `affiliatedBy` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `securityKey` int(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `afLogs` (
+  `id` int(11) NOT NULL,
+  `afCode` varchar(50) DEFAULT NULL,
+  `referrer` varchar(3000) DEFAULT NULL,
+  `username` varchar(65) DEFAULT NULL,
+  `date` int(10) DEFAULT NULL,
+  `action` varchar(40) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `apps` (
   `id` int(11) NOT NULL,
@@ -78,6 +91,11 @@ CREATE TABLE `apps` (
   `sessionunauthed` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Session is not validated',
   `hashcheckfail` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'This program hash does not match, make sure you''re using latest version',
   `keyexpired` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Key has expired.',
+  `loggedInMsg` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Logged in!',
+  `pausedApp` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Application is currently paused, please wait for the developer to say otherwise.',
+  `unTooShort` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Username too short, try longer one.',
+  `pwLeaked` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'This password has been leaked in a data breach (not from us), please use a different one.',
+  `chatHitDelay` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Chat slower, you''ve hit the delay limit',
   `sellixsecret` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
   `sellixdayproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
   `sellixweekproduct` varchar(13) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -166,6 +184,7 @@ CREATE TABLE `emailverify` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `files` (
+  `pk` int(11) NOT NULL,
   `name` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `id` varchar(49) COLLATE utf8_unicode_ci NOT NULL,
   `url` varchar(2048) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -206,12 +225,28 @@ CREATE TABLE `resets` (
   `time` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE `securityKeys` (
+  `id` int(11) NOT NULL,
+  `username` varchar(65) DEFAULT NULL,
+  `name` varchar(99) DEFAULT NULL,
+  `credentialId` varchar(999) DEFAULT NULL,
+  `credentialPublicKey` varchar(999) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `sellerLogs` (
+  `id` int(11) NOT NULL,
+  `ip` varchar(45) NOT NULL,
+  `path` varchar(999) NOT NULL,
+  `date` int(10) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 CREATE TABLE `sessions` (
   `id` varchar(10) NOT NULL,
   `credential` varchar(255) DEFAULT NULL,
   `app` varchar(64) NOT NULL,
   `expiry` int(10) NOT NULL,
-  `enckey` varchar(100) NOT NULL,
+  `enckey` varchar(100) DEFAULT NULL,
   `validated` int(1) NOT NULL DEFAULT '0',
   `ip` varchar(45) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -256,6 +291,7 @@ CREATE TABLE `uservars` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `vars` (
+  `id` int(11) NOT NULL,
   `varid` varchar(49) NOT NULL,
   `msg` varchar(20000) NOT NULL,
   `app` varchar(64) NOT NULL,
@@ -277,6 +313,9 @@ ALTER TABLE `acclogs`
 
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`username`);
+
+ALTER TABLE `afLogs`
+  ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `apps`
   ADD PRIMARY KEY (`id`);
@@ -301,6 +340,9 @@ ALTER TABLE `chats`
 ALTER TABLE `emailverify`
   ADD PRIMARY KEY (`id`);
 
+ALTER TABLE `files`
+  ADD PRIMARY KEY (`pk`);
+
 ALTER TABLE `keys`
   ADD PRIMARY KEY (`id`);
 
@@ -308,6 +350,12 @@ ALTER TABLE `logs`
   ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `resets`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `securityKeys`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `sellerLogs`
   ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `sessions`
@@ -327,12 +375,18 @@ ALTER TABLE `uservars`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `user vars` (`name`,`user`,`app`);
 
+ALTER TABLE `vars`
+  ADD PRIMARY KEY (`id`);
+
 ALTER TABLE `webhooks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `baselink` (`baselink`);
 
 
 ALTER TABLE `acclogs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `afLogs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `apps`
@@ -356,6 +410,9 @@ ALTER TABLE `chats`
 ALTER TABLE `emailverify`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
+ALTER TABLE `files`
+  MODIFY `pk` int(11) NOT NULL AUTO_INCREMENT;
+
 ALTER TABLE `keys`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
@@ -363,6 +420,12 @@ ALTER TABLE `logs`
   MODIFY `id` int(1) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `resets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `securityKeys`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `sellerLogs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `subs`
@@ -375,6 +438,9 @@ ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `uservars`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `vars`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `webhooks`
