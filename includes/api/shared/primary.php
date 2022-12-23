@@ -17,22 +17,6 @@ function vpnCheck($ipaddr)
 	$json = json_decode($resp);
 	
 	if($httpcode == 429) {
-		$json_data = json_encode([
-			// Message
-			"content" => "<@819668271316860928> IP checking is rate limited",
-			// Username
-			"username" => "KeyAuth Logs",
-		], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-		$ch = curl_init("https://discord.com/api/webhooks/976664258777583696/5os4emC3ZEleLevN3smoM973j8IHIrFYdXXECGGB6USnm9-N2OxODkAYI7XqIecfav6p");
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'Content-type: application/json'
-		));
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_exec($ch);
-		curl_close($ch);
 		return false;
 	}
 	if($json->proxy) {
