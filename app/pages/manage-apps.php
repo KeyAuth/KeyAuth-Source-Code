@@ -246,10 +246,6 @@ if ($_SESSION['role'] == "Reseller") {
 		$appname = $row["name"];
 		$secret = $row["secret"];
 		$version = $row["ver"];
-
-		($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-
-		$row = mysqli_fetch_array($result);
 		$ownerid = $row["ownerid"];
 
 		$_SESSION["secret"] = $secret;
