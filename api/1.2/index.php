@@ -961,7 +961,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $message = misc\etc\sanitize($_POST['message'] ?? $_GET['message']);
         mysqli_query($link, "INSERT INTO `chatmsgs` (`author`, `message`, `timestamp`, `channel`,`app`) VALUES ('$credential','$message','" . time() . "','$channel','$secret')");
-        mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '$secret' AND `channel` = '$channel' AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret' ORDER BY `id` DESC LIMIT 20) foo );");
+        mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '$secret' AND `channel` = '$channel' AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret' ORDER BY `id` DESC LIMIT 50) foo );");
         misc\cache\purge('KeyAuthChatMsgs:' . $secret . ':' . $channel);
         $response = json_encode(array(
             "success" => true,
