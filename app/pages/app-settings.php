@@ -103,9 +103,12 @@ if (isset($_POST['updatesettings'])) {
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
-		$result = mysqli_query($link, "SELECT 1 FROM `apps` WHERE `customDomain` = '$customDomain' AND `secret` != '" . $_SESSION['app'] . "'");
+		$result = mysqli_query($link, "SELECT `name`, `owner` FROM `apps` WHERE `customDomain` = '$customDomain' AND `secret` != '" . $_SESSION['app'] . "'");
 		if(mysqli_num_rows($result)) {
-			dashboard\primary\error("You can\'t have more than one app with a custom domain. Use a different domain or subdomain please.");
+			$row = mysqli_fetch_array($result);
+			$name = $row["name"];
+			$owner = $row["owner"];
+			dashboard\primary\error("The domain {$customDomain} is already being used on app named \"{$name}\" owned by {$owner}. Use a different domain or subdomain please.");
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
 		}
@@ -146,9 +149,12 @@ if (isset($_POST['updatesettings'])) {
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
-		$result = mysqli_query($link, "SELECT 1 FROM `apps` WHERE `customDomainAPI` = '$customDomainAPI' AND `secret` != '" . $_SESSION['app'] . "'");
+		$result = mysqli_query($link, "SELECT `name`, `owner` FROM `apps` WHERE `customDomainAPI` = '$customDomainAPI' AND `secret` != '" . $_SESSION['app'] . "'");
 		if(mysqli_num_rows($result)) {
-			dashboard\primary\error("You can\'t have more than one app with a custom domain. Use a different domain or subdomain please.");
+			$row = mysqli_fetch_array($result);
+			$name = $row["name"];
+			$owner = $row["owner"];
+			dashboard\primary\error("The domain {$customDomainAPI} is already being used on app named \"{$name}\" owned by {$owner}. Use a different domain or subdomain please.");
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
 		}
@@ -177,6 +183,12 @@ if (isset($_POST['updatesettings'])) {
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     }
+	
+	if($sessionduration > 604800) {
+		dashboard\primary\error("Session duration can be at most 7 days/1 week");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        return;
+	}
 
     mysqli_query($link, "UPDATE `apps` SET 
 		`cooldown` = '$cooldownduration',
@@ -615,12 +627,6 @@ if (isset($_POST['updatesettings'])) {
                             <option value="1" <?= $sessionUnit == 1 ? ' selected="selected"' : ''; ?>>Seconds</option>
                             <option value="604800" <?= $sessionUnit == 604800 ? ' selected="selected"' : ''; ?>>Weeks
                             </option>
-                            <option value="2629743" <?= $sessionUnit == 2629743 ? ' selected="selected"' : ''; ?>>Months
-                            </option>
-                            <option value="31556926" <?= $sessionUnit == 31556926 ? ' selected="selected"' : ''; ?>>
-                                Years</option>
-                            <option value="315569260" <?= $sessionUnit == 315569260 ? ' selected="selected"' : ''; ?>>
-                                Lifetime</option>
                         </select>
                     </div>
                 </div>
