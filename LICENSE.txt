@@ -1,7 +1,0 @@
-Source code in this repository is covered by the KeyAuth License v1.0.
-
-KeyAuth License v1.0:
-https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/LICENSE_KEYAUTH.txt
-
-No grant of any rights in the trademarks, service marks, or logos of KeyAuth is
-made.
