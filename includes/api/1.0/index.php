@@ -88,11 +88,18 @@ function register($un, $key, $pw, $hwid, $secret)
         mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`,`owner`,`createdate`, `lastlogin`, `ip`) VALUES ('$un','$password', NULLIF('$hwid', ''), '$secret', '$genby', '$createdate', '$createdate', '$ip')");
         $result = mysqli_query($link, "SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
         $rows = array();
-        while ($r = mysqli_fetch_assoc($result)) {
-            $timeleft = $r["expiry"] - time();
-            $r += ["timeleft" => $timeleft];
-            $rows[] = $r;
-        }
+        if(mysqli_num_rows($result) > 0) {
+			while ($r = mysqli_fetch_assoc($result)) {
+				$timeleft = $expiry - time();
+				$r += ["timeleft" => $timeleft];
+				$rows[] = $r;
+			}
+		}
+		else {
+			$timeleft = $expiry - time();
+			$rows = array("subscription" => "$subname", "key" => "$key", "expiry" => "$expiry", "timeleft" => $timeleft);
+		}
+		
         cache\purge('KeyAuthUser:' . $secret . ':' . $un);
 		cache\purge('KeyAuthSubs:' . $secret . ':' . $un);
         // success
