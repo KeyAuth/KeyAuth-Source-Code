@@ -656,7 +656,7 @@ if (isset($_POST['updatesettings'])) {
                 </div>
                 <br>
                 <div class="form-group row">
-                    <label for="example-tel-input" class="col-2 col-form-label">Minnimum username length: <i
+                    <label for="example-tel-input" class="col-2 col-form-label">Minimum username length: <i
                             class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
                             data-bs-placement="top"
                             title="Reject registrations with username having character count under this number"></i></label>
