@@ -4,6 +4,11 @@ if ($_SESSION['role'] != "developer" && $_SESSION['role'] != "seller") {
 }
 if (isset($_POST['setcode'])) {
     $code = misc\etc\sanitize($_POST['code']);
+	if(strlen($code) < 5) {
+		dashboard\primary\error("Affiliate code must be 5 or more characters long");
+		echo "<meta http-equiv='Refresh' Content='2'>";
+		return;
+	}
     mysqli_query($link, "UPDATE `accounts` SET `afCode` = '$code' WHERE `username` = '" . $_SESSION['username'] . "'");
 	if(mysqli_affected_rows($link) > 0) {
 		$_SESSION['afCode'] = $code;
@@ -60,7 +65,7 @@ if (isset($_POST['setcode'])) {
                 <div class="form-group row">
                     <label for="example-tel-input" class="col-2 col-form-label">Affiliate Code</label>
                     <div class="col-10">
-                        <input class="form-control" id="af_code" name="code" placeholder="Affiliate code, must be at least 5 characters" minlength="5" maxlength="50" type="text">
+                        <input class="form-control" id="af_code" name="code" placeholder="Affiliate code, must be at least 5 characters" minlength="5" maxlength="50" type="text" required>
                     </div>
                 </div>
                 <br>
