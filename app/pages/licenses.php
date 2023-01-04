@@ -354,12 +354,28 @@ if (isset($_POST['genkeys'])) {
                                     title="This needs to coordinate to the level of subscription you want to give to user when they redeem license. If it's blank, go to subscriptions tab and create subscription"></i></label>
                             <select name="level" class="form-control">
                                 <?php
-                                ($result = mysqli_query($link, "SELECT DISTINCT `level` FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "'"));
+                                ($result = mysqli_query($link, "SELECT DISTINCT `level` FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "' ORDER BY `level` ASC"));
                                 if (mysqli_num_rows($result) > 0) {
                                     while ($row = mysqli_fetch_array($result)) {
+										
+										$resultSubs = mysqli_query($link, "SELECT `name` FROM `subscriptions` WHERE `level` = '" . $row["level"] . "' AND `app` = '" . $_SESSION['app'] . "'");
+										
+										$name = " (";
+										$count = 0;
+										while ($rowSubs = mysqli_fetch_array($resultSubs)) {
+											$count++;
+											if($count > 1) {
+												$name .= ", " . $rowSubs["name"];
+											}
+											else {
+												$name .= $rowSubs["name"];
+											}
+										}
+										$name .= ")";
+										
                                 ?>
                                 <option <?= $lvl == $row["level"] ? ' selected="selected"' : ''; ?>
-                                    value="<?php echo $row["level"]; ?>"><?php echo $row["level"]; ?></option>
+                                    value="<?php echo $row["level"]; ?>"><?php echo $row["level"] . $name; ?></option>
                                 <?php
                                     }
                                 }
