@@ -12,7 +12,7 @@ if(!isset($_SESSION['app'])) {
 }
 if (isset($_POST['saveuser']))
 {
-    $un = misc\etc\sanitize($_POST['saveuser']);
+    $un = misc\etc\sanitize(urldecode($_POST['saveuser']));
     $username = misc\etc\sanitize($_POST['username']);
     $hwid = misc\etc\sanitize($_POST['hwid']);
     $pass = misc\etc\sanitize($_POST['pass']);
@@ -23,23 +23,51 @@ if (isset($_POST['saveuser']))
         $hwidd = $row["hwid"];
         $hwidd = $hwidd .= $hwid;
         mysqli_query($link, "UPDATE `users` SET `hwid` = '$hwidd' WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
+		if(mysqli_affected_rows($link)) {
+			dashboard\primary\success("Successfully updated user!");
+			misc\cache\purge('KeyAuthUser:'.$_SESSION['app'].':'.$un);
+		}
+		else {
+			dashboard\primary\error("Failed to update user!");
+		}
     }
     if (isset($username) && trim($username) != '')
     {
-        mysqli_query($link, "UPDATE `users` SET `username` = '$username' WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
-        mysqli_query($link, "UPDATE `subs` SET `user` = '$username' WHERE `user` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
-		mysqli_query($link, "UPDATE `keys` SET `usedby` = '$username' WHERE `usedby` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
+        $resp = misc\user\changeUsername($un, $username, $_SESSION['app']);
+		switch($resp) {
+			case 'already_used':
+				dashboard\primary\error("Username already used!");
+				break;
+			case 'failure':
+				dashboard\primary\error("Failed to change username!");
+				break;
+			case 'success':
+				dashboard\primary\success("Successfully changed username!");
+				break;
+			default:
+				dashboard\primary\error("Unhandled Error! Contact us if you need help");
+				break;
+		}
     }
     if (isset($pass) && trim($pass) != '')
     {
-        mysqli_query($link, "UPDATE `users` SET `password` = '" . password_hash($pass, PASSWORD_BCRYPT) . "' WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
+        $resp = misc\user\changePassword($un, $pass, $_SESSION['app']);
+		switch($resp) {
+			case 'failure':
+				dashboard\primary\error("Failed to change password!");
+				break;
+			case 'success':
+				dashboard\primary\success("Successfully changed password!");
+				break;
+			default:
+				dashboard\primary\error("Unhandled Error! Contact us if you need help");
+				break;
+		}
     }
-    dashboard\primary\success("Successfully Updated User");
-	misc\cache\purge('KeyAuthUser:'.$_SESSION['app'].':'.$un);
 }
 if (isset($_POST['deletevar']))
 {
-	$resp = misc\user\deleteVar($_POST['deletevar'], $_POST['var']);
+	$resp = misc\user\deleteVar(urldecode($_POST['deletevar']), $_POST['var']);
     switch ($resp)
     {
         case 'failure':
@@ -57,7 +85,7 @@ if (isset($_POST['deletesub']))
 {
     $sub = misc\etc\sanitize($_POST['sub']);
 	
-	$resp = misc\user\deleteSub($_POST['deletesub'], $sub);
+	$resp = misc\user\deleteSub(urldecode($_POST['deletesub']), $sub);
     switch ($resp)
     {
         case 'failure':
@@ -73,45 +101,45 @@ if (isset($_POST['deletesub']))
 }
 if (isset($_POST['importusers']))
 {
-    $users = misc\etc\sanitize($_POST['users']);
-    $text = explode("|", $users);
-    str_replace('"', "", $text);
-    str_replace("'", "", $text);
-    foreach ($text as $line)
-    {
-        $array = explode(',', $line);
-        $first = $array[0];
-        if (!isset($first) || $first == '')
-        {
+	$users = misc\etc\sanitize($_POST['users']);
+	$text = explode("|", $users);
+	str_replace('"', "", $text);
+	str_replace("'", "", $text);
+	foreach ($text as $line)
+	{
+		$array = explode(',', $line);
+		$first = $array[0];
+		if (!isset($first) || $first == '')
+		{
 			dashboard\primary\error("Invalid Format!");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
-        $second = $array[1];
-        if (!isset($second) || $second == '')
-        {
-            dashboard\primary\error("Invalid Format!");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
-        $third = $array[2];
-        if (!isset($third) || $third == '')
-        {
-            dashboard\primary\error("Invalid Format!");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
-        $expiry = ($third * 86400) + time();
-        mysqli_query($link, "INSERT INTO `users` (`username`, `hwid`, `app`,`owner`, `createdate`) VALUES ('$first','$second','" . $_SESSION['app'] . "','" . $_SESSION['username'] . "','" . time() . "')");
+			echo "<meta http-equiv='Refresh' Content='2;'>";
+			return;
+		}
+		$second = $array[1];
+		if (!isset($second) || $second == '')
+		{
+			dashboard\primary\error("Invalid Format!");
+			echo "<meta http-equiv='Refresh' Content='2;'>";
+			return;
+		}
+		$third = $array[2];
+		if (!isset($third) || $third == '')
+		{
+			dashboard\primary\error("Invalid Format!");
+			echo "<meta http-equiv='Refresh' Content='2;'>";
+			return;
+		}
+		$expiry = ($third * 86400) + time();
+		mysqli_query($link, "INSERT INTO `users` (`username`, `hwid`, `app`,`owner`, `createdate`) VALUES ('$first','$second','" . $_SESSION['app'] . "','" . $_SESSION['username'] . "','" . time() . "')");
 		mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$first','default','$expiry','" . $_SESSION['app'] . "')");
-    }
+	}
     dashboard\primary\success("Successfully imported users!");
 }
 if (isset($_POST['extenduser']))
 {	
 	$activeOnly = ($_POST['activeOnly'] == "on") ? 1 : 0;
 	$expiry = time() + $_POST['time'] * $_POST['expiry'];
-	$resp = misc\user\extend($_POST['user'], $_POST['sub'], $expiry, $activeOnly);
+	$resp = misc\user\extend(urldecode($_POST['user']), $_POST['sub'], $expiry, $activeOnly);
     switch ($resp)
     {
 		case 'missing':
@@ -134,9 +162,28 @@ if (isset($_POST['extenduser']))
 			break;
 	}
 }
+if (isset($_POST['subtractuser']))
+{	
+	$expiry = $_POST['time'] * $_POST['expiry'];
+	$resp = misc\user\subtract(urldecode($_POST['user']), $_POST['sub'], $expiry, $secret);
+	switch ($resp) {
+		case 'invalid_seconds':
+			dashboard\primary\error("Seconds specified must be greater than zero.");
+			break;
+		case 'failure':
+			dashboard\primary\error("Failed to substract from subscription!");
+			break;
+		case 'success':
+			dashboard\primary\success("Successfully subtracted time from subscription.");
+			break;
+		default:
+			dashboard\primary\error("Unhandled Error! Contact us if you need help");
+			break;
+	}
+}
 if (isset($_POST['adduser']))
 {
-	$resp = misc\user\add($_POST['username'], $_POST['sub'], strtotime($_POST['expiry']), NULL, $_POST['password']);
+	$resp = misc\user\add(urldecode($_POST['username']), $_POST['sub'], strtotime($_POST['expiry']), NULL, $_POST['password']);
     switch ($resp)
     {
 		case 'already_exist':
@@ -213,7 +260,7 @@ if (isset($_POST['resetall']))
 
 if (isset($_POST['deleteuser']))
 {
-    $resp = misc\user\deleteSingular($_POST['deleteuser']);
+    $resp = misc\user\deleteSingular(urldecode($_POST['deleteuser']));
     switch ($resp)
     {
         case 'failure':
@@ -229,7 +276,7 @@ if (isset($_POST['deleteuser']))
 }
 if (isset($_POST['resetuser']))
 {
-	$resp = misc\user\resetSingular($_POST['resetuser']);
+	$resp = misc\user\resetSingular(urldecode($_POST['resetuser']));
     switch ($resp)
     {
         case 'failure':
@@ -245,7 +292,7 @@ if (isset($_POST['resetuser']))
 }
 if (isset($_POST['setvar']))
 {
-	$resp = misc\user\setVariable($_POST['user'], $_POST['var'], $_POST['data']);
+	$resp = misc\user\setVariable(urldecode($_POST['user']), $_POST['var'], $_POST['data']);
     switch ($resp)
     {
 		case 'missing':
@@ -264,7 +311,7 @@ if (isset($_POST['setvar']))
 }
 if (isset($_POST['banuser']))
 {
-	$resp = misc\user\ban($_POST['un'], $_POST['reason']);
+	$resp = misc\user\ban(urldecode($_POST['un']), $_POST['reason']);
     switch ($resp)
     {
 		case 'missing':
@@ -283,7 +330,7 @@ if (isset($_POST['banuser']))
 }
 if (isset($_POST['unbanuser']))
 {
-    $resp = misc\user\unban($_POST['unbanuser']);
+    $resp = misc\user\unban(urldecode($_POST['unbanuser']));
     switch ($resp)
     {
 		case 'missing':
@@ -302,7 +349,7 @@ if (isset($_POST['unbanuser']))
 }
 if (isset($_POST['pauseuser']))
 {
-	$user = misc\etc\sanitize($_POST['pauseuser']);
+	$user = misc\etc\sanitize(urldecode($_POST['pauseuser']));
 	$result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '" . $_SESSION['app'] . "' AND `expiry` > '" . time() . "' AND `user` = '$user'");
     while ($row = mysqli_fetch_array($result)) {
         $expires = $row['expiry'];
@@ -318,7 +365,7 @@ if (isset($_POST['pauseuser']))
 }
 if (isset($_POST['unpauseuser']))
 {
-	$user = misc\etc\sanitize($_POST['unpauseuser']);
+	$user = misc\etc\sanitize(urldecode($_POST['unpauseuser']));
 	$result = mysqli_query($link, "SELECT * FROM `subs` WHERE `app` = '" . $_SESSION['app'] . "' AND `user` = '$user' AND `paused` = 1");
     while ($row = mysqli_fetch_array($result)) {
         $expires = $row['expiry'];
@@ -348,6 +395,9 @@ if (isset($_POST['unpauseuser']))
                 class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import users</button><br><br>
         <button data-bs-toggle="modal" type="button" data-bs-target="#extend-user"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Extend
+            User(s)</button>
+		<button data-bs-toggle="modal" type="button" data-bs-target="#subtract-user"
+            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Subtract
             User(s)</button>
         <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allusers"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
@@ -415,7 +465,7 @@ if (isset($_POST['unpauseuser']))
                             <select name="sub" class="form-control">
 
                                 <?php
-($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "' ORDER BY CHAR_LENGTH(`name`) DESC")) or die(mysqli_error($link));
+($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "' ORDER BY `level` ASC")) or die(mysqli_error($link));
 if (mysqli_num_rows($result) > 0)
 {
     while ($row = mysqli_fetch_array($result))
@@ -500,7 +550,7 @@ if (mysqli_num_rows($result) > 0)
 {
     while ($row = mysqli_fetch_array($result))
     {
-        echo "<option value=\"" . $row["username"] . "\">" . $row["username"] . "</option>";
+        echo "<option value=\"" . urlencode($row["username"]) . "\">" . $row["username"] . "</option>";
     }
 }
 ?>
@@ -604,6 +654,8 @@ if (mysqli_num_rows($result) > 0)
                                 placeholder="Format: username,hwid,days|username,hwid,days">
 
                         </div>
+						
+						
 
                 </div>
 
@@ -666,7 +718,7 @@ if (mysqli_num_rows($result) > 0)
 {
     while ($row = mysqli_fetch_array($result))
     {
-        echo "<option value=\"" . $row["username"] . "\">" . $row["username"] . "</option>";
+        echo "<option value=\"" . urlencode($row["username"]) . "\">" . $row["username"] . "</option>";
     }
 }
 ?>
@@ -682,7 +734,7 @@ if (mysqli_num_rows($result) > 0)
                             <select name="sub" class="form-control">
 
                                 <?php
-($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "' ORDER BY CHAR_LENGTH(`name`) DESC")) or die(mysqli_error($link));
+($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "' ORDER BY `level` ASC")) or die(mysqli_error($link));
 if (mysqli_num_rows($result) > 0)
 {
     while ($row = mysqli_fetch_array($result))
@@ -729,7 +781,117 @@ if (mysqli_num_rows($result) > 0)
 
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 
-                    <button class="btn btn-danger waves-effect waves-light" name="extenduser">Add</button>
+                    <button class="btn btn-danger waves-effect waves-light" name="extenduser">Extend</button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+	
+	<div id="subtract-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+        style="display: none;">
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header d-flex align-items-center">
+
+                    <h4 class="modal-title">Subtract User(s)</h4>
+
+                    <!--begin::Close-->
+                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                        <span class="svg-icon svg-icon-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
+                                    transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
+                                    fill="black" />
+                            </svg>
+                        </span>
+                    </div>
+                    <!--end::Close-->
+                </div>
+
+                <div class="modal-body">
+
+                    <form method="post">
+
+                        <div class="form-group">
+
+                            <label for="recipient-name" class="control-label">User:</label>
+
+                            <select name="user" class="form-control">
+								<option value="all">All</option>
+							
+                                <?php
+($result = mysqli_query($link, "SELECT * FROM `users` WHERE `app` = '" . $_SESSION['app'] . "' ORDER BY CHAR_LENGTH(`username`) DESC")) or die(mysqli_error($link));
+if (mysqli_num_rows($result) > 0)
+{
+    while ($row = mysqli_fetch_array($result))
+    {
+        echo "<option value=\"" . urlencode($row["username"]) . "\">" . $row["username"] . "</option>";
+    }
+}
+?>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="recipient-name" class="control-label">Subscription:</label>
+
+                            <select name="sub" class="form-control">
+
+                                <?php
+($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "' ORDER BY `level` ASC")) or die(mysqli_error($link));
+if (mysqli_num_rows($result) > 0)
+{
+    while ($row = mysqli_fetch_array($result))
+    {
+        echo "  <option value=\"".$row["name"]."\">" . $row["name"] . "</option>";
+    }
+}
+?>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">Unit Of Time To Subtract:</label>
+                            <select name="expiry" class="form-control">
+                                <option value="86400">Days</option>
+                                <option value="60">Minutes</option>
+                                <option value="3600">Hours</option>
+                                <option value="1">Seconds</option>
+                                <option value="604800">Weeks</option>
+                                <option value="2629743">Months</option>
+                                <option value="31556926">Years</option>
+                                <option value="315569260">Lifetime</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">Time To Subtract:</label>
+                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time">
+                        </div>
+
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                    <button class="btn btn-danger waves-effect waves-light" name="subtractuser">Subtract</button>
 
                     </form>
 
@@ -996,7 +1158,7 @@ if (mysqli_num_rows($result) > 0)
 
 if (isset($_POST['edituser']))
 {
-$un = misc\etc\sanitize($_POST['edituser']);
+$un = misc\etc\sanitize(urldecode($_POST['edituser']));
 $result = mysqli_query($link, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '" . $_SESSION['app'] . "'");
 if (mysqli_num_rows($result) == 0)
 {
@@ -1152,13 +1314,13 @@ $value = $varrow['name'] . " : " . $varrow["data"];
                     <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary"
                         data-dismiss="modal">Close</button>
 
-                    <button class="btn btn-warning waves-effect waves-light" value="<?php echo $un; ?>"
+                    <button class="btn btn-warning waves-effect waves-light" value="<?php echo urlencode($un); ?>"
                         name="deletesub">Delete Subscription</button>
 
-                    <button class="btn btn-primary waves-effect waves-light" value="<?php echo $un; ?>"
+                    <button class="btn btn-primary waves-effect waves-light" value="<?php echo urlencode($un); ?>"
                         name="deletevar">Delete Variable</button>
 
-                    <button class="btn btn-danger waves-effect waves-light" value="<?php echo $un; ?>"
+                    <button class="btn btn-danger waves-effect waves-light" value="<?php echo urlencode($un); ?>"
                         name="saveuser">Save</button>
 
                     </form>

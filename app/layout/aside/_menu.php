@@ -194,6 +194,20 @@
 						            </div>
 						            <?php
 									}
+									if($role != "Manager") {
+									?>
+						            <div class="menu-item">
+						                <a class="menu-link <?php if ($page == 'audit-log') {
+																	echo 'active';
+																} ?>" href="?page=audit-log">
+						                    <span class="menu-icon">
+						                        <i data-feather="book-open"></i>
+						                    </span>
+						                    <span class="menu-title">Audit Log</span>
+						                </a>
+						            </div>
+						            <?php
+									}
 
 									}
 									?>

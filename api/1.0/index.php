@@ -61,7 +61,7 @@ $pausedApp = $row['pausedApp'] ?? "Application is currently paused, please wait 
 $unTooShort = $row['unTooShort'] ?? "Username too short, try longer one.";
 $pwLeaked = $row['pwLeaked'] ?? "This password has been leaked in a data breach (not from us), please use a different one.";
 $chatHitDelay = $row['chatHitDelay'] ?? "Chat slower, you've hit the delay limit";
-
+		
 if ($banned) {
     die(api\v1_0\Encrypt(json_encode(array(
         "success" => false,
@@ -74,10 +74,13 @@ switch (hex2bin($_POST['type'])) {
         $ip = api\shared\primary\getIp();
         if ($vpnblock) {
             if (api\shared\primary\vpnCheck($ip)) {
-                die(api\v1_0\Encrypt(json_encode(array(
-                    "success" => false,
-                    "message" => "$vpnblocked"
-                )), $secret));
+				$row = misc\cache\fetch('KeyAuthWhitelist:' . $secret . ':' . $ip, "SELECT 1 FROM `whitelist` WHERE `ip` = '$ip' AND `app` = '$secret'", 0);
+				if($row == "not_found") {
+					die(api\v1_0\Encrypt(json_encode(array(
+						"success" => false,
+						"message" => "$vpnblocked"
+					)), $secret));
+				}
             }
         }
 
@@ -128,7 +131,7 @@ switch (hex2bin($_POST['type'])) {
         // session init
         $time = time() + $sessionexpiry;
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`,`ip`) VALUES ('$sessionid','$secret', '$time', '$enckey', '$ip')");
+        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`,`ip`) VALUES ('$sessionid','$secret', '$time', '".time()."', '$enckey', '$ip')");
 
         $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT(select count(1) FROM `users` WHERE `app` = '$secret') AS 'numUsers',(select count(1) FROM `sessions` WHERE `app` = '$secret' AND `validated` = 1 AND `expiry` > " . time() . ") AS 'numOnlineUsers',(select count(1) FROM `keys` WHERE `app` = '$secret') AS 'numKeys';", 0, 1800);
 
@@ -978,6 +981,45 @@ switch (hex2bin($_POST['type'])) {
                 "message" => "Session is validated."
             )), $enckey));
         }
+	case 'changeUsername':
+        // retrieve session info
+        $sessionid = misc\etc\sanitize(hex2bin($_POST['sessionid']));
+        $session = api\shared\primary\getSession($sessionid, $secret);
+        $enckey = $session["enckey"];
+		
+		if (!$session["validated"]) {
+			die(api\v1_0\Encrypt(json_encode(array(
+				"success" => false,
+				"message" => "$sessionunauthed"
+			)), $enckey));
+        }
+
+        $credential = $session["credential"];
+		
+		$resp = misc\user\changeUsername($credential, $_POST['newUsername'], $secret);
+		switch($resp) {
+			case 'already_used':
+				die(api\v1_0\Encrypt(json_encode(array(
+					"success" => false,
+					"message" => "Username already used!"
+				)), $enckey));
+			case 'failure':
+				die(api\v1_0\Encrypt(json_encode(array(
+					"success" => false,
+					"message" => "Failed to change username!"
+				)), $enckey));
+			case 'success':
+				misc\session\killSingular($sessionid, $secret);
+				die(api\v1_0\Encrypt(json_encode(array(
+					"success" => true,
+					"message" => "Successfully changed username, user logged out."
+				)), $enckey));
+			default:
+				die(api\v1_0\Encrypt(json_encode(array(
+					"success" => false,
+					"message" => "Unhandled Error! Contact us if you need help"
+				)), $enckey));
+		}
     default:
         die(json_encode(array(
             "success" => false,

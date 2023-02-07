@@ -19,7 +19,8 @@ function vpnCheck($ipaddr)
 	if($httpcode == 429) {
 		return false;
 	}
-	if($json->proxy) {
+	
+	if($json->proxy || $json->hosting) {
 		return true;
 	}
 	return false;

@@ -58,6 +58,20 @@ if (isset($_POST['deleteblack'])) {
             break;
     }
 }
+if (isset($_POST['addwhite'])) {
+    $resp = misc\blacklist\addWhite($_POST['ip']);
+    switch ($resp) {
+        case 'failure':
+            dashboard\primary\error("Failed to add whitelist!");
+            break;
+        case 'success':
+            dashboard\primary\success("Successfully added whitelist!");
+            break;
+        default:
+            dashboard\primary\error("Unhandled Error! Contact us if you need help");
+            break;
+    }
+}
 ?>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
@@ -70,6 +84,9 @@ if (isset($_POST['deleteblack'])) {
         <button data-bs-toggle="modal" type="button" data-bs-target="#delete-blacklists"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All Blacklists</button>
+		<button data-bs-toggle="modal" type="button" data-bs-target="#create-whitelist"
+            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
+            Create Whitelist</button>
     </form>
     <br>
 
@@ -182,7 +199,63 @@ if (isset($_POST['deleteblack'])) {
             </div>
         </div>
     </div>
+	
+	<div id="create-whitelist" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+        style="display: none;">
 
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header d-flex align-items-center">
+
+                    <h4 class="modal-title">Add Whitelist</h4>
+
+                    <!--begin::Close-->
+                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                        <span class="svg-icon svg-icon-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
+                                    transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
+                                    fill="black" />
+                            </svg>
+                        </span>
+                    </div>
+                    <!--end::Close-->
+                </div>
+
+                <div class="modal-body">
+
+                    <form method="post">
+
+                        <div class="form-group">
+
+                            <label for="recipient-name" class="control-label">IP Address:</label>
+
+                            <input type="text" class="form-control" placeholder="IP to whitelist from VPN check"
+                                name="ip" required>
+
+                        </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                    <button class="btn btn-danger" name="addwhite">Add</button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
     <table id="kt_datatable_blacklists" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
         <thead>

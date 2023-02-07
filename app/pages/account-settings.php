@@ -46,8 +46,14 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
         if (isset($_POST['pfp']) && trim($_POST['pfp']) != '') {
             if (!filter_var($pfp, FILTER_VALIDATE_URL)) {
                 dashboard\primary\error("Invalid Url For Profile Image!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
                 return;
             }
+			if (strpos($pfp, "file:///") !== false) {
+				dashboard\primary\error("Url must start with https://");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+                return;
+			}
             $_SESSION['img'] = $pfp;
             mysqli_query($link, "UPDATE `accounts` SET `img` = '$pfp' WHERE `username` = '" . $_SESSION['username'] . "'");
         }

@@ -1,10 +1,6 @@
 <?php
 
-//error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
-
-/* Attempt MySQL server connection. Assuming you are running MySQL
-
-server with default setting (user 'root' with no password) */
+error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
 
 $link = mysqli_connect("localhost", "root", "", "main");
 
@@ -19,6 +15,8 @@ if ($link === false) {
 mysqli_query($link, "SET NAMES 'utf8'");
 
 $logwebhook = ""; // discord webhook which receives login logs and keys created
+
+$resellerwebhook = ""; // discord webhook for logging reseller API events
 
 $adminwebhook = ""; // discord webhook which receives admin actions
 

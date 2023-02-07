@@ -1,5 +1,5 @@
 <?php
-//error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
+error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
 
 $redis = new Redis();
 $redis->connect('127.0.0.1', 6379);

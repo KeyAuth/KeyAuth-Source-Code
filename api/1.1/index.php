@@ -75,10 +75,13 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $ip = api\shared\primary\getIp();
         if ($vpnblock) {
             if (api\shared\primary\vpnCheck($ip)) {
-                die(json_encode(array(
-                    "success" => false,
-                    "message" => "$vpnblocked"
-                )));
+				$row = misc\cache\fetch('KeyAuthWhitelist:' . $secret . ':' . $ip, "SELECT 1 FROM `whitelist` WHERE `ip` = '$ip' AND `app` = '$secret'", 0);
+				if($row == "not_found") {
+					die(json_encode(array(
+						"success" => false,
+						"message" => "$vpnblocked"
+					)));
+				}
             }
         }
 
@@ -137,7 +140,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // session init
         $time = time() + $sessionexpiry;
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', NULLIF('$enckey', ''), '$ip')");
+        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', '".time()."', NULLIF('$enckey', ''), '$ip')");
         misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
 
         dupe:
@@ -165,7 +168,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         // Read in username
         $username = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
@@ -249,7 +251,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         // Read in username
         $username = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
@@ -348,7 +349,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         // Read in username
         $username = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
@@ -428,7 +428,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
         $checkkey = misc\etc\sanitize($_POST['key'] ?? $_GET['key']);
 
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
@@ -581,7 +580,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
     case 'setvar':
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
         if (!$session["validated"]) {
             die(json_encode(array(
                 "success" => false,
@@ -609,7 +607,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
     case 'getvar':
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
         if (!$session["validated"]) {
             die(json_encode(array(
                 "success" => false,
@@ -638,7 +635,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         $varid = misc\etc\sanitize($_POST['varid'] ?? $_GET['varid']);
 
@@ -672,7 +668,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
         $ip = api\shared\primary\getIp();
@@ -694,7 +689,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
         if (!$session["validated"]) {
             die(json_encode(array(
                 "success" => false,
@@ -718,7 +712,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
         if (!$session["validated"]) {
             die(json_encode(array(
                 "success" => false,
@@ -775,7 +768,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         $credential = $session["credential"];
 
@@ -848,7 +840,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         $webid = misc\etc\sanitize($_POST['webid'] ?? $_GET['webid']);
         $row = misc\cache\fetch('KeyAuthWebhook:' . $secret . ':' . $webid, "SELECT `baselink`, `useragent`, `authed` FROM `webhooks` WHERE `webid` = '$webid' AND `app` = '$secret'", 0);
@@ -903,7 +894,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         $fileid = misc\etc\sanitize($_POST['fileid'] ?? $_GET['fileid']);
 
@@ -957,7 +947,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         $credential = $session["credential"];
         if (!$session["validated"]) {
@@ -994,7 +983,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-        $enckey = $session["enckey"];
 
         $credential = $session["credential"];
         if (!$session["validated"]) {
@@ -1008,6 +996,43 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "message" => "Session is validated."
             )));
         }
+	case 'changeUsername':
+        $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
+        $session = api\shared\primary\getSession($sessionid, $secret);
+		
+		if (!$session["validated"]) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "$sessionunauthed"
+            )));
+        }
+
+        $credential = $session["credential"];
+		
+		$resp = misc\user\changeUsername($credential, $_POST['newUsername'] ?? $_GET['newUsername'], $secret);
+		switch($resp) {
+			case 'already_used':
+				die(json_encode(array(
+					"success" => false,
+					"message" => "Username already used!"
+				)));
+			case 'failure':
+				die(json_encode(array(
+					"success" => false,
+					"message" => "Failed to change username!"
+				)));
+			case 'success':
+				misc\session\killSingular($sessionid, $secret);
+				die(json_encode(array(
+					"success" => true,
+					"message" => "Successfully changed username, user logged out."
+				)));
+			default:
+				die(json_encode(array(
+					"success" => false,
+					"message" => "Unhandled Error! Contact us if you need help"
+				)));
+		}
     default:
         die(json_encode(array(
             "success" => false,

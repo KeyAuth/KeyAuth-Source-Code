@@ -20,6 +20,7 @@ function deleteSingular($username, $secret = null)
 	}
 	
 	mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `user` = '$username'");
+	mysqli_query($link, "DELETE FROM `uservars` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `user` = '$username'");
 	mysqli_query($link, "DELETE FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");
 
 	if (mysqli_affected_rows($link) > 0) {
@@ -265,8 +266,13 @@ function subtract($username, $sub, $seconds, $secret = null)
 		return 'invalid_seconds';
 	}
 	
-	mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`-$seconds WHERE `user` = '$username' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-		
+	if($username == "all") {
+		mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`-$seconds WHERE `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+	}
+	else {
+		mysqli_query($link, "UPDATE `subs` SET `expiry` = `expiry`-$seconds WHERE `user` = '$username' AND `subscription` = '$sub' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+	}
+	
 	if (mysqli_affected_rows($link) > 0) {
 		cache\purge('KeyAuthSubs:' . ($secret ?? $_SESSION['app']) . ':' . $username);
 		return 'success';
@@ -368,6 +374,52 @@ function resetAll($secret = null)
 		}
 		return 'success';
 	} else {
+		return 'failure';
+	}
+}
+function changeUsername($oldUsername, $newUsername, $secret = null) {
+	$oldUsername = etc\sanitize($oldUsername);
+	$newUsername = etc\sanitize($newUsername);
+	
+	global $link;
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
+	$result = mysqli_query($link, "SELECT 1 FROM `users` WHERE `username` = '$newUsername' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+	if(mysqli_num_rows($result) > 0) {
+		return 'already_used';
+	}
+	mysqli_query($link, "UPDATE `users` SET `username` = '$newUsername' WHERE `username` = '$oldUsername' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+	if (mysqli_affected_rows($link) > 0) {
+		mysqli_query($link, "UPDATE `subs` SET `user` = '$newUsername' WHERE `user` = '$oldUsername' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		mysqli_query($link, "UPDATE `uservars` SET `user` = '$newUsername' WHERE `user` = '$oldUsername' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		mysqli_query($link, "UPDATE `chatmsgs` SET `user` = '$newUsername' WHERE `author` = '$oldUsername' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		mysqli_query($link, "UPDATE `keys` SET `usedby` = '$newUsername' WHERE `usedby` = '$oldUsername' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+		cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $oldUsername);
+		cache\purge('KeyAuthSubs:' . ($secret ?? $_SESSION['app']) . ':' . $oldUsername);
+		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
+			cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
+			cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
+		}
+		return 'success';
+	}
+	else {
+		return 'failure';
+	}
+}
+function changePassword($username, $password, $secret = null) {
+	$username = etc\sanitize($username);
+	$password = etc\sanitize($password);
+	
+	global $link;
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
+	mysqli_query($link, "UPDATE `users` SET `password` = '" . password_hash($password, PASSWORD_BCRYPT) . "' WHERE `username` = '$username' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
+	if (mysqli_affected_rows($link) > 0) {
+		cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
+		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
+			cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
+		}
+		return 'success';
+	}
+	else {
 		return 'failure';
 	}
 }

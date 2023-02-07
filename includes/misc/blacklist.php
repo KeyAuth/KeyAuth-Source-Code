@@ -76,3 +76,33 @@ function deleteSingular($blacklist, $type, $secret = null)
 		return 'failure';
 	}
 }
+function addWhite($ip, $secret = null)
+{
+	global $link;
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
+	$ip = etc\sanitize($ip);
+
+	mysqli_query($link, "INSERT INTO `whitelist`(`ip`, `app`) VALUES ('$ip','" . ($secret ?? $_SESSION['app']) . "')");
+	cache\purge('KeyAuthWhitelist:' . ($secret ?? $_SESSION['app']) . ':' . $ip);
+			
+	if (mysqli_affected_rows($link) > 0) {
+		return 'success';
+	} else {
+		return 'failure';
+	}
+}
+function deleteWhite($ip, $secret = null)
+{
+	global $link;
+	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
+	$ip = etc\sanitize($ip);
+
+	mysqli_query($link, "DELETE FROM `whitelist` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `ip` = '$ip'");
+	cache\purge('KeyAuthWhitelist:' . ($secret ?? $_SESSION['app']) . ':' . $ip);
+			
+	if (mysqli_affected_rows($link) > 0) {
+		return 'success';
+	} else {
+		return 'failure';
+	}
+}
