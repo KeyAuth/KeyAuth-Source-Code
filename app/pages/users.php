@@ -101,37 +101,78 @@ if (isset($_POST['deletesub']))
 }
 if (isset($_POST['importusers']))
 {
-	$users = misc\etc\sanitize($_POST['users']);
-	$text = explode("|", $users);
-	str_replace('"', "", $text);
-	str_replace("'", "", $text);
-	foreach ($text as $line)
-	{
-		$array = explode(',', $line);
-		$first = $array[0];
-		if (!isset($first) || $first == '')
-		{
-			dashboard\primary\error("Invalid Format!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
-			return;
+	if(!empty($_POST['authgg'])) {
+		$json = $_POST['authgg'];
+		$data = json_decode($json);
+
+		foreach($data as $key => $row) {
+			$email = misc\etc\sanitize($row->email);
+			if(strpos($email, '@') !== false) { // ensure the email field is an actual email address
+				$email = sha1(strtolower($email));
+			}
+			else {
+				$email = NULL;
+			}
+			
+			$lastlogin = strtotime(misc\etc\sanitize($row->lastlogin));
+			if($lastlogin < 0) { // check if user has ever logged in, if not set value to NULL
+				$lastlogin = NULL;
+			}
+			$username = misc\etc\sanitize($row->username);
+			$hwid = misc\etc\sanitize($row->hwid);
+			$lastip = misc\etc\sanitize($row->lastip);
+			
+			if($hwid == "NO HWID, SIGNED UP WITH PHP") { // set hwid to NULL if there's no HWID set
+				$hwid = NULL; 
+			}
+			
+			mysqli_query($link, "INSERT INTO `users`(`username`, `email`, `hwid`, `app`, `createdate`, `lastlogin`, `ip`) VALUES ('$username',NULLIF('$email', ''), NULLIF('$hwid', ''),'" . $_SESSION['app'] . "', UNIX_TIMESTAMP(),NULLIF('$lastlogin', ''), NULLIF('$lastip', ''))");
+			
+			$expiry = strtotime(misc\etc\sanitize($row->expiry_date));
+			if($expiry > time()) { // check if user's subscription is still active or expired.
+				$rank = misc\etc\sanitize($row->rank) + 1;
+				mysqli_query($link, "INSERT INTO `subs`(`user`, `subscription`, `expiry`, `app`, `key`) VALUES ('$username','rank ". $rank ."', '$expiry','" . $_SESSION['app'] . "', '$username')");
+			}
+			
+			if(!empty($row->variable)) { // check if user has a variable assigned to it. KeyAuth is superior and allows multiple user variables.
+				$variable = misc\etc\sanitize($row->variable);
+				mysqli_query($link, "INSERT INTO `uservars`(`name`, `data`, `user`, `app`) VALUES ('main','$variable', '$username', '" . $_SESSION['app'] . "')");
+			}
 		}
-		$second = $array[1];
-		if (!isset($second) || $second == '')
+	}
+	else {
+		$users = misc\etc\sanitize($_POST['users']);
+		$text = explode("|", $users);
+		str_replace('"', "", $text);
+		str_replace("'", "", $text);
+		foreach ($text as $line)
 		{
-			dashboard\primary\error("Invalid Format!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
-			return;
+			$array = explode(',', $line);
+			$first = $array[0];
+			if (!isset($first) || $first == '')
+			{
+				dashboard\primary\error("Invalid Format!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+			}
+			$second = $array[1];
+			if (!isset($second) || $second == '')
+			{
+				dashboard\primary\error("Invalid Format!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+			}
+			$third = $array[2];
+			if (!isset($third) || $third == '')
+			{
+				dashboard\primary\error("Invalid Format!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+			}
+			$expiry = ($third * 86400) + time();
+			mysqli_query($link, "INSERT INTO `users` (`username`, `hwid`, `app`,`owner`, `createdate`) VALUES ('$first','$second','" . $_SESSION['app'] . "','" . $_SESSION['username'] . "','" . time() . "')");
+			mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$first','default','$expiry','" . $_SESSION['app'] . "')");
 		}
-		$third = $array[2];
-		if (!isset($third) || $third == '')
-		{
-			dashboard\primary\error("Invalid Format!");
-			echo "<meta http-equiv='Refresh' Content='2;'>";
-			return;
-		}
-		$expiry = ($third * 86400) + time();
-		mysqli_query($link, "INSERT INTO `users` (`username`, `hwid`, `app`,`owner`, `createdate`) VALUES ('$first','$second','" . $_SESSION['app'] . "','" . $_SESSION['username'] . "','" . time() . "')");
-		mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES ('$first','default','$expiry','" . $_SESSION['app'] . "')");
 	}
     dashboard\primary\success("Successfully imported users!");
 }
@@ -652,6 +693,15 @@ if (mysqli_num_rows($result) > 0)
 
                             <input class="form-control" name="users"
                                 placeholder="Format: username,hwid,days|username,hwid,days">
+
+                        </div>
+						
+						<div class="form-group">
+
+                            <label for="recipient-name" class="control-label">Import from auth.gg:</label>
+
+                            <input class="form-control" name="authgg"
+                                placeholder="Paste in JSON from developers.auth.gg">
 
                         </div>
 						

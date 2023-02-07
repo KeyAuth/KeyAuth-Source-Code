@@ -139,33 +139,61 @@ if (isset($_POST['savekey'])) {
 }
 
 if (isset($_POST['importkeys'])) {
-    $keys = misc\etc\sanitize($_POST['keys']);
-    $text = explode("|", $keys);
-    str_replace('"', "", $text);
-    str_replace("'", "", $text);
-    foreach ($text as $line) {
-        $array = explode(',', $line);
-        $first = $array[0];
-        if (!isset($first) || $first == '') {
-            dashboard\primary\error("Invalid Format, please watch tutorial video!");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
-        $second = $array[1];
-        if (!isset($second) || $second == '') {
-            dashboard\primary\error("Invalid Format, please watch tutorial video!");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
-        $third = $array[2];
-        if (!isset($third) || $third == '') {
-            dashboard\primary\error("Invalid Format, please watch tutorial video!");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
-        $expiry = $third * 86400;
-        mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$first','$expiry','Not Used','$second','" . $_SESSION['username'] . "','" . time() . "','" . $_SESSION['app'] . "')");
-    }
+	
+	if(!empty($_POST['authgg'])) {
+		$json = $_POST['authgg'];
+		$data = json_decode($json);
+
+		$levels = array();
+		foreach($data as $key => $row) {
+			$license = misc\etc\sanitize($row->token);
+			$level = misc\etc\sanitize($row->rank) + 1;
+			$usedby = misc\etc\sanitize($row->used_by);
+			$expires = misc\etc\sanitize($row->days) * 86400; // convert num of days to unix
+			$status = "Not Used";
+			if(!empty($usedby)) {
+				$status = "Used";
+			}
+			else {
+				if(!in_array($level, $levels)) {
+					mysqli_query($link, "INSERT INTO `subscriptions`(`name`, `level`, `app`) VALUES ('rank  ".$level."','$level', '" . $_SESSION['app'] . "')");
+					$levels[] = $level; // prevent doing an insert statement for the same level twice
+				}
+				$usedby = NULL;
+			}
+			
+			mysqli_query($link, "INSERT INTO `keys`(`key`, `expires`, `status`, `level`, `genby`, `gendate`, `usedby`, `app`) VALUES ('$license','$expires', '$status', '$level', '" . $_SESSION['username'] . "', UNIX_TIMESTAMP(), NULLIF('$usedby', ''), '" . $_SESSION['app'] . "')");
+		}
+	}
+	else {
+		$keys = misc\etc\sanitize($_POST['keys']);
+		$text = explode("|", $keys);
+		str_replace('"', "", $text);
+		str_replace("'", "", $text);
+		foreach ($text as $line) {
+			$array = explode(',', $line);
+			$first = $array[0];
+			if (!isset($first) || $first == '') {
+				dashboard\primary\error("Invalid Format, please watch tutorial video!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+			}
+			$second = $array[1];
+			if (!isset($second) || $second == '') {
+				dashboard\primary\error("Invalid Format, please watch tutorial video!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+			}
+			$third = $array[2];
+			if (!isset($third) || $third == '') {
+				dashboard\primary\error("Invalid Format, please watch tutorial video!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+			}
+			$expiry = $third * 86400;
+			mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$first','$expiry','Not Used','$second','" . $_SESSION['username'] . "','" . time() . "','" . $_SESSION['app'] . "')");
+		}
+	}
     dashboard\primary\success("Successfully imported licenses!");
 }
 if (isset($_POST['addtime'])) {
@@ -329,7 +357,7 @@ if (isset($_POST['genkeys'])) {
                     <form method="post">
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">Amount:</label>
-                            <input type="number" class="form-control" name="amount" placeholder="Default 1"
+                            <input type="number" min="1" class="form-control" name="amount" placeholder="Default 1"
                                 value="<?php if (!is_null($amt)) {
                                                                                                                         echo $amt;
                                                                                                                     } ?>">
@@ -455,6 +483,11 @@ if (isset($_POST['genkeys'])) {
                                     title="Make sure you have a subscription created that matches each level of the keys you're importing."></i></label>
                             <input class="form-control" name="keys"
                                 placeholder="Format: KEYHERE,LVLHERE,DAYSHERE|KEYHERE,LVLHERE,DAYSHERE">
+                        </div>
+						<div class="form-group">
+                            <label for="recipient-name" class="control-label">Import from auth.gg:</label>
+                            <input class="form-control" name="authgg"
+                                placeholder="Paste in JSON from developers.auth.gg">
                         </div>
                 </div>
                 <div class="modal-footer">
