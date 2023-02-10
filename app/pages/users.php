@@ -1288,7 +1288,7 @@ $rows[] = $r;
 foreach ($rows as $subrow)
 {
 $sub = $subrow['subscription'];
-$value = "[" . $subrow['subscription'] . "]" . " - Expires: <script>document.write(convertTimestamp(" . $subrow["expiry"] . "));</script>";
+$value = "[" . $subrow['subscription'] . "] - Expires: <script>document.write(convertTimestamp(" . $subrow["expiry"] . "));</script>";
 ?>
 
                                 <option value="<?php echo $sub; ?>"><?php echo $value; ?></option>

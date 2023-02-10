@@ -298,19 +298,16 @@ switch (hex2bin($_POST['type'])) {
                         "success" => false,
                         "message" => "$usernamenotfound"
                     )), $enckey));
-                    break;
                 case 'sub_missing':
                     die(api\v1_0\Encrypt(json_encode(array(
                         "success" => false,
                         "message" => "$nosublevel"
                     )), $enckey));
-                    break;
                 case 'failure':
                     die(api\v1_0\Encrypt(json_encode(array(
                         "success" => false,
                         "message" => "Failed to upgrade for some reason."
                     )), $enckey));
-                    break;
                 case 'success':
                     // set key to used, and set usedby
                     mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `usedon` = '" . time() . "', `usedby` = '$username' WHERE `key` = '$checkkey' AND `app` = '$secret'");
@@ -320,13 +317,11 @@ switch (hex2bin($_POST['type'])) {
                         "success" => true,
                         "message" => "Upgraded successfully"
                     )), $enckey));
-                    break;
                 default:
                     die(api\v1_0\Encrypt(json_encode(array(
                         "success" => false,
                         "message" => "Unhandled Error! Contact us if you need help"
                     )), $enckey));
-                    break;
             }
         }
 

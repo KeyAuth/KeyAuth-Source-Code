@@ -154,7 +154,7 @@ function unban($username, $secret = null)
 	$ip = $row["ip"];
 	cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . $ip);
 	if(!is_null($hwid)) {
-		cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . '*' . ':' . $hwid);
+		cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':*:' . $hwid);
 	}
 	mysqli_query($link, "DELETE FROM `bans` WHERE `hwid` = '$hwid' OR `ip` = '$ip' AND `app` = '" . ($secret ?? $_SESSION['app']) . "'");
 	mysqli_query($link, "UPDATE `users` SET `banned` = NULL WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `username` = '$username'");

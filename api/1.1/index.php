@@ -313,19 +313,16 @@ switch ($_POST['type'] ?? $_GET['type']) {
                         "success" => false,
                         "message" => "$usernamenotfound"
                     )));
-                    break;
                 case 'sub_missing':
                     die(json_encode(array(
                         "success" => false,
                         "message" => "$nosublevel"
                     )));
-                    break;
                 case 'failure':
                     die(json_encode(array(
                         "success" => false,
                         "message" => "Failed to upgrade for some reason."
                     )));
-                    break;
                 case 'success':
                     // set key to used, and set usedby
                     mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `usedon` = '" . time() . "', `usedby` = '$username' WHERE `key` = '$checkkey'");
@@ -335,13 +332,11 @@ switch ($_POST['type'] ?? $_GET['type']) {
                         "success" => true,
                         "message" => "Upgraded successfully"
                     )));
-                    break;
                 default:
                     die(json_encode(array(
                         "success" => false,
                         "message" => "Unhandled Error! Contact us if you need help"
                     )));
-                    break;
             }
         }
 

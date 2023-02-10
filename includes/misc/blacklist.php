@@ -19,7 +19,7 @@ function add($data, $type, $secret = null)
 			break;
 		case 'Hardware ID':
 			mysqli_query($link, "INSERT INTO `bans`(`hwid`, `type`, `app`) VALUES ('$data','hwid','" . ($secret ?? $_SESSION['app']) . "')");
-			cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . '*' . ':' . $data);
+			cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':*:' . $data);
 			break;
 		default:
 			return 'invalid';
@@ -62,7 +62,7 @@ function deleteSingular($blacklist, $type, $secret = null)
 			break;
 		case 'hwid':
 			mysqli_query($link, "DELETE FROM `bans` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `hwid` = '$blacklist'");
-			cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':' . '*' . ':' . $blacklist);
+			cache\purgePattern('KeyAuthBlacklist:' . ($secret ?? $_SESSION['app']) . ':*:' . $blacklist);
 			break;
 		default:
 			return 'invalid';
