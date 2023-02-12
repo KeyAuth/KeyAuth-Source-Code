@@ -2,7 +2,7 @@
 # keyauth.cc
 
 # contains MySQL credentials, discord webhooks, and API keys
-/includes/connection.php
+includes/connection.php
 
 # contains Redis password
 /includes/redis.php
