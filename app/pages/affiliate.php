@@ -1,5 +1,5 @@
 <?php
-if ($_SESSION['role'] != "developer" && $_SESSION['role'] != "seller") {
+if (($_SESSION['role'] != "developer" && $_SESSION['role'] != "seller") || ($_SESSION['username'] == "demoseller" || $_SESSION['username'] == "demodeveloper")) {
     die('Only paid users can access affiliate dashboard');
 }
 if (isset($_POST['setcode'])) {
