@@ -4,6 +4,11 @@ if (($_SESSION['role'] != "developer" && $_SESSION['role'] != "seller") || ($_SE
 }
 if (isset($_POST['setcode'])) {
     $code = misc\etc\sanitize($_POST['code']);
+	if(strtolower($code) == "keyauth") {
+		dashboard\primary\error("Affiliate code can\'t be the name of this service, KeyAuth");
+		echo "<meta http-equiv='Refresh' Content='2'>";
+		return;
+	}
 	if(strlen($code) < 5) {
 		dashboard\primary\error("Affiliate code must be 5 or more characters long");
 		echo "<meta http-equiv='Refresh' Content='2'>";
