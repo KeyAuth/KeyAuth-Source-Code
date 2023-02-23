@@ -403,11 +403,12 @@ Private Shared version As String = "<?php echo $version; ?>"</code>
                 </div>
                 <div class="tab-pane fade" id="kt_table_widget_5_tab_8">
                     <!--begin::Table container-->
-                    <code style="display: block;white-space:pre-wrap;">let mut keyauthapp = keyauth::KeyauthApi::new(
+                    <code style="display: block;white-space:pre-wrap;">let mut keyauthapp = keyauth::v1_2::KeyauthApi::new(
     "<?php echo $appname; ?>", // This should be your application name, you can find this in your dashboard
     "<?php echo $ownerid; ?>", // This is your ownerid, you can find this in your user settings (where you change your password)
     obfstr::obfstr!("<?php echo $secret; ?>"), // This is your app secret
     "<?php echo $version; ?>",
+    "https://keyauth.cc/api/1.2", // This is the API URL, if you have custom api domain edit this
 );</code>
                     <br>
                     Repository: <a href="https://github.com/KeyAuth/KeyAuth-Rust-Example"
