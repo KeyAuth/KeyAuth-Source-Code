@@ -340,7 +340,7 @@
 				mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`, `affiliatedBy`, `expires`) VALUES ('$username', SHA1('$email'), '$pass_encrypted', '$ownerid','seller', '$ip','$code', $expires)") or die(mysqli_error($link));
 			}
 			else {
-				mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`) VALUES ('$username', SHA1('$email'), '$pass_encrypted', '$ownerid','tester', '$ip')") or die(mysqli_error($link));
+				mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`) VALUES ('$username', SHA1(LOWER('$email')), '$pass_encrypted', '$ownerid','tester', '$ip')") or die(mysqli_error($link));
 			}
 			
 			dashboard\primary\wh_log($logwebhook, "{$username} has registered successfully", $webhookun);
