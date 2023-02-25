@@ -1,9 +1,3 @@
-<?php
-if ($_SESSION['role'] == "Reseller") {
-    header("location: ./?page=reseller-licenses");
-	die();
-}
-?>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
