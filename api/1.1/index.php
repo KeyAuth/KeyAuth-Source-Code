@@ -177,11 +177,14 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         // Read in password
         $password = misc\etc\sanitize($_POST['pass'] ?? $_GET['pass']);
+		
+		// Read in email
+        $email = misc\etc\sanitize($_POST['email'] ?? $_GET['email']);
 
         // Read in hwid
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
 
-        $resp = api\v1_0\register($username, $checkkey, $password, $hwid, $secret);
+        $resp = api\v1_0\register($username, $checkkey, $password, $email, $hwid, $secret);
         switch ($resp) {
             case 'username_taken':
                 die(json_encode(array(
@@ -488,7 +491,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         // if login didn't work, attempt to register
-        $resp = api\v1_0\register($checkkey, $checkkey, $checkkey, $hwid, $secret);
+        $resp = api\v1_0\register($checkkey, $checkkey, $checkkey, NULL, $hwid, $secret);
         switch ($resp) {
             case 'username_taken':
                 die(json_encode(array(

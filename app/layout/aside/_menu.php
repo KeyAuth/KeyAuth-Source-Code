@@ -221,16 +221,6 @@
 						            <?php
 									if ($role == "developer" || $role == "seller") {
 									?>
-									<div class="menu-item">
-						                <a class="menu-link <?php if ($page == "affiliate") {
-																	echo "active";
-																} ?> " href="?page=affiliate">
-						                    <span class="menu-icon">
-						                        <i data-feather="share-2"></i>
-						                    </span>
-						                    <span class="menu-title">Affiliate</span>
-						                </a>
-						            </div>
 						            <div class="menu-item">
 						                <a class="menu-link <?php if ($page == "manage-accs") {
 																	echo "active";

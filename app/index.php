@@ -52,8 +52,6 @@ if (!$_SESSION['app']) // no app selected yet
         $_SESSION['app'] = $row["secret"];
     }
 }
-
-
 ?>
 
 <!DOCTYPE html>

@@ -166,11 +166,14 @@ switch (hex2bin($_POST['type'])) {
 
         // Read in password
         $password = misc\etc\sanitize(api\v1_0\Decrypt($_POST['pass'], $enckey));
+		
+		// Read in email
+        $email = misc\etc\sanitize(api\v1_0\Decrypt($_POST['email'], $enckey));
 
         // Read in hwid
         $hwid = misc\etc\sanitize(api\v1_0\Decrypt($_POST['hwid'], $enckey));
 
-        $resp = api\v1_0\register($username, $checkkey, $password, $hwid, $secret);
+        $resp = api\v1_0\register($username, $checkkey, $password, $email, $hwid, $secret);
         switch ($resp) {
             case 'username_taken':
                 die(api\v1_0\Encrypt(json_encode(array(
@@ -466,7 +469,7 @@ switch (hex2bin($_POST['type'])) {
         }
 
         // if login didn't work, attempt to register
-        $resp = api\v1_0\register($checkkey, $checkkey, $checkkey, $hwid, $secret);
+        $resp = api\v1_0\register($checkkey, $checkkey, $checkkey, NULL, $hwid, $secret);
         switch ($resp) {
             case 'username_taken':
                 die(api\v1_0\Encrypt(json_encode(array(
@@ -818,6 +821,7 @@ switch (hex2bin($_POST['type'])) {
         $enckey = $session["enckey"];
 
         $webid = misc\etc\sanitize(api\v1_0\Decrypt($_POST['webid'], $enckey));
+
         $row = misc\cache\fetch('KeyAuthWebhook:' . $secret . ':' . $webid, "SELECT `baselink`, `useragent`, `authed` FROM `webhooks` WHERE `webid` = '$webid' AND `app` = '$secret'", 0);
         if ($row == "not_found") {
             die(api\v1_0\Encrypt(json_encode(array(
@@ -846,7 +850,7 @@ switch (hex2bin($_POST['type'])) {
         $params = misc\etc\sanitize(api\v1_0\Decrypt($_POST['params'], $enckey));
         $body = api\v1_0\Decrypt($_POST['body'], $enckey);
         $contType = misc\etc\sanitize(api\v1_0\Decrypt($_POST['conttype'], $enckey));
-
+		
         $url = $baselink .= urldecode($params);
 
         $ch = curl_init($url);

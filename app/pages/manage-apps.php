@@ -7,7 +7,9 @@ if ($_SESSION['role'] == "Reseller") {
 
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-
+	<div class="alert alert-warning" role="alert">
+		Our old Discord server was banned, please join the new one <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
+	</div>
     <?php
 
 	if (isset($_POST['selectApp'])) {
@@ -40,6 +42,7 @@ if ($_SESSION['role'] == "Reseller") {
 		$appname = misc\etc\sanitize($_POST['appname']);
 		if ($appname == "") {
 			dashboard\primary\error("Input a valid name");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 
@@ -47,6 +50,7 @@ if ($_SESSION['role'] == "Reseller") {
 		if (mysqli_num_rows($result) > 0) {
 			mysqli_close($link);
 			dashboard\primary\error("You already own application with this name!");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 
@@ -58,6 +62,7 @@ if ($_SESSION['role'] == "Reseller") {
 			if (mysqli_num_rows($result) > 0) {
 				mysqli_close($link);
 				dashboard\primary\error("Tester plan only supports one application!");
+                echo '<meta http-equiv="refresh" content="2">';
 				return;
 			}
 		}
@@ -65,6 +70,7 @@ if ($_SESSION['role'] == "Reseller") {
 		if ($role == "Manager") {
 			mysqli_close($link);
 			dashboard\primary\error("Manager Accounts Are Not Allowed To Create Applications");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 
@@ -98,16 +104,19 @@ if ($_SESSION['role'] == "Reseller") {
 		$appname = misc\etc\sanitize($_POST['appname']);
 		if ($appname == "") {
 			dashboard\primary\error("Input a valid name");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 		if ($role == "Manager") {
 			dashboard\primary\error("Manager Accounts Aren\'t Allowed To Rename Applications");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 		$result = mysqli_query($link, "SELECT 1 FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "' AND `name` = '$appname'");
 		$num = mysqli_num_rows($result);
 		if ($num > 0) {
 			dashboard\primary\error("You already have an application with this name!");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 		mysqli_query($link, "UPDATE `accounts` SET `app` = '$appname' WHERE `app` = '" . $_SESSION['name'] . "' AND `owner` = '" . $_SESSION['username'] . "'");
@@ -132,6 +141,7 @@ if ($_SESSION['role'] == "Reseller") {
 	if (isset($_POST['pauseapp'])) {
 		if ($role == "Manager") {
 			dashboard\primary\error("Manager accounts aren\'t allowed to pause applications");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 		misc\cache\purgePattern('KeyAuthSubs:' . $_SESSION["app"]);
@@ -141,6 +151,7 @@ if ($_SESSION['role'] == "Reseller") {
 	if (isset($_POST['unpauseapp'])) {
 		if ($role == "Manager") {
 			dashboard\primary\error("Manager accounts aren\'t allowed to unpause applications");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 		misc\cache\purgePattern('KeyAuthSubs:' . $_SESSION["app"]);
@@ -151,6 +162,7 @@ if ($_SESSION['role'] == "Reseller") {
 	if (isset($_POST['refreshapp'])) {
 		if ($role == "Manager") {
 			dashboard\primary\error("Manager Accounts Aren\'t Allowed To Refresh Applications");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
         $gen = misc\etc\generateRandomString();
@@ -190,6 +202,7 @@ if ($_SESSION['role'] == "Reseller") {
 	if (isset($_POST['deleteapp'])) {
 		if ($role == "Manager") {
 			error("Manager Accounts Aren\'t Allowed To Delete Applications");
+            echo '<meta http-equiv="refresh" content="2">';
 			return;
 		}
 		$app = $_SESSION['app'];

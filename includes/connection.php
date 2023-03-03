@@ -30,3 +30,7 @@ $adminapikey = ""; // api key for api/admin (an api only my staff can use)
 $proxycheckapikey = ""; // proxycheck.io API key to check if IP is considered a VPN
 
 $bunnyNetKey = ""; // bunny.net CDN used for custom domains
+
+$awsAccessKey = ""; // used for AWS SES to send emails
+
+$awsSecretKey = ""; // used for AWS SES to send emails

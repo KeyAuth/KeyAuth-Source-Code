@@ -424,6 +424,9 @@ if (isset($_POST['unpauseuser']))
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
+	<div class="alert alert-warning" role="alert">
+		Our old Discord server was banned, please join the new one <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
+	</div>
     <form method="POST">
         <button data-bs-toggle="modal" type="button" id="modal" data-bs-target="#create-user"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>

@@ -1,4 +1,4 @@
-	<?php
+<?php
 	include '../includes/connection.php';
 	require '../includes/misc/autoload.phtml';
 	require '../includes/dashboard/autoload.phtml';
@@ -33,10 +33,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="keywords"
 			content="KeyAuth, Cloud Authentication, Key Authentication,Authentication, API authentication,Security, Encryption authentication, Authenticated encryption, Cybersecurity, Developer, SaaS, Software Licensing, Licensing" />
-		<meta property=”og:description”
+		<meta property="og:description"
 			content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors" />
 		<meta property="og:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png" />
-		<meta property=”og:site_name” content="KeyAuth | Secure your software from piracy." />
+		<meta property="og:site_name" content="KeyAuth | Secure your software from piracy." />
 
 		<!-- Schema.org markup for Google+ -->
 		<meta itemprop="name" content="KeyAuth - Open Source Auth">
@@ -117,22 +117,10 @@
 					</a>
 					<!--end::Logo-->
 					<?php
-					$affiliateValid = 0;
 					if(isset($_GET['af'])) {
-					// var_dump($_SERVER['HTTP_REFERER']);
-					$code = misc\etc\sanitize($_GET['af']);
-					$result = mysqli_query($link, "SELECT 1 FROM `accounts` WHERE `afCode` = '$code'") or die(mysqli_error($link));
-					if (mysqli_num_rows($result) > 0) {
-					$affiliateValid = 1;
 					?>
-					<div class="alert alert-success">Affiliate code found! You will receive 2 month free trial when you complete registration</div>
+					<div class="alert alert-danger">We're no longer doing the affiliate system as people didn't buy afterwards and rather abused it.</div>
 					<?php
-					}
-					else {
-					?>
-					<div class="alert alert-danger">Affiliate code not found! You will <b><u>NOT</u></b> recieve 2 month free trial when you complete registration</div>
-					<?php
-					}
 					}
 					?>
 					<!--begin::Wrapper-->
@@ -311,7 +299,8 @@
 				return;
 			}
 
-			if (misc\etc\isBreached($_POST['password'])) {
+			if (misc\etc\isBreached($password)) {
+				dashboard\primary\wh_log($logwebhook, "{$username} attempted to register with leaked password `{$password}`", $webhookun);
 				dashboard\primary\error("Password has been leaked in a data breach (not from us)! Please use different password.");
 				return;
 			}
@@ -334,22 +323,11 @@
 
 			$ownerid = misc\etc\generateRandomString();
 			$ip = api\shared\primary\getIp();
-
-			if($affiliateValid) {
-				$expires = time() + 5259486;
-				mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`, `affiliatedBy`, `expires`) VALUES ('$username', SHA1('$email'), '$pass_encrypted', '$ownerid','seller', '$ip','$code', $expires)") or die(mysqli_error($link));
-			}
-			else {
-				mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`) VALUES ('$username', SHA1(LOWER('$email')), '$pass_encrypted', '$ownerid','tester', '$ip')") or die(mysqli_error($link));
-			}
+			
+			mysqli_query($link, "INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`) VALUES ('$username', SHA1(LOWER('$email')), '$pass_encrypted', '$ownerid','tester', '$ip')") or die(mysqli_error($link));
 			
 			dashboard\primary\wh_log($logwebhook, "{$username} has registered successfully", $webhookun);
-			
-			if(isset($_GET['af'])) {
-				$referrer = misc\etc\sanitize($_POST['referrer']);
-				mysqli_query($link, "INSERT INTO `afLogs` (`afCode`, `referrer`, `username`, `date`, `action`) VALUES ('$code', NULLIF('$referrer', ''), '$username', ".time().",'Registered account')") or die(mysqli_error($link));
-			}
-			
+
 			$_SESSION['logindate'] = time();
 			$_SESSION['username'] = $username;
 			$_SESSION['ownerid'] = $ownerid;

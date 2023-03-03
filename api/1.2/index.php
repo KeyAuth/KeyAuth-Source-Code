@@ -223,11 +223,14 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         // Read in password
         $password = misc\etc\sanitize($_POST['pass'] ?? $_GET['pass']);
+		
+		// Read in email
+        $email = misc\etc\sanitize($_POST['email'] ?? $_GET['email']);
 
         // Read in hwid
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
 
-        $resp = api\v1_0\register($username, $checkkey, $password, $hwid, $secret);
+        $resp = api\v1_0\register($username, $checkkey, $password, $email, $hwid, $secret);
         switch ($resp) {
             case 'username_taken':
                 $response = json_encode(array(
@@ -602,7 +605,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         // if login didn't work, attempt to register
-        $resp = api\v1_0\register($checkkey, $checkkey, $checkkey, $hwid, $secret);
+        $resp = api\v1_0\register($checkkey, $checkkey, $checkkey, NULL, $hwid, $secret);
         switch ($resp) {
             case 'username_taken':
                 $response = json_encode(array(
@@ -677,6 +680,75 @@ switch ($_POST['type'] ?? $_GET['type']) {
 					"nonce" => misc\etc\generateRandomString(32)
                 ));
         }
+        $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+        header("signature: {$sig}");
+
+        die($response);
+    case 'forgot':
+        $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
+        $session = api\shared\primary\getSession($sessionid, $secret);
+        $enckey = $session["enckey"];
+		
+		$un = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
+		$email = strtolower(misc\etc\sanitize($_POST['email'] ?? $_GET['email']));
+
+        $row = misc\cache\fetch('KeyAuthUser:' . $secret . ':' . $un, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '$secret'", 0);
+		if ($row == "not_found") {
+			$response = json_encode(array(
+                "success" => false,
+                "message" => "No user found with that username!"
+            ));
+			$sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+			header("signature: {$sig}");
+	
+			die($response);
+		}
+		
+		$emailHashed = $row['email'];
+		
+		if (sha1($email) != $emailHashed) {
+			$response = json_encode(array(
+                "success" => false,
+                "message" => "Email address do not match!"
+            ));
+		}
+		else {
+			$algos = array(
+				'ripemd128',
+				'md5',
+				'md4',
+				'tiger128,4',
+				'haval128,3',
+				'haval128,4',
+				'haval128,5'
+			);
+			$emailSecret = hash($algos[array_rand($algos)], misc\etc\generateRandomString());
+	
+			include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
+			ini_set('display_errors', 1);
+			ini_set('display_startup_errors', 1);
+			error_reporting(E_ALL);
+			mysqli_query($link, "INSERT INTO `resetUsers` (`secret`, `email`, `username`, `app`, `time`) VALUES ('$emailSecret', SHA1('$email'), '$un', '$secret', '" . time() . "')");
+			$htmlContent = " 
+                    <html> 
+                    <head> 
+                        <title>KeyAuth - You Requested A Password Reset</title> 
+                    </head> 
+                    <body> 
+                        <h1>You requested a password reset through the app {$name}</h1> 
+                        <p>Please go to <a href=\"https://keyauth.cc/resetUser/?secret={$emailSecret}\">https://keyauth.cc/resetUser/?secret={$emailSecret}</a></p>
+						<p>Also, in case you forgot, your username is: <b>{$un}</b></p>
+                        <p style=\"margin-top: 20px;\">Thanks,<br><b>KeyAuth.</b></p>
+                    </body> 
+                    </html>";
+			misc\email\send($un, $email, $htmlContent, "KeyAuth - Password Reset for {$name}");
+			$response = json_encode(array(
+				"success" => true,
+				"message" => "Successfully sent email to change password.",
+				"nonce" => misc\etc\generateRandomString(32)
+			));
+		}
+		
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
 

@@ -15,7 +15,7 @@ function Decrypt($string, $enckey)
 }
 #endregion
 #region rgstr region
-function register($un, $key, $pw, $hwid, $secret)
+function register($un, $key, $pw, $email, $hwid, $secret)
 {
     global $link; // needed to refrence active MySQL connection
     include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
@@ -85,7 +85,7 @@ function register($un, $key, $pw, $hwid, $secret)
         $password = password_hash($pw, PASSWORD_BCRYPT);
         $createdate = time();
         // create user
-        mysqli_query($link, "INSERT INTO `users` (`username`, `password`, `hwid`, `app`,`owner`,`createdate`, `lastlogin`, `ip`) VALUES ('$un','$password', NULLIF('$hwid', ''), '$secret', '$genby', '$createdate', '$createdate', '$ip')");
+        mysqli_query($link, "INSERT INTO `users` (`username`, `email`, `password`, `hwid`, `app`,`owner`,`createdate`, `lastlogin`, `ip`) VALUES ('$un',SHA(LOWER(NULLIF('$email', ''))),'$password', NULLIF('$hwid', ''), '$secret', '$genby', '$createdate', '$createdate', '$ip')");
         $result = mysqli_query($link, "SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
         $rows = array();
         if(mysqli_num_rows($result) > 0) {

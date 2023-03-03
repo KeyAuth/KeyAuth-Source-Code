@@ -18,7 +18,7 @@ CREATE TABLE `acclogs` (
 
 CREATE TABLE `accounts` (
   `username` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
-  `email` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
+  `email` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
   `password` varchar(60) COLLATE utf8_unicode_ci NOT NULL,
   `ownerid` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL,
   `role` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
@@ -134,6 +134,14 @@ CREATE TABLE `apps` (
   `customerPanelIcon` varchar(99) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://cdn.keyauth.cc/front/assets/img/favicon.png'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+CREATE TABLE `auditLog` (
+  `id` int(11) NOT NULL,
+  `user` varchar(65) NOT NULL,
+  `event` varchar(999) NOT NULL,
+  `time` int(10) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 CREATE TABLE `bans` (
   `id` int(11) NOT NULL,
   `hwid` varchar(2000) DEFAULT NULL,
@@ -219,12 +227,28 @@ CREATE TABLE `logs` (
   `logapp` varchar(64) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+CREATE TABLE `orders` (
+  `id` int(11) NOT NULL,
+  `orderID` varchar(36) NOT NULL,
+  `username` varchar(65) NOT NULL,
+  `date` int(10) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE `resets` (
   `id` int(11) NOT NULL,
   `secret` char(32) NOT NULL,
-  `email` varchar(65) NOT NULL,
+  `email` varchar(40) NOT NULL,
   `time` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `resetUsers` (
+  `id` int(11) NOT NULL,
+  `secret` varchar(32) NOT NULL,
+  `email` varchar(40) NOT NULL,
+  `username` varchar(70) NOT NULL,
+  `app` varchar(64) NOT NULL,
+  `time` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `securityKeys` (
   `id` int(11) NOT NULL,
@@ -310,6 +334,12 @@ CREATE TABLE `webhooks` (
   `authed` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE TABLE `whitelist` (
+  `id` int(11) NOT NULL,
+  `ip` varchar(49) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 
 ALTER TABLE `acclogs`
   ADD PRIMARY KEY (`id`);
@@ -321,6 +351,9 @@ ALTER TABLE `afLogs`
   ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `apps`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `auditLog`
   ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `bans`
@@ -352,7 +385,13 @@ ALTER TABLE `keys`
 ALTER TABLE `logs`
   ADD PRIMARY KEY (`id`);
 
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`id`);
+
 ALTER TABLE `resets`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `resetUsers`
   ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `securityKeys`
@@ -385,6 +424,9 @@ ALTER TABLE `webhooks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `baselink` (`baselink`);
 
+ALTER TABLE `whitelist`
+  ADD PRIMARY KEY (`id`);
+
 
 ALTER TABLE `acclogs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
@@ -393,6 +435,9 @@ ALTER TABLE `afLogs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `apps`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `auditLog`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `bans`
@@ -422,7 +467,13 @@ ALTER TABLE `keys`
 ALTER TABLE `logs`
   MODIFY `id` int(1) NOT NULL AUTO_INCREMENT;
 
+ALTER TABLE `orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 ALTER TABLE `resets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `resetUsers`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `securityKeys`
@@ -447,6 +498,9 @@ ALTER TABLE `vars`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `webhooks`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `whitelist`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 

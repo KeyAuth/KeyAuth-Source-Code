@@ -302,7 +302,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
 
                         <button name="updatesettings" class="btn btn-success"> <i class="fa fa-check"></i> Save</button>
                         <a type="button" class="btn btn-info" target="popup"
-                            onclick="window.open('https://discord.com/api/oauth2/authorize?client_id=866538681308545054&redirect_uri=https%3A%2F%2F<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>%2Fapi%2Fdiscord%2F&response_type=code&scope=identify%20guilds.join','popup','width=600,height=600'); return false;">
+                            onclick="window.open('https://discord.com/api/oauth2/authorize?client_id=1078136820728090634&redirect_uri=https%3A%2F%2F<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>%2Fapi%2Fdiscord%2F&response_type=code&scope=identify%20guilds.join','popup','width=600,height=600'); return false;">
                             <i class="fab fa-discord"></i> Link Discord</a>
                         <?php if (!$twofactor) {
                             echo '                <a class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#twofa"><i class="fa fa-lock"></i>Enable 2FA</a>';
