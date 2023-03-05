@@ -421,7 +421,7 @@ Private Shared version As String = "<?php echo $version; ?>"</code>
     "<?php echo $ownerid; ?>", // This is your ownerid, you can find this in your user settings (where you change your password)
     obfstr::obfstr!("<?php echo $secret; ?>"), // This is your app secret
     "<?php echo $version; ?>",
-    "https://keyauth.cc/api/1.2", // This is the API URL, if you have custom api domain edit this
+    "https://keyauth.win/api/1.2", // This is the API URL, if you have custom api domain edit this
 );</code>
                     <br>
                     Repository: <a href="https://github.com/KeyAuth/KeyAuth-Rust-Example"
