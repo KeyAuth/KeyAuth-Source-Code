@@ -314,7 +314,8 @@ CREATE TABLE `uservars` (
   `name` varchar(99) NOT NULL,
   `data` varchar(500) NOT NULL,
   `user` varchar(70) NOT NULL,
-  `app` varchar(64) NOT NULL
+  `app` varchar(64) NOT NULL,
+  `readOnly` int(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `vars` (
