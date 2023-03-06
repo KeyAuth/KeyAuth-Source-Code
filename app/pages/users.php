@@ -333,7 +333,8 @@ if (isset($_POST['resetuser']))
 }
 if (isset($_POST['setvar']))
 {
-	$resp = misc\user\setVariable(urldecode($_POST['user']), $_POST['var'], $_POST['data']);
+    $readOnly = misc\etc\sanitize($_POST['readOnly']) == NULL ? 0 : 1;
+	$resp = misc\user\setVariable(urldecode($_POST['user']), $_POST['var'], $_POST['data'], null, $readOnly);
     switch ($resp)
     {
 		case 'missing':
@@ -424,8 +425,8 @@ if (isset($_POST['unpauseuser']))
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
-	<div class="alert alert-warning" role="alert">
-		Our old Discord server was banned, please join the new one <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
+	<div class="alert alert-primary" role="alert">
+		Please join the new Discord server <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
 	</div>
     <form method="POST">
         <button data-bs-toggle="modal" type="button" id="modal" data-bs-target="#create-user"
@@ -628,17 +629,19 @@ if (mysqli_num_rows($result) > 0)
                         </div>
 
                         <div class="form-group">
-
                             <label for="recipient-name" class="control-label">Variable Data: <i
                                     class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip"
                                     data-placement="top"
                                     title="Assigns variable to selected user(s) which you can get and set from loader"></i></label>
-
                             <input type="text" class="form-control" name="data" placeholder="User variable data"
                                 required>
-
                         </div>
-
+                        <div class="form-check">
+                            <input class="form-check-input" name="readOnly" type="checkbox" id="flexCheckChecked" checked>
+                            <label class="form-check-label" for="flexCheckChecked">
+                                Read-only <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, the variable can only be updated via Seller API or this dashboard."></i>
+                            </label>
+                        </div>
                 </div>
 
                 <div class="modal-footer">

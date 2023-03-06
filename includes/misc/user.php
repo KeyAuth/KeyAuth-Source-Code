@@ -59,7 +59,7 @@ function resetSingular($username, $secret = null)
 		return 'failure';
 	}
 }
-function setVariable($user, $var, $data, $secret = null)
+function setVariable($user, $var, $data, $secret = null, $readOnly = 0)
 {
 	global $link;
 	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
@@ -77,11 +77,11 @@ function setVariable($user, $var, $data, $secret = null)
 			$rows[] = $r;
 		}
 		foreach ($rows as $row) {
-			mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '" . $row['username'] . "', '" . ($secret ?? $_SESSION['app']) . "')");
+			mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`, `readOnly`) VALUES ('$var', '$data', '" . $row['username'] . "', '" . ($secret ?? $_SESSION['app']) . "', $readOnly)");
 		}
 		cache\purgePattern('KeyAuthUserVar:' . ($secret ?? $_SESSION['app']));
 	} else {
-		mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '$user', '" . ($secret ?? $_SESSION['app']) . "')");
+		mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`, `readOnly`) VALUES ('$var', '$data', '$user', '" . ($secret ?? $_SESSION['app']) . "', $readOnly)");
 		cache\purge('KeyAuthUserVar:' . ($secret ?? $_SESSION['app']) . ':' . $var . ':' . $user);
 	}
 	if (mysqli_affected_rows($link) > 0) {

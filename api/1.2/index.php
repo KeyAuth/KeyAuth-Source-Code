@@ -796,6 +796,20 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $var = misc\etc\sanitize($_POST['var'] ?? $_GET['var']);
         $data = misc\etc\sanitize($_POST['data'] ?? $_GET['data']);
+
+        $row = misc\cache\fetch('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `data`, `readOnly` FROM `uservars` WHERE `name` = '$var' AND `user` = '" . $session["credential"] . "' AND `app` = '$secret'", 0);
+
+        $readOnly = $row["readOnly"];
+        if ($readOnly) {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "Variable is read only"
+            ));
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            header("signature: {$sig}");
+            die($response);
+		}
+
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '" . $session["credential"] . "', '$secret')");
 
@@ -839,7 +853,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $var = misc\etc\sanitize($_POST['var'] ?? $_GET['var']);
 
-        $row = misc\cache\fetch('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `data` FROM `uservars` WHERE `name` = '$var' AND `user` = '" . $session["credential"] . "' AND `app` = '$secret'", 0);
+        $row = misc\cache\fetch('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `data`, `readOnly` FROM `uservars` WHERE `name` = '$var' AND `user` = '" . $session["credential"] . "' AND `app` = '$secret'", 0);
 
         if ($row == "not_found") {
             $response = json_encode(array(
