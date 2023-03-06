@@ -333,7 +333,7 @@ if (isset($_POST['resetuser']))
 }
 if (isset($_POST['setvar']))
 {
-	$resp = misc\user\setVariable(urldecode($_POST['user']), $_POST['var'], $_POST['data']);
+	$resp = misc\user\setVariable(urldecode($_POST['user']), $_POST['var'], $_POST['data'], null, $_POST['readonly']);
     switch ($resp)
     {
 		case 'missing':
@@ -637,6 +637,15 @@ if (mysqli_num_rows($result) > 0)
                             <input type="text" class="form-control" name="data" placeholder="User variable data"
                                 required>
 
+                        </div>
+                        <div class="form-check">
+                            <br>
+                            <input class="form-check-input" name="readonly" type="checkbox" id="flexCheckChecked">
+                            <label class="form-check-label" for="flexCheckChecked">
+                                Read Only <i class="fas fa-question-circle fa-lg text-white-50"
+                                             data-bs-toggle="tooltip" data-bs-placement="top"
+                                             title="If checked, only seller api or this panel will be able to change the value of this variable."></i>
+                            </label>
                         </div>
 
                 </div>

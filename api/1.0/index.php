@@ -567,6 +567,18 @@ switch (hex2bin($_POST['type'])) {
 
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 
+	    //in cache stores wether the variable is read only in a seperate key to the variable itself, i dont know if theres a better way to do this
+	    $tmprow = misc\cache\fetch('KeyAuthUserVarPerms:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `readOnly` FROM `uservars` WHERE `name` = '$var' AND `user` = '" . $session["credential"] . "' AND `app` = '$secret'", 0);
+	    if ($tmprow != "not_found") {
+		    $readOnly = $tmprow["readOnly"];
+		    if ($readOnly == 1) {
+			    die(api\v1_0\Encrypt(json_encode(array(
+				    "success" => false,
+				    "message" => "Variable is read only",
+			    )), $enckey));
+		    }
+	    }
+
         mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '" . $session["credential"] . "', '$secret')");
 
         if (mysqli_affected_rows($link) != 0) {
