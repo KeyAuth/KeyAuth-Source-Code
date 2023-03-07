@@ -637,7 +637,7 @@ if (mysqli_num_rows($result) > 0)
                                 required>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" name="readOnly" type="checkbox" id="flexCheckChecked" checked>
+                            <input class="form-check-input" name="readOnly" type="checkbox" id="flexCheckChecked">
                             <label class="form-check-label" for="flexCheckChecked">
                                 Read-only <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, the variable can only be updated via Seller API or this dashboard."></i>
                             </label>

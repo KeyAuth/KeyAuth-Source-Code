@@ -66,6 +66,7 @@ function setVariable($user, $var, $data, $secret = null, $readOnly = 0)
 	$user = etc\sanitize($user);
 	$var = etc\sanitize($var);
 	$data = etc\sanitize($data);
+	$readOnly = intval($readOnly);
 
 	if ($user == "all") {
 		$result = mysqli_query($link, "SELECT `username` FROM `users` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
