@@ -88,18 +88,18 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $ip = api\shared\primary\getIp();
         if ($vpnblock) {
             if (api\shared\primary\vpnCheck($ip)) {
-				$row = misc\cache\fetch('KeyAuthWhitelist:' . $secret . ':' . $ip, "SELECT 1 FROM `whitelist` WHERE `ip` = '$ip' AND `app` = '$secret'", 0);
-				if($row == "not_found") {
-					$response = json_encode(array(
-						"success" => false,
-						"message" => "$vpnblocked"
-					));
-	
-					$sig = hash_hmac('sha256', $response, $secret);
-					header("signature: {$sig}");
-	
-					die($response);
-				}
+                $row = misc\cache\fetch('KeyAuthWhitelist:' . $secret . ':' . $ip, "SELECT 1 FROM `whitelist` WHERE `ip` = '$ip' AND `app` = '$secret'", 0);
+                if ($row == "not_found") {
+                    $response = json_encode(array(
+                        "success" => false,
+                        "message" => "$vpnblocked"
+                    ));
+
+                    $sig = hash_hmac('sha256', $response, $secret);
+                    header("signature: {$sig}");
+
+                    die($response);
+                }
             }
         }
 
@@ -179,7 +179,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // session init
         $time = time() + $sessionexpiry;
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', '".time()."', NULLIF('$enckey', ''), '$ip')");
+        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', '" . time() . "', NULLIF('$enckey', ''), '$ip')");
         misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
 
         dupe:
@@ -201,7 +201,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "version" => $currentver,
                 "customerPanelLink" => "https://keyauth.cc/panel/$owner/$name/"
             ),
-			"nonce" => misc\etc\generateRandomString(32)
+            "nonce" => misc\etc\generateRandomString(32)
         ));
 
         $sig = !is_null($enckey) ? hash_hmac('sha256', $resp, $secret)  : 'No encryption key supplied';
@@ -223,8 +223,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         // Read in password
         $password = misc\etc\sanitize($_POST['pass'] ?? $_GET['pass']);
-		
-		// Read in email
+
+        // Read in email
         $email = misc\etc\sanitize($_POST['email'] ?? $_GET['email']);
 
         // Read in hwid
@@ -302,7 +302,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     "success" => true,
                     "message" => "$loggedInMsg",
                     "info" => $resp,
-					"nonce" => misc\etc\generateRandomString(32)
+                    "nonce" => misc\etc\generateRandomString(32)
                 ));
                 break;
         }
@@ -365,9 +365,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
             }
 
             if (!is_null($banned)) {
-				if (strpos($keybanned, '{reason}') !== false) {
-                   $keybanned = str_replace("{reason}", $banned, $keybanned);
-				}
+                if (strpos($keybanned, '{reason}') !== false) {
+                    $keybanned = str_replace("{reason}", $banned, $keybanned);
+                }
                 $response = json_encode(array(
                     "success" => false,
                     "message" => "$keybanned"
@@ -409,11 +409,11 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     // set key to used, and set usedby
                     mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `usedon` = '" . time() . "', `usedby` = '$username' WHERE `key` = '$checkkey'");
                     misc\cache\purge('KeyAuthKeys:' . $secret . ':' . $checkkey);
-					misc\cache\purge('KeyAuthSubs:' . $secret . ':' . $username);
+                    misc\cache\purge('KeyAuthSubs:' . $secret . ':' . $username);
                     $response = json_encode(array(
                         "success" => true,
                         "message" => "Upgraded successfully",
-						"nonce" => misc\etc\generateRandomString(32)
+                        "nonce" => misc\etc\generateRandomString(32)
                     ));
                     break;
                 default:
@@ -512,9 +512,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     "success" => true,
                     "message" => "$loggedInMsg",
                     "info" => $resp,
-					"nonce" => misc\etc\generateRandomString(32)
+                    "nonce" => misc\etc\generateRandomString(32)
                 ));
-				break;
+                break;
         }
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
@@ -593,7 +593,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     "success" => true,
                     "message" => "$loggedInMsg",
                     "info" => $resp,
-					"nonce" => misc\etc\generateRandomString(32)
+                    "nonce" => misc\etc\generateRandomString(32)
                 ));
                 break;
         }
@@ -677,7 +677,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     "success" => true,
                     "message" => "$loggedInMsg",
                     "info" => $resp,
-					"nonce" => misc\etc\generateRandomString(32)
+                    "nonce" => misc\etc\generateRandomString(32)
                 ));
         }
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
@@ -688,48 +688,47 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
         $enckey = $session["enckey"];
-		
-		$un = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
-		$email = strtolower(misc\etc\sanitize($_POST['email'] ?? $_GET['email']));
+
+        $un = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
+        $email = strtolower(misc\etc\sanitize($_POST['email'] ?? $_GET['email']));
 
         $row = misc\cache\fetch('KeyAuthUser:' . $secret . ':' . $un, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '$secret'", 0);
-		if ($row == "not_found") {
-			$response = json_encode(array(
+        if ($row == "not_found") {
+            $response = json_encode(array(
                 "success" => false,
                 "message" => "No user found with that username!"
             ));
-			$sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
-			header("signature: {$sig}");
-	
-			die($response);
-		}
-		
-		$emailHashed = $row['email'];
-		
-		if (sha1($email) != $emailHashed) {
-			$response = json_encode(array(
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            header("signature: {$sig}");
+
+            die($response);
+        }
+
+        $emailHashed = $row['email'];
+
+        if (sha1($email) != $emailHashed) {
+            $response = json_encode(array(
                 "success" => false,
                 "message" => "Email address do not match!"
             ));
-		}
-		else {
-			$algos = array(
-				'ripemd128',
-				'md5',
-				'md4',
-				'tiger128,4',
-				'haval128,3',
-				'haval128,4',
-				'haval128,5'
-			);
-			$emailSecret = hash($algos[array_rand($algos)], misc\etc\generateRandomString());
-	
-			include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-			ini_set('display_errors', 1);
-			ini_set('display_startup_errors', 1);
-			error_reporting(E_ALL);
-			mysqli_query($link, "INSERT INTO `resetUsers` (`secret`, `email`, `username`, `app`, `time`) VALUES ('$emailSecret', SHA1('$email'), '$un', '$secret', '" . time() . "')");
-			$htmlContent = " 
+        } else {
+            $algos = array(
+                'ripemd128',
+                'md5',
+                'md4',
+                'tiger128,4',
+                'haval128,3',
+                'haval128,4',
+                'haval128,5'
+            );
+            $emailSecret = hash($algos[array_rand($algos)], misc\etc\generateRandomString());
+
+            include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
+            ini_set('display_errors', 1);
+            ini_set('display_startup_errors', 1);
+            error_reporting(E_ALL);
+            mysqli_query($link, "INSERT INTO `resetUsers` (`secret`, `email`, `username`, `app`, `time`) VALUES ('$emailSecret', SHA1('$email'), '$un', '$secret', '" . time() . "')");
+            $htmlContent = " 
                     <html> 
                     <head> 
                         <title>KeyAuth - You Requested A Password Reset</title> 
@@ -741,14 +740,14 @@ switch ($_POST['type'] ?? $_GET['type']) {
                         <p style=\"margin-top: 20px;\">Thanks,<br><b>KeyAuth.</b></p>
                     </body> 
                     </html>";
-			misc\email\send($un, $email, $htmlContent, "KeyAuth - Password Reset for {$name}");
-			$response = json_encode(array(
-				"success" => true,
-				"message" => "Successfully sent email to change password.",
-				"nonce" => misc\etc\generateRandomString(32)
-			));
-		}
-		
+            misc\email\send($un, $email, $htmlContent, "KeyAuth - Password Reset for {$name}");
+            $response = json_encode(array(
+                "success" => true,
+                "message" => "Successfully sent email to change password.",
+                "nonce" => misc\etc\generateRandomString(32)
+            ));
+        }
+
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
 
@@ -771,9 +770,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
             "success" => true,
             "message" => "Successfully fetched online users.",
             "users" => $rows,
-			"nonce" => misc\etc\generateRandomString(32)
+            "nonce" => misc\etc\generateRandomString(32)
         ));
-		
+
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
 
@@ -800,15 +799,18 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $row = misc\cache\fetch('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `data`, `readOnly` FROM `uservars` WHERE `name` = '$var' AND `user` = '" . $session["credential"] . "' AND `app` = '$secret'", 0);
 
         $readOnly = $row["readOnly"];
-        if ($readOnly) {
-            $response = json_encode(array(
-                "success" => false,
-                "message" => "Variable is read only"
-            ));
-            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
-            header("signature: {$sig}");
-            die($response);
-		}
+
+        if ($row != "not_found") {
+            if ($readOnly) {
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Variable is read only"
+                ));
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+                die($response);
+            }
+        }
 
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '" . $session["credential"] . "', '$secret')");
@@ -818,7 +820,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             $response = json_encode(array(
                 "success" => true,
                 "message" => "Successfully set variable",
-				"nonce" => misc\etc\generateRandomString(32)
+                "nonce" => misc\etc\generateRandomString(32)
             ));
 
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
@@ -833,7 +835,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "success" => false,
                 "message" => "Failed to set variable"
             ));
-			die($response);
+            die($response);
         }
     case 'getvar':
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
@@ -872,7 +874,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             "success" => true,
             "message" => "Successfully retrieved variable",
             "response" => $data,
-			"nonce" => misc\etc\generateRandomString(32)
+            "nonce" => misc\etc\generateRandomString(32)
         ));
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
@@ -919,7 +921,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $response = json_encode(array(
             "success" => true,
             "message" => "$msg",
-			"nonce" => misc\etc\generateRandomString(32)
+            "nonce" => misc\etc\generateRandomString(32)
         ));
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
@@ -940,7 +942,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             $response = json_encode(array(
                 "success" => true,
                 "message" => "Client is blacklisted",
-				"nonce" => misc\etc\generateRandomString(32)
+                "nonce" => misc\etc\generateRandomString(32)
             ));
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
             header("signature: {$sig}");
@@ -975,7 +977,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $channel = misc\etc\sanitize($_POST['channel'] ?? $_GET['channel']);
         $rows = misc\cache\fetch('KeyAuthChatMsgs:' . $secret . ':' . $channel, "SELECT `author`, `message`, `timestamp` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret'", 1);
 
-		if ($rows == "not_found") {
+        if ($rows == "not_found") {
             $rows = [];
         }
 
@@ -983,7 +985,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             "success" => true,
             "message" => "Successfully retrieved chat messages",
             "messages" => $rows,
-			"nonce" => misc\etc\generateRandomString(32)
+            "nonce" => misc\etc\generateRandomString(32)
         ));
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
@@ -1061,7 +1063,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $response = json_encode(array(
             "success" => true,
             "message" => "Successfully sent chat message",
-			"nonce" => misc\etc\generateRandomString(32)
+            "nonce" => misc\etc\generateRandomString(32)
         ));
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
@@ -1202,7 +1204,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             "success" => true,
             "message" => "Webhook request successful",
             "response" => "$response",
-			"nonce" => misc\etc\generateRandomString(32)
+            "nonce" => misc\etc\generateRandomString(32)
         ));
         $sig = !is_null($enckey) ? hash_hmac('sha256', $resp, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
@@ -1249,8 +1251,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 die($response);
             }
         }
-		
-		ini_set('memory_limit', '-1');
+
+        ini_set('memory_limit', '-1');
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -1275,7 +1277,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             "success" => true,
             "message" => "File download successful",
             "contents" => "$contents",
-			"nonce" => misc\etc\generateRandomString(32)
+            "nonce" => misc\etc\generateRandomString(32)
         ));
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
@@ -1300,8 +1302,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
             die($response);
         }
-		
-		$reason = misc\etc\sanitize($_POST['reason'] ?? $_GET['reason']) ?? "User banned from triggering ban function in the client";
+
+        $reason = misc\etc\sanitize($_POST['reason'] ?? $_GET['reason']) ?? "User banned from triggering ban function in the client";
 
         include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
@@ -1317,7 +1319,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             $response = json_encode(array(
                 "success" => true,
                 "message" => "Successfully Banned User",
-				"nonce" => misc\etc\generateRandomString(32)
+                "nonce" => misc\etc\generateRandomString(32)
             ));
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
             header("signature: {$sig}");
@@ -1353,61 +1355,61 @@ switch ($_POST['type'] ?? $_GET['type']) {
             $response = json_encode(array(
                 "success" => true,
                 "message" => "Session is validated.",
-				"nonce" => misc\etc\generateRandomString(32)
+                "nonce" => misc\etc\generateRandomString(32)
             ));
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
             header("signature: {$sig}");
 
             die($response);
         }
-	case 'changeUsername':
+    case 'changeUsername':
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
-		$enckey = $session["enckey"];
-		
-		if (!$session["validated"]) {
+        $enckey = $session["enckey"];
+
+        if (!$session["validated"]) {
             $response = json_encode(array(
                 "success" => false,
                 "message" => "$sessionunauthed"
             ));
-			$sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
             header("signature: {$sig}");
 
             die($response);
         }
 
         $credential = $session["credential"];
-		
-		$resp = misc\user\changeUsername($credential, $_POST['newUsername'] ?? $_GET['newUsername'], $secret);
-		switch($resp) {
-			case 'already_used':
-				$response = json_encode(array(
-					"success" => false,
-					"message" => "Username already used!"
-				));
-				break;
-			case 'failure':
-				$response = json_encode(array(
-					"success" => false,
-					"message" => "Failed to change username!"
-				));
-				break;
-			case 'success':
-				misc\session\killSingular($sessionid, $secret);
-				$response = json_encode(array(
-					"success" => true,
-					"message" => "Successfully changed username, user logged out.",
-					"nonce" => misc\etc\generateRandomString(32)
-				));
-				break;
-			default:
-				$response = json_encode(array(
-					"success" => false,
-					"message" => "Unhandled Error! Contact us if you need help"
-				));
-				break;
-		}
-		$sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+
+        $resp = misc\user\changeUsername($credential, $_POST['newUsername'] ?? $_GET['newUsername'], $secret);
+        switch ($resp) {
+            case 'already_used':
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Username already used!"
+                ));
+                break;
+            case 'failure':
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Failed to change username!"
+                ));
+                break;
+            case 'success':
+                misc\session\killSingular($sessionid, $secret);
+                $response = json_encode(array(
+                    "success" => true,
+                    "message" => "Successfully changed username, user logged out.",
+                    "nonce" => misc\etc\generateRandomString(32)
+                ));
+                break;
+            default:
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Unhandled Error! Contact us if you need help"
+                ));
+                break;
+        }
+        $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
 
         die($response);
