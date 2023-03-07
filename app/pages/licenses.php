@@ -287,6 +287,9 @@ if (isset($_POST['genkeys'])) {
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
+	<div class="alert alert-primary" role="alert">
+		Please join the new Discord server <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
+	</div>
     <form method="POST">
         <button type="button" data-bs-toggle="modal" data-bs-target="#create-keys"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>

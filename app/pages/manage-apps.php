@@ -7,8 +7,8 @@ if ($_SESSION['role'] == "Reseller") {
 
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-	<div class="alert alert-warning" role="alert">
-		Our old Discord server was banned, please join the new one <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
+	<div class="alert alert-primary" role="alert">
+		Please join the new Discord server <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
 	</div>
     <?php
 
