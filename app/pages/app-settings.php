@@ -159,7 +159,7 @@ if (isset($_POST['updatesettings'])) {
             return;
 		}
 		
-        $url = "https://api.bunny.net/pullzone/876754/addHostname";
+        $url = "https://api.bunny.net/pullzone/1257510/addHostname";
 
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_URL, $url);
