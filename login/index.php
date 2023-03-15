@@ -324,15 +324,17 @@ if (isset($_SESSION['username'])) {
 		}
 
         if ($role == "Reseller" || $role == "Manager") {
-            ($result = mysqli_query($link, "SELECT `secret` FROM `apps` WHERE `name` = '$app' AND `owner` = '$owner'")) or die(mysqli_error($link));
+            ($result = mysqli_query($link, "SELECT `secret`, `ownerid` FROM `apps` WHERE `name` = '$app' AND `owner` = '$owner'")) or die(mysqli_error($link));
             if (mysqli_num_rows($result) < 1) {
                 dashboard\primary\error("Application you\'re assigned to no longer exists!");
                 return;
             }
             while ($row = mysqli_fetch_array($result)) {
                 $app = $row["secret"];
+                $ownerid = $row["ownerid"];
             }
             $_SESSION['app'] = $app;
+            $_SESSION['ownerid'] = $ownerid;
         }
 		
         if ($acclogs) // check if account logs enabled
