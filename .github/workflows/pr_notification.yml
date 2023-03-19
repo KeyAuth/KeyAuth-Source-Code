@@ -1,0 +1,12 @@
+name: Pull Request Notification
+
+on:
+  pull_request_target:
+    types:
+      - opened
+
+jobs:
+  notify:
+    uses: KeyAuth/.github/.github/workflows/pr_notification_global.yml@main
+    secrets:
+      DISCORD_PR: ${{ secrets.DISCORD_PR }}
