@@ -3,6 +3,8 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 <br>
 *You're not allowed to sell KeyAuth. source made avaliable only for you to use*
 
+test
+
 View #suggestions and #bugs channel in Discord server if you want to suggest new feature or submit bug https://discord.gg/keyauth
 
 [![CodeFactor](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code/badge)](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code)
