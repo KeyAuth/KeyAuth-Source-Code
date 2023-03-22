@@ -97,7 +97,7 @@ if (isset($_POST['updatesettings'])) {
     $pwLeaked = misc\etc\sanitize($_POST['pwLeaked']);
     $chatHitDelay = misc\etc\sanitize($_POST['chatHitDelay']);
 
-    if (!is_null($customDomain) && $_SESSION['role'] == "seller") {
+    if (!is_null($customDomain) && ($_SESSION['role'] == "seller" || $_SESSION['role'] == "Manager")) {
         if (strpos($customDomain, "http") === 0) {
             dashboard\primary\error("Do not include protocol. Your custom domain should be entered as panel.example.com not https://panel.example.com or http://panel.example.com");
             echo "<meta http-equiv='Refresh' Content='2;'>";
