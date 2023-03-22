@@ -182,7 +182,7 @@ if ($_SESSION['role'] == "Reseller") {
 			mysqli_query($link, "UPDATE `subs` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `subscriptions` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `users` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
-			mysqli_query($link, "UPDATE `uservars ` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
+			mysqli_query($link, "UPDATE `uservars` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `vars` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			mysqli_query($link, "UPDATE `webhooks` SET `app` = '$new_secret' WHERE `app` = '" . $_SESSION['app'] . "'");
 			$_SESSION['app'] = $new_secret;
