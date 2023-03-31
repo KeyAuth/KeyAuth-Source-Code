@@ -71,6 +71,7 @@ if (isset($_POST['submit_code'])) {
         $enable_2factor = mysqli_query($link, "UPDATE `accounts` SET `twofactor` = '1' WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
         if ($enable_2factor) {
             echo "<meta http-equiv='Refresh' Content='2;'>";
+            dashboard\primary\wh_log($logwebhook, "{$username} has enabled 2FA", $webhookun);
             dashboard\primary\success("Two-factor security has been successfully activated on your account!");
         } else {
             dashboard\primary\error("There was a problem trying to activate security on your account!");
@@ -101,6 +102,7 @@ if (isset($_POST['submit_code_disable'])) {
 
         if ($enable_2factor) {
             echo "<meta http-equiv='Refresh' Content='2;'>";
+            dashboard\primary\wh_log($logwebhook, "{$username} has disabled 2FA", $webhookun);
             dashboard\primary\success("Two-factor security has been successfully disabled on your account!");
         } else {
             dashboard\primary\error("There was a problem trying to activate security on your account!");
