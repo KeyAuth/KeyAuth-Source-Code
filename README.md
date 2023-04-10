@@ -6,7 +6,7 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 View #suggestions and #bugs channel in Discord server if you want to suggest new feature or submit bug https://discord.gg/keyauth
 
 [![CodeFactor](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code/badge)](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code)
-[![Discord](https://img.shields.io/discord/1090738985795584081?label=Discord&cacheSeconds=3600)](https://discord.com/invite/keyauth)
+[![Discord](https://img.shields.io/discord/1093247954862755960?label=Discord&cacheSeconds=3600)](https://discord.com/invite/keyauth)
 [![Twitter](https://img.shields.io/twitter/follow/KeyAuth?cacheSeconds=3600)](https://twitter.com/KeyAuth)
 
 [![Screenshot](https://i.imgur.com/rige1nM.png)](https://keyauth.cc)
