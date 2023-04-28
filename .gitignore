@@ -1,51 +1,39 @@
 # Nelson Cybersecurity LLC
 # keyauth.cc
+
 # private
 api/admin/
-
-# private
 api/discord/
-
-# private
 api/upgrade/
-
-# private
 api/status/
+api/dashboard/
+app/pages/admin-panel.php
+app/pages/upgrade.php
+app/pages/support.php
+changeEmail/
+changeUsername/
+deleteAccount/
+forgot/
+owner/
+paddle/
+purge-redis/
+reset/
+resetUser/
+whoami/
+login/accShare/
+login/emailVerify/
+
 
 # purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 api/reseller/
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 api/seller/
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 panel/
-
-#private
-app/pages/admin-panel.php
-
-#private
-app/pages/upgrade.php
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 app/pages/manage-accs.php
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 app/pages/reseller-balance.php
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 app/pages/reseller-licenses.php
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 app/pages/reseller-users.php
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 app/pages/seller-settings.php
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 app/pages/seller-logs.php
-
-# purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 app/pages/webloader.php
 
 # contains MySQL credentials, discord webhooks, and API keys
