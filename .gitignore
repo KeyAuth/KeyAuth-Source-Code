@@ -22,7 +22,8 @@ resetUser/
 whoami/
 login/accShare/
 login/emailVerify/
-
+sitemap.xml
+includes/credentials.php
 
 # purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 api/reseller/
