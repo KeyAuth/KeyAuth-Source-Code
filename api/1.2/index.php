@@ -1,17 +1,27 @@
 <?php
 header("Access-Control-Allow-Origin: *"); // allow browser applications to request API
-error_reporting(0); // disable useless warnings, should turn this on if you need to debug a problem
+error_reporting(0);
+
+set_exception_handler(function ($exception) {
+	error_log($exception);
+	http_response_code(500);
+	die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
+});
 
 include '../../includes/misc/autoload.phtml';
 include '../../includes/api/shared/autoload.phtml';
 include '../../includes/api/1.0/autoload.phtml';
 
+if (\misc\cache\rateLimit("KeyAuthAppLimit:" . $_POST['ownerid'] ?? $_GET['ownerid'] ?? $_SERVER['HTTP_CDN_HOST'], 1, 60, 200)) {
+    die(json_encode(array("success" => false, "message" => "This application has sent too many requests. Try again in a minute.")));
+}
+
 if (isset($_SERVER['HTTP_CDN_HOST'])) { // custom domains https://www.youtube.com/watch?v=a2SROFJ0eYc
-    $row = misc\cache\fetch('KeyAuthApp:' . misc\etc\sanitize($_SERVER['HTTP_CDN_HOST']), "SELECT * FROM `apps` WHERE `customDomainAPI` = '" . misc\etc\sanitize($_SERVER['HTTP_CDN_HOST']) . "'", 0);
+    $row = misc\cache\fetch('KeyAuthApp:' . misc\etc\sanitize($_SERVER['HTTP_CDN_HOST']), "SELECT * FROM `apps` WHERE `customDomainAPI` = ?", [$_SERVER['HTTP_CDN_HOST']], 0);
 } else {
     $ownerid = misc\etc\sanitize($_POST['ownerid'] ?? $_GET['ownerid']); // ownerid of account that owns application
     $name = misc\etc\sanitize($_POST['name'] ?? $_GET['name']); // application name
-    $row = misc\cache\fetch('KeyAuthApp:' . $name . ':' . $ownerid, "SELECT * FROM `apps` WHERE `ownerid` = '$ownerid' AND `name` = '$name'", 0);
+    $row = misc\cache\fetch('KeyAuthApp:' . $name . ':' . $ownerid, "SELECT * FROM `apps` WHERE `ownerid` = ? AND `name` = ?", [$ownerid, $name], 0);
 }
 
 if ($row == "not_found") {
@@ -88,7 +98,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $ip = api\shared\primary\getIp();
         if ($vpnblock) {
             if (api\shared\primary\vpnCheck($ip)) {
-                $row = misc\cache\fetch('KeyAuthWhitelist:' . $secret . ':' . $ip, "SELECT 1 FROM `whitelist` WHERE `ip` = '$ip' AND `app` = '$secret'", 0);
+                $row = misc\cache\fetch('KeyAuthWhitelist:' . $secret . ':' . $ip, "SELECT 1 FROM `whitelist` WHERE `ip` = ? AND `app` = ?", [$ip, $secret], 0);
                 if ($row == "not_found") {
                     $response = json_encode(array(
                         "success" => false,
@@ -149,8 +159,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         if ($hashcheck) {
             if (strpos($serverhash, $hash) === false) {
                 if (is_null($serverhash)) {
-                    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-                    mysqli_query($link, "UPDATE `apps` SET `hash` = '$hash' WHERE `secret` = '$secret'");
+                    misc\mysql\query("UPDATE `apps` SET `hash` = ? WHERE `secret` = ?", [$hash, $secret]);
                     misc\cache\purge('KeyAuthApp:' . $name . ':' . $ownerid); // flush cache for application so new hash takes precedent
                 } else {
                     $response = json_encode(array(
@@ -168,23 +177,21 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $enckey = !is_null($_POST['enckey'] ?? $_GET['enckey']) ? misc\etc\sanitize($_POST['enckey'] ?? $_GET['enckey']) . "-" . $secret : NULL;
         $sessionid = misc\etc\generateRandomString();
+        $sessionCreate = false;
 
         if (is_null($enckey)) {
-            $row = misc\cache\fetch('KeyAuthStateDuplicates:' . $secret . ':' . $ip, "SELECT `id`, `expiry` FROM `sessions` WHERE `app` = '$secret' AND `ip` = '$ip' AND `validated` = 0 AND `expiry` > " . time() . " LIMIT 1", 0);
+            $row = misc\cache\fetch('KeyAuthStateDuplicates:' . $secret . ':' . $ip, "SELECT `id`, `expiry` FROM `sessions` WHERE `app` = ? AND `ip` = ? AND `validated` = 0 AND `expiry` > ? LIMIT 1", [$secret, $ip, time()], 0);
             if ($row != "not_found") {
                 $sessionid = $row['id'];
                 goto dupe;
             }
         }
-        // session init
-        $time = time() + $sessionexpiry;
-        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        mysqli_query($link, "INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES ('$sessionid','$secret', '$time', '" . time() . "', NULLIF('$enckey', ''), '$ip')");
-        misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
+
+        $sessionCreate = true;
 
         dupe:
 
-        $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT(select count(1) FROM `users` WHERE `app` = '$secret') AS 'numUsers',(select count(1) FROM `sessions` WHERE `app` = '$secret' AND `validated` = 1 AND `expiry` > " . time() . ") AS 'numOnlineUsers',(select count(1) FROM `keys` WHERE `app` = '$secret') AS 'numKeys';", 0, 1800);
+        $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
 
         $numUsers = $row['numUsers'];
         $numOnlineUsers = $row['numOnlineUsers'];
@@ -195,10 +202,10 @@ switch ($_POST['type'] ?? $_GET['type']) {
             "message" => "Initialized",
             "sessionid" => $sessionid,
             "appinfo" => array(
-                "numUsers" => $numUsers,
-                "numOnlineUsers" => $numOnlineUsers,
-                "numKeys" => $numKeys,
-                "version" => $currentver,
+                "numUsers" => "$numUsers",
+                "numOnlineUsers" => "$numOnlineUsers",
+                "numKeys" => "$numKeys",
+                "version" => "$currentver",
                 "customerPanelLink" => "https://keyauth.cc/panel/$owner/$name/"
             ),
             "nonce" => misc\etc\generateRandomString(32)
@@ -207,7 +214,14 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $sig = !is_null($enckey) ? hash_hmac('sha256', $resp, $secret)  : 'No encryption key supplied';
         header("signature: {$sig}");
 
-        die($resp);
+        echo $resp;
+
+        fastcgi_finish_request();
+
+        // session init
+        $time = time() + $sessionexpiry;
+        misc\mysql\query("INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES (?, ?, ?, ?, NULLIF(?, ''), ?)", [$sessionid, $secret, $time, time(), $enckey, $ip]);
+        misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
 
     case 'register':
         // retrieve session info
@@ -229,6 +243,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         // Read in hwid
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
+
+        $registerSuccess = false;
 
         $resp = api\v1_0\register($username, $checkkey, $password, $email, $hwid, $secret);
         switch ($resp) {
@@ -263,10 +279,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             case 'key_banned':
-                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if (strpos($keybanned, '{reason}') !== false) {
-                    $result = mysqli_query($link, "SELECT `banned` FROM `keys` WHERE `app` = '$secret' AND `key` = '$checkkey'");
-                    $row = mysqli_fetch_array($result);
+                    $query = misc\mysql\query("SELECT `banned` FROM `keys` WHERE `app` = ? AND `key` = ?", [$secret, $checkkey]);
+                    $row = mysqli_fetch_array($query->result);
                     $reason = $row['banned'];
                     $keybanned = str_replace("{reason}", $reason, $keybanned);
                 }
@@ -288,16 +303,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-                if ($killOtherSessions) {
-                    mysqli_query($link, "DELETE FROM `sessions` WHERE `id` != '$sessionid' AND `credential` = '$username' AND `app` = '$secret'");
-                    misc\cache\purgePattern('KeyAuthState:' . $secret);
-                }
-                mysqli_query($link, "UPDATE `sessions` SET `credential` = '$username',`validated` = 1 WHERE `id` = '$sessionid'");
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                $registerSuccess = true;
 
-                $ip = api\shared\primary\getIp();
-                misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 $response = json_encode(array(
                     "success" => true,
                     "message" => "$loggedInMsg",
@@ -309,7 +316,21 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : NULL;
         header("signature: {$sig}");
 
-        die($response);
+        echo $response;
+
+        fastcgi_finish_request();
+
+        if ($registerSuccess) {
+            if ($killOtherSessions) {
+                misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $username, $secret]);
+                misc\cache\purgePattern('KeyAuthState:' . $secret);
+            }
+            misc\mysql\query("UPDATE `sessions` SET `credential` = ?,`validated` = 1 WHERE `id` = ?", [$username, $sessionid]);
+            misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+
+            $ip = api\shared\primary\getIp();
+            misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
+        }
     case 'upgrade':
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
@@ -322,13 +343,12 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // Read in key
         $checkkey = misc\etc\sanitize($_POST['key'] ?? $_GET['key']);
 
-        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 
         // search for key
-        $result = mysqli_query($link, "SELECT `banned`, `expires`, `status`, `level` FROM `keys` WHERE `key` = '$checkkey' AND `app` = '$secret'");
+        $query = misc\mysql\query("SELECT `banned`, `expires`, `status`, `level` FROM `keys` WHERE `key` = ? AND `app` = ?", [$checkkey, $secret]);
 
         // check if key exists
-        if (mysqli_num_rows($result) < 1) {
+        if ($query->num_rows < 1) {
             $response = json_encode(array(
                 "success" => false,
                 "message" => "$keynotfound"
@@ -341,10 +361,10 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         // if key does exist
-        elseif (mysqli_num_rows($result) > 0) {
+        elseif ($query->num_rows > 0) {
 
             // get key info
-            while ($row = mysqli_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($query->result)) {
                 $expires = $row['expires'];
                 $status = $row['status'];
                 $level = $row['level'];
@@ -382,8 +402,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
             // add current time to key time
             $expiry = $expires + time();
 
-            $result = mysqli_query($link, "SELECT `name` FROM `subscriptions` WHERE `app` = '$secret' AND `level` = '$level'");
-            $subName = mysqli_fetch_array($result)['name'];
+            $query = misc\mysql\query("SELECT `name` FROM `subscriptions` WHERE `app` = ? AND `level` = ?", [$secret, $level]);
+            $subName = mysqli_fetch_array($query->result)['name'];
 
             $resp = misc\user\extend($username, $subName, $expiry, 0, $secret);
             switch ($resp) {
@@ -407,7 +427,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     break;
                 case 'success':
                     // set key to used, and set usedby
-                    mysqli_query($link, "UPDATE `keys` SET `status` = 'Used', `usedon` = '" . time() . "', `usedby` = '$username' WHERE `key` = '$checkkey'");
+                    misc\mysql\query("UPDATE `keys` SET `status` = 'Used', `usedon` = ?, `usedby` = ? WHERE `key` = ? AND `app` = ?", [time(), $username, $checkkey, $secret]);
                     misc\cache\purge('KeyAuthKeys:' . $secret . ':' . $checkkey);
                     misc\cache\purge('KeyAuthSubs:' . $secret . ':' . $username);
                     $response = json_encode(array(
@@ -462,9 +482,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 break;
             case 'user_banned':
                 if (strpos($userbanned, '{reason}') !== false) {
-                    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-                    $result = mysqli_query($link, "SELECT `banned` FROM `users` WHERE `app` = '$secret' AND `username` = '$username'");
-                    $row = mysqli_fetch_array($result);
+                    $query = misc\mysql\query("SELECT `banned` FROM `users` WHERE `app` = ? AND `username` = ?", [$secret, $username]);
+                    $row = mysqli_fetch_array($query->result);
                     $reason = $row['banned'];
                     $userbanned = str_replace("{reason}", $reason, $userbanned);
                 }
@@ -498,12 +517,11 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if ($killOtherSessions) {
-                    mysqli_query($link, "DELETE FROM `sessions` WHERE `id` != '$sessionid' AND `credential` = '$username' AND `app` = '$secret'");
+                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $username, $secret]);
                     misc\cache\purgePattern('KeyAuthState:' . $secret);
                 }
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$username' WHERE `id` = '$sessionid'");
+                misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$username, $sessionid]);
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
 
                 $ip = api\shared\primary\getIp();
@@ -543,9 +561,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 break;
             case 'user_banned':
                 if (strpos($userbanned, '{reason}') !== false) {
-                    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-                    $result = mysqli_query($link, "SELECT `banned` FROM `users` WHERE `app` = '$secret' AND `username` = '$checkkey'");
-                    $row = mysqli_fetch_array($result);
+                    $query = misc\mysql\query("SELECT `banned` FROM `users` WHERE `app` = ? AND `username` = ?", [$secret, $checkkey]);
+                    $row = mysqli_fetch_array($query->result);
                     $reason = $row['banned'];
                     $userbanned = str_replace("{reason}", $reason, $userbanned);
                 }
@@ -579,12 +596,11 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if ($killOtherSessions) {
-                    mysqli_query($link, "DELETE FROM `sessions` WHERE `id` != '$sessionid' AND `credential` = '$checkkey' AND `app` = '$secret'");
+                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $checkkey, $secret]);
                     misc\cache\purgePattern('KeyAuthState:' . $secret);
                 }
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$checkkey' WHERE `id` = '$sessionid'");
+                misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$checkkey, $sessionid]);
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
 
                 $ip = api\shared\primary\getIp();
@@ -639,9 +655,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 break;
             case 'key_banned':
                 if (strpos($keybanned, '{reason}') !== false) {
-                    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-                    $result = mysqli_query($link, "SELECT `banned` FROM `keys` WHERE `app` = '$secret' AND `key` = '$checkkey'");
-                    $row = mysqli_fetch_array($result);
+                    $query = misc\mysql\query("SELECT `banned` FROM `keys` WHERE `app` = ? AND `key` = ?", [$secret, $checkkey]);
+                    $row = mysqli_fetch_array($query->result);
                     $reason = $row['banned'];
                     $keybanned = str_replace("{reason}", $reason, $keybanned);
                 }
@@ -663,12 +678,11 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
                 if ($killOtherSessions) {
-                    mysqli_query($link, "DELETE FROM `sessions` WHERE `id` != '$sessionid' AND `credential` = '$checkkey' AND `app` = '$secret'");
+                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $checkkey, $secret]);
                     misc\cache\purgePattern('KeyAuthState:' . $secret);
                 }
-                mysqli_query($link, "UPDATE `sessions` SET `validated` = 1,`credential` = '$checkkey' WHERE `id` = '$sessionid'");
+                misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$checkkey, $sessionid]);
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
 
                 $ip = api\shared\primary\getIp();
@@ -692,7 +706,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $un = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
         $email = strtolower(misc\etc\sanitize($_POST['email'] ?? $_GET['email']));
 
-        $row = misc\cache\fetch('KeyAuthUser:' . $secret . ':' . $un, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '$secret'", 0);
+        $row = misc\cache\fetch('KeyAuthUser:' . $secret . ':' . $un, "SELECT * FROM `users` WHERE `username` = ? AND `app` = ?", [$un, $secret], 0);
         if ($row == "not_found") {
             $response = json_encode(array(
                 "success" => false,
@@ -723,11 +737,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
             );
             $emailSecret = hash($algos[array_rand($algos)], misc\etc\generateRandomString());
 
-            include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-            ini_set('display_errors', 1);
-            ini_set('display_startup_errors', 1);
-            error_reporting(E_ALL);
-            mysqli_query($link, "INSERT INTO `resetUsers` (`secret`, `email`, `username`, `app`, `time`) VALUES ('$emailSecret', SHA1('$email'), '$un', '$secret', '" . time() . "')");
+            misc\mysql\query("INSERT INTO `resetUsers` (`secret`, `email`, `username`, `app`, `time`) VALUES (?, SHA1(?), ?, ?, ?)", [$emailSecret, $email, $un, $secret, time()]);
             $htmlContent = " 
                     <html> 
                     <head> 
@@ -757,7 +767,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $session = api\shared\primary\getSession($sessionid, $secret);
         $enckey = $session["enckey"];
 
-        $rows = misc\cache\fetch('KeyAuthOnlineUsers:' . $secret, "SELECT DISTINCT `credential` FROM `sessions` WHERE `validated` = 1 AND `app` = '$secret'", 1, 1800);
+        $rows = misc\cache\fetch('KeyAuthOnlineUsers:' . $secret, "SELECT DISTINCT `credential` FROM `sessions` WHERE `validated` = 1 AND `app` = ?", [$secret], 1, 1800);
 
         if ($rows == "not_found") {
             $response = json_encode(array(
@@ -796,11 +806,30 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $var = misc\etc\sanitize($_POST['var'] ?? $_GET['var']);
         $data = misc\etc\sanitize($_POST['data'] ?? $_GET['data']);
 
-        $row = misc\cache\fetch('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `data`, `readOnly` FROM `uservars` WHERE `name` = '$var' AND `user` = '" . $session["credential"] . "' AND `app` = '$secret'", 0);
+        if(is_null($var)) {
+            $response = json_encode(array(
+                "success" => true,
+                "message" => "No variable name provided"
+            ));
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            header("signature: {$sig}");
+            die($response);
+        }
 
-        $readOnly = $row["readOnly"];
+        if(is_null($data)) {
+            $response = json_encode(array(
+                "success" => true,
+                "message" => "No variable data provided"
+            ));
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            header("signature: {$sig}");
+            die($response);
+        }
+
+        $row = misc\cache\fetch('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `data`, `readOnly` FROM `uservars` WHERE `name` = ? AND `user` = ? AND `app` = ?", [$var, $session["credential"], $secret], 0);
 
         if ($row != "not_found") {
+            $readOnly = $row["readOnly"];
             if ($readOnly) {
                 $response = json_encode(array(
                     "success" => false,
@@ -812,10 +841,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
             }
         }
 
-        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        mysqli_query($link, "REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES ('$var', '$data', '" . $session["credential"] . "', '$secret')");
+        $query = misc\mysql\query("REPLACE INTO `uservars` (`name`, `data`, `user`, `app`) VALUES (?, ?, ?, ?)", [$var, $data, $session["credential"], $secret]);
 
-        if (mysqli_affected_rows($link) != 0) {
+        if ($query->affected_rows != 0) {
             misc\cache\purge('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"]);
             $response = json_encode(array(
                 "success" => true,
@@ -855,7 +883,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $var = misc\etc\sanitize($_POST['var'] ?? $_GET['var']);
 
-        $row = misc\cache\fetch('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `data`, `readOnly` FROM `uservars` WHERE `name` = '$var' AND `user` = '" . $session["credential"] . "' AND `app` = '$secret'", 0);
+        $row = misc\cache\fetch('KeyAuthUserVar:' . $secret . ':' . $var . ':' . $session["credential"], "SELECT `data`, `readOnly` FROM `uservars` WHERE `name` = ? AND `user` = ? AND `app` = ?", [$var, $session["credential"], $secret], 0);
 
         if ($row == "not_found") {
             $response = json_encode(array(
@@ -888,7 +916,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $varid = misc\etc\sanitize($_POST['varid'] ?? $_GET['varid']);
 
-        $row = misc\cache\fetch('KeyAuthVar:' . $secret . ':' . $varid, "SELECT `msg`, `authed` FROM `vars` WHERE `varid` = '$varid' AND `app` = '$secret'", 0);
+        $row = misc\cache\fetch('KeyAuthVar:' . $secret . ':' . $varid, "SELECT `msg`, `authed` FROM `vars` WHERE `varid` = ? AND `app` = ?", [$varid, $secret], 0);
 
         if ($row == "not_found") {
             $response = json_encode(array(
@@ -936,7 +964,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
         $ip = api\shared\primary\getIp();
 
-        $row = misc\cache\fetch('KeyAuthBlacklist:' . $secret . ':' . $ip . ':' . $hwid, "SELECT 1 FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '$ip') AND `app` = '$secret'", 0);
+        $row = misc\cache\fetch('KeyAuthBlacklist:' . $secret . ':' . $ip . ':' . $hwid, "SELECT 1 FROM `bans` WHERE (`hwid` = ? OR `ip` = ?) AND `app` = ?", [$hwid, $ip, $secret], 0);
 
         if ($row != "not_found") {
             $response = json_encode(array(
@@ -975,7 +1003,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $channel = misc\etc\sanitize($_POST['channel'] ?? $_GET['channel']);
-        $rows = misc\cache\fetch('KeyAuthChatMsgs:' . $secret . ':' . $channel, "SELECT `author`, `message`, `timestamp` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret'", 1);
+        $rows = misc\cache\fetch('KeyAuthChatMsgs:' . $secret . ':' . $channel, "SELECT `author`, `message`, `timestamp` FROM `chatmsgs` WHERE `channel` = ? AND `app` = ?", [$channel, $secret], 1);
 
         if ($rows == "not_found") {
             $rows = [];
@@ -1008,10 +1036,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $channel = misc\etc\sanitize($_POST['channel'] ?? $_GET['channel']);
-        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        $result = mysqli_query($link, "SELECT `delay` FROM `chats` WHERE `name` = '$channel' AND `app` = '$secret'");
+        $query = misc\mysql\query("SELECT `delay` FROM `chats` WHERE `name` = ? AND `app` = ?", [$channel, $secret]);
 
-        if (mysqli_num_rows($result) < 1) {
+        if ($query->num_rows < 1) {
             $response = json_encode(array(
                 "success" => false,
                 "message" => "Chat channel not found"
@@ -1022,12 +1049,12 @@ switch ($_POST['type'] ?? $_GET['type']) {
             die($response);
         }
 
-        $row = mysqli_fetch_array($result);
+        $row = mysqli_fetch_array($query->result);
         $delay = $row['delay'];
         $credential = $session["credential"];
-        $result = mysqli_query($link, "SELECT `timestamp` FROM `chatmsgs` WHERE `author` = '$credential' AND `channel` = '$channel' AND `app` = '$secret' ORDER BY `id` DESC LIMIT 1");
+        $query = misc\mysql\query("SELECT `timestamp` FROM `chatmsgs` WHERE `author` = ? AND `channel` = ? AND `app` = ? ORDER BY `id` DESC LIMIT 1", [$credential, $channel, $secret]);
 
-        $row = mysqli_fetch_array($result);
+        $row = mysqli_fetch_array($query->result);
         $time = $row['timestamp'];
 
         if (time() - $time < $delay) {
@@ -1041,9 +1068,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
             die($response);
         }
 
-        $result = mysqli_query($link, "SELECT `time` FROM `chatmutes` WHERE `user` = '$credential' AND `app` = '$secret'");
-        if (mysqli_num_rows($result) != 0) {
-            $row = mysqli_fetch_array($result);
+        $query = misc\mysql\query("SELECT `time` FROM `chatmutes` WHERE `user` = ? AND `app` = ?", [$credential, $secret]);
+        if ($query->num_rows != 0) {
+            $row = mysqli_fetch_array($query->result);
             $unmuted = $row["time"];
             $unmuted = date("F j, Y, g:i a", $unmuted);
             $response = json_encode(array(
@@ -1057,8 +1084,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $message = misc\etc\sanitize($_POST['message'] ?? $_GET['message']);
-        mysqli_query($link, "INSERT INTO `chatmsgs` (`author`, `message`, `timestamp`, `channel`,`app`) VALUES ('$credential','$message','" . time() . "','$channel','$secret')");
-        mysqli_query($link, "DELETE FROM `chatmsgs` WHERE `app` = '$secret' AND `channel` = '$channel' AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = '$channel' AND `app` = '$secret' ORDER BY `id` DESC LIMIT 50) foo );");
+        misc\mysql\query("INSERT INTO `chatmsgs` (`author`, `message`, `timestamp`, `channel`,`app`) VALUES (?, ?, ?, ?, ?)", [$credential, $message, time(), $channel, $secret]);
+        misc\mysql\query("DELETE FROM `chatmsgs` WHERE `app` = ? AND `channel` = ? AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = ? AND `app` = ? ORDER BY `id` DESC LIMIT 50) foo );", [$secret, $channel, $channel, $secret]);
         misc\cache\purge('KeyAuthChatMsgs:' . $secret . ':' . $channel);
         $response = json_encode(array(
             "success" => true,
@@ -1070,6 +1097,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         die($response);
     case 'log':
+        // client isn't expecting a response body, just flush output right away so program can move on to rest of the code quicker
+        fastcgi_finish_request();
+
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
@@ -1081,11 +1111,24 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $msg = misc\etc\sanitize($_POST['message'] ?? $_GET['message']);
 
+        if(is_null($msg)) {
+            die();
+        }
+
         $pcuser = misc\etc\sanitize($_POST['pcuser'] ?? $_GET['pcuser']);
 
         if (is_null($webhook)) {
-            include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-            mysqli_query($link, "INSERT INTO `logs` (`logdate`, `logdata`, `credential`, `pcuser`,`logapp`) VALUES ('$currtime','$msg',NULLIF('$credential', ''),NULLIF('$pcuser', ''),'$secret')");
+            $roleCheck = misc\cache\fetch('KeyAuthSellerCheck:' . $owner, "SELECT `role`,`expires` FROM `accounts` WHERE `username` = ?", [$owner], 0);
+            if($roleCheck['role'] == "tester") {
+                $query = misc\mysql\query("SELECT count(*) AS 'numLogs' FROM `logs` WHERE `logapp` = ?",[$secret]);
+                $row = mysqli_fetch_array($query->result);
+                $numLogs = $row["numLogs"];
+                if($numLogs >= 20) {
+                    die();
+                }
+            }
+            
+            misc\mysql\query("INSERT INTO `logs` (`logdate`, `logdata`, `credential`, `pcuser`,`logapp`) VALUES (?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)", [$currtime, $msg, $credential, $pcuser, $secret]);
             die();
         }
 
@@ -1149,7 +1192,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $enckey = $session["enckey"];
 
         $webid = misc\etc\sanitize($_POST['webid'] ?? $_GET['webid']);
-        $row = misc\cache\fetch('KeyAuthWebhook:' . $secret . ':' . $webid, "SELECT `baselink`, `useragent`, `authed` FROM `webhooks` WHERE `webid` = '$webid' AND `app` = '$secret'", 0);
+        $row = misc\cache\fetch('KeyAuthWebhook:' . $secret . ':' . $webid, "SELECT `baselink`, `useragent`, `authed` FROM `webhooks` WHERE `webid` = ? AND `app` = ?", [$webid, $secret], 0);
         if ($row == "not_found") {
             $response = json_encode(array(
                 "success" => false,
@@ -1218,7 +1261,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $fileid = misc\etc\sanitize($_POST['fileid'] ?? $_GET['fileid']);
 
-        $row = misc\cache\fetch('KeyAuthFile:' . $secret . ':' . $fileid, "SELECT `name`, `url`, `authed` FROM `files` WHERE `app` = '$secret' AND `id` = '$fileid'", 0);
+        $row = misc\cache\fetch('KeyAuthFile:' . $secret . ':' . $fileid, "SELECT `name`, `url`, `authed` FROM `files` WHERE `app` = ? AND `id` = ?", [$secret, $fileid], 0);
 
         if ($row == "not_found") {
             $response = json_encode(array(
@@ -1305,7 +1348,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $reason = misc\etc\sanitize($_POST['reason'] ?? $_GET['reason']) ?? "User banned from triggering ban function in the client";
 
-        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
         if (!empty($hwid)) {
             misc\blacklist\add($hwid, "Hardware ID", $secret);
@@ -1313,8 +1355,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $ip = api\shared\primary\getIp();
         misc\blacklist\add($ip, "IP Address", $secret);
 
-        mysqli_query($link, "UPDATE `users` SET `banned` = '$reason' WHERE `username` = '$credential'");
-        if (mysqli_affected_rows($link) != 0) {
+        misc\mysql\query("UPDATE `users` SET `banned` = ? WHERE `username` = ?", [$reason, $credential]);
+        if ($query->affected_rows != 0) {
             misc\cache\purge('KeyAuthUser:' . $secret . ':' . $credential);
             $response = json_encode(array(
                 "success" => true,

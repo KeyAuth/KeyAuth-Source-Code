@@ -2,7 +2,7 @@
 
 namespace dashboard\primary;
 
-use misc\etc;
+use misc\mysql;
 
 function time2str($date)
 {
@@ -36,10 +36,9 @@ function time2str($date)
 }
 function expireCheck($username, $expires)
 {
-    global $link;
     if ($expires < time()) {
         $_SESSION['role'] = "tester";
-        mysqli_query($link, "UPDATE `accounts` SET `role` = 'tester' WHERE `username` = '$username'");
+        $query = mysql\query("UPDATE `accounts` SET `role` = 'tester' WHERE `username` = ?",[$username]);
     }
     if ($expires - time() < 2629743) // check if account expires in month or less
     {
@@ -79,7 +78,7 @@ function error($msg)
 
                               .error({
 
-                                message: \'' . $msg . '\',
+                                message: \'' . addslashes($msg) . '\',
 
                                 duration: 3500,
 
@@ -103,7 +102,7 @@ function success($msg)
 
                               .success({
 
-                                message: \'' . $msg . '\',
+                                message: \'' . addslashes($msg) . '\',
 
                                 duration: 3500,
 

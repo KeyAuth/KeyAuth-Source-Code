@@ -32,7 +32,7 @@
  *
  * ------------------------------------------------------------
  */
-
+include '../../includes/misc/autoload.phtml';
 require_once '../../vendor/lbuchs/webauthn/src/WebAuthn.php';
 try {
     // read get argument and post body
@@ -86,11 +86,10 @@ try {
         $ids = array();
 
         // load registrations from session stored there by processCreate.
-        include '../../includes/connection.php';
 		
-		$result = mysqli_query($link, "SELECT * FROM `securityKeys` WHERE `username` = '".$_SESSION['pendingUsername']."'");
-		if (mysqli_num_rows($result) > 0) {
-			while ($row = mysqli_fetch_array($result)) {
+        $query = misc\mysql\query("SELECT * FROM `securityKeys` WHERE `username` = ?", [$_SESSION['pendingUsername']]);
+		if ($query->num_rows > 0) {
+			while ($row = mysqli_fetch_array($query->result)) {
 				$ids[] = base64_decode($row["credentialId"]);
 			}
 		}
@@ -123,12 +122,10 @@ try {
 
         unset($_SESSION['challenge']); // disgard challenge array from session file, no longer needed
 		
-		include '../../includes/connection.php';
-		include '../../includes/misc/autoload.phtml';
-		
 		$name = misc\etc\sanitize($_GET['name']);
-		mysqli_query($link, "INSERT INTO `securityKeys` (`username`, `name`, `credentialId`, `credentialPublicKey`) VALUES ('".$_SESSION['username']."', '$name', '".base64_encode($data->credentialId)."', '".$data->credentialPublicKey."')");
-		mysqli_query($link, "UPDATE `accounts` SET `securityKey` = 1 WHERE `username` = '" . $_SESSION['username'] . "'");
+
+        misc\mysql\query("INSERT INTO `securityKeys` (`username`, `name`, `credentialId`, `credentialPublicKey`) VALUES (?, ?, ?, ?)", [$_SESSION['username'], $name, base64_encode($data->credentialId), $data->credentialPublicKey]);
+        misc\mysql\query("UPDATE `accounts` SET `securityKey` = 1 WHERE `username` = ?", [$_SESSION['username']]);
 
         $return = new stdClass();
         $return->success = true;
@@ -155,11 +152,10 @@ try {
         // looking up correspondending public key of the credential id
         // you should also validate that only ids of the given user name
         // are taken for the login.
-		include '../../includes/connection.php';
 		
-		$result = mysqli_query($link, "SELECT * FROM `securityKeys` WHERE `username` = '".$_SESSION['pendingUsername']."'");
-		if (mysqli_num_rows($result) > 0) {
-			while ($row = mysqli_fetch_array($result)) {
+        $query = misc\mysql\query("SELECT * FROM `securityKeys` WHERE `username` = ?", [$_SESSION['pendingUsername']]);
+		if ($query->num_rows > 0) {
+			while ($row = mysqli_fetch_array($query->result)) {
 				if(base64_decode($row["credentialId"]) === $id) {
 					$credentialPublicKey = $row["credentialPublicKey"];
                     break;

@@ -17,9 +17,25 @@ function vpnCheck($ipaddr)
 	$json = json_decode($resp);
 	
 	if($httpcode == 429) {
+		global $logwebhook;
+		$json_data = json_encode([
+			// Message
+			"content" => "<@1090738119348867072> IP checking is rate limited",
+			// Username
+			"username" => "KeyAuth Logs",
+		], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+		$ch = curl_init($logwebhook);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'Content-type: application/json'
+		));
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_exec($ch);
+		curl_close($ch);
 		return false;
 	}
-	
 	if($json->proxy || $json->hosting) {
 		return true;
 	}
@@ -32,7 +48,7 @@ function getIp()
 function getSession($sessionid, $secret)
 {
     // had to name it 'state' instead of 'session' because Redis wouldn't save key with 'session' in it
-    $row = cache\fetch('KeyAuthState:' . $secret . ':' . $sessionid, "SELECT * FROM `sessions` WHERE `id` = '$sessionid' AND `app` = '$secret' AND `expiry` > " . time() . "", 0);
+    $row = cache\fetch('KeyAuthState:' . $secret . ':' . $sessionid, "SELECT * FROM `sessions` WHERE `id` = ? AND `app` = ? AND `expiry` > ?", [$sessionid, $secret, time()], 0, NULL, "ssi");
     if ($row == "not_found") {
         die(json_encode(array(
             "success" => false,

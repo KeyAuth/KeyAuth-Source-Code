@@ -1,7 +1,6 @@
 <?php
 
-include '../includes/connection.php';
-
+include '../includes/misc/autoload.phtml';
 
 session_start();
 
@@ -13,11 +12,11 @@ if (!isset($_SESSION['app'])) {
     die("Application not selected.");
 }
 
-$result = mysqli_query($link, "SELECT * FROM `keys` WHERE `app` = '" . $_SESSION['app'] . "'");
+$query = misc\mysql\query("SELECT * FROM `keys` WHERE `app` = ?",[$_SESSION['app']]);
 
 
 
-while ($row = mysqli_fetch_array($result))
+while ($row = mysqli_fetch_array($query->result))
 
 
 

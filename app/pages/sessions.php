@@ -43,7 +43,7 @@ if (isset($_POST['kill'])) {
 
     <form method="post">
         <button type="button" data-bs-toggle="modal" data-bs-target="#killallsessions"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
+            class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Kill All Sessions</button>
     </form>
 
@@ -88,7 +88,7 @@ if (isset($_POST['kill'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all sessions? </p>
+                        <p> Are you sure you want to delete all sessions? This can not be undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">

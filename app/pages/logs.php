@@ -29,7 +29,7 @@ if (isset($_POST['dellogs'])) {
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
     <form method="post">
         <button type="button" data-bs-toggle="modal" type="button" data-bs-target="#del-logs"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
+            class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All Logs</button>
     </form>
 
@@ -59,7 +59,7 @@ if (isset($_POST['dellogs'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all logs? </p>
+                        <p> Are you sure you want to delete all logs? This can not be undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">
@@ -72,7 +72,17 @@ if (isset($_POST['dellogs'])) {
         </div>
     </div>
     <br>
-
+    <?php
+    if($_SESSION['role'] == "tester") {
+        $query = misc\mysql\query("SELECT count(*) AS 'numLogs' FROM `logs` WHERE `logapp` = ?",[$_SESSION['app']]);
+        $row = mysqli_fetch_array($query->result);
+        $numLogs = $row["numLogs"];
+        if($numLogs >= 20) {
+            ?><div class="alert alert-danger" role="alert">You have hit 20 logs! Upgrade to developer or seller to store more logs.</div><?php
+        }
+    }
+    ?>
+    
     <table id="kt_datatable_logs" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
         <thead>
             <tr class="fw-bolder fs-6 text-gray-800 px-7">

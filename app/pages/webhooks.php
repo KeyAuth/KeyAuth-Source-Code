@@ -13,7 +13,7 @@ if(!isset($_SESSION['app'])) {
 if (isset($_POST['genwebhook'])) {
 
     if ($_SESSION['role'] == "tester") {
-        dashboard\primary\error("Free users can\'t create webhooks!");
+        dashboard\primary\error("You must upgrade to developer or seller to use webhooks!");
     } else {
         $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
         $resp = misc\webhook\add($_POST['baselink'], $_POST['useragent'], $authed);
@@ -46,18 +46,32 @@ if (isset($_POST['deletewebhook'])) {
     }
 }
 
+if (isset($_POST['delallwebhooks'])){
+    $resp = misc\webhook\deleteAll();
+    switch ($resp){
+        case 'failure':
+            dashboard\primary\error("Failed to delete all webhooks!");
+            break;
+        case 'success':
+            dashboard\primary\success("Successfully deleted all webhooks!");
+            break;
+        default:
+            dashboard\primary\error("Unhandled Error! Contact us if you need help");
+            break;
+    }
+}
+
 if (isset($_POST['editwebhook'])) {
     $webhook = misc\etc\sanitize($_POST['editwebhook']);
 
-    $result = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `webid` = '$webhook' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) < 1) {
-        mysqli_close($link);
+    $query = misc\mysql\query("SELECT * FROM `webhooks` WHERE `webid` = ? AND `app` = ?",[$webhook, $_SESSION['app']]);
+    if ($query->num_rows < 1) {
         dashboard\primary\error("Webhook not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";
         return;
     }
 
-    $row = mysqli_fetch_array($result);
+    $row = mysqli_fetch_array($query->result);
 
     $baselink = $row["baselink"];
     $useragent = $row["useragent"];
@@ -97,7 +111,7 @@ if (isset($_POST['savewebhook'])) {
     $baselink = misc\etc\sanitize($_POST['baselink']);
     $useragent = misc\etc\sanitize($_POST['useragent']);
 
-    mysqli_query($link, "UPDATE `webhooks` SET `baselink` = '$baselink',`useragent` = '$useragent' WHERE `webid` = '$webhook' AND `app` = '" . $_SESSION['app'] . "'");
+    misc\mysql\query("UPDATE `webhooks` SET `baselink` = ?,`useragent` = ? WHERE `webid` = ? AND `app` = ?",[$baselink, $useragent, $webhook, $_SESSION['app']]);
 
     dashboard\primary\success("Successfully Updated Settings!");
     misc\cache\purge('KeyAuthWebhook:' . $_SESSION['app'] . ':' . $webhook);
@@ -105,10 +119,15 @@ if (isset($_POST['savewebhook'])) {
 ?>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-
+    <div class="alert alert-warning" role="alert">
+		People often this mistake this for Discord webhooks, please read <a href="https://docs.keyauth.cc/website/dashboard/webhooks" target="_blank">https://docs.keyauth.cc/website/dashboard/webhooks</a>
+	</div>
     <button data-bs-toggle="modal" type="button" data-bs-target="#create-webhook"
         class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
         Create Webhook</button>
+    <button data-bs-toggle="modal" type="button" data-bs-target="#delete-allwebhooks"
+            class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
+            Delete All Webhooks</button>
     <br>
 
 
@@ -167,6 +186,44 @@ if (isset($_POST['savewebhook'])) {
             </div>
         </div>
     </div>
+
+    <div class="modal fade" tabindex="-1" id="delete-allwebhooks">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-900px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header">
+                    <h2 class="modal-title">Delete All Webhooks</h2>
+
+                    <!--begin::Close-->
+                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                        <span class="svg-icon svg-icon-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                 fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
+                                      transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
+                                      fill="black" />
+                            </svg>
+                        </span>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <div class="modal-body">
+                    <label class="fs-5 fw-bold mb-2">
+                        <p> Are you sure you want to delete all webhooks? This can not be undone.</p>
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <form method="post">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">No</button>
+                        <button name="delallwebhooks" class="btn btn-danger">Yes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <br>
     <table id="kt_datatable_webhooks" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
         <thead>
@@ -182,9 +239,9 @@ if (isset($_POST['savewebhook'])) {
         <tbody>
             <?php
             if ($_SESSION['app']) {
-                ($result = mysqli_query($link, "SELECT * FROM `webhooks` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
-                if (mysqli_num_rows($result) > 0) {
-                    while ($row = mysqli_fetch_array($result)) {
+                $query = misc\mysql\query("SELECT * FROM `webhooks` WHERE `app` = ?",[$_SESSION['app']]);
+                if ($query->num_rows > 0) {
+                    while ($row = mysqli_fetch_array($query->result)) {
 
                         echo "<tr>";
 

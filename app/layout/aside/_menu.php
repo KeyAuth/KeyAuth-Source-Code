@@ -217,7 +217,16 @@
 						                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">Account</span>
 						                </div>
 						            </div>
-
+							    <div class="menu-item">
+						                <a class="menu-link <?php if ($page == 'support') {
+																echo 'active';
+															} ?>" href="?page=support">
+						                    <span class="menu-icon">
+						                        <i data-feather="life-buoy"></i>
+						                    </span>
+						                    <span class="menu-title">Support Chat</span>
+						                </a>
+						            </div>
 						            <?php
 									if ($role == "developer" || $role == "seller") {
 									?>

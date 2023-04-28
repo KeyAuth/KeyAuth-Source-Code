@@ -1,5 +1,4 @@
 <?php
-include '../includes/connection.php';
 require '../includes/misc/autoload.phtml';
 require '../includes/dashboard/autoload.phtml';
 require '../includes/api/shared/autoload.phtml';
@@ -14,6 +13,12 @@ if (isset($_SESSION['username'])) {
     header("Location: ../app/");
     exit();
 }
+
+set_exception_handler(function ($exception) {
+	error_log($exception);
+	http_response_code(500);
+	\dashboard\primary\error($exception->getMessage());
+});
 ?>
 <html>
 <!--begin::Head-->
@@ -108,6 +113,9 @@ if (isset($_SESSION['username'])) {
                     <img alt="Logo" src="https://cdn.keyauth.cc/v2/assets/media/logos/favicon.ico" class="h-80px" />
                 </a>
                 <!--end::Logo-->
+				<div class="alert alert-primary" role="alert">
+	            	Please join the new Discord server <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
+	            </div>
                 <!--begin::Wrapper-->
                 <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
                     <!--begin::Form-->
@@ -208,13 +216,13 @@ if (isset($_SESSION['username'])) {
         $username = misc\etc\sanitize($_POST['username']);
         $password = misc\etc\sanitize($_POST['password']);
 
-        ($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
+        $query = misc\mysql\query("SELECT * FROM `accounts` WHERE `username` = ?", [$username]);
 
-        if (mysqli_num_rows($result) < 1) {
-            dashboard\primary\error("Account doesn\'t exist!");
+        if ($query->num_rows < 1) {
+            dashboard\primary\error("Account doesn't exist!");
             return;
         }
-        while ($row = mysqli_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($query->result)) {
             $user = $row['username'];
             $pass = $row['password'];
             $id = $row['ownerid'];
@@ -222,7 +230,7 @@ if (isset($_SESSION['username'])) {
             $role = $row['role'];
             $app = misc\etc\sanitize($row['app']);
             $banned = $row['banned'];
-            $locked = $row['locked'];
+			$locked = $row['locked'];
             $img = $row['img'];
 
             $owner = misc\etc\sanitize($row['owner']);
@@ -242,59 +250,90 @@ if (isset($_SESSION['username'])) {
             return;
         }
 
-        if ($locked) {
-            header("location: ./locked/");
-            die();
-        }
-
-
         if (!password_verify($password, $pass)) {
             dashboard\primary\error("Password is invalid!");
             return;
         }
+		
+		if ($locked) {
+            header("location: ./accShare/");
+            die();
+        }
+		
+		if (misc\etc\isBreached($password)) {
+			dashboard\primary\wh_log($logwebhook, "{$username} attempted to login with leaked password `{$password}`", $webhookun);
+			dashboard\primary\error("Password has been leaked in a data breach (not from us)! You must click Forgot Password and change password.");
+			return;
+		}
+		
         $ip = api\shared\primary\getIp();
 		
-        if (in_array($role, array("developer", "seller")) && $username != "demoseller" && $username != "demodeveloper" && $emailVerify) {
-            $url = "http://ip-api.com/json/{$ip}?fields=2052"; // returns fields: region,as
+		/*
+		* Email verification
+		* For paid customers, checks if ISP and region (aka state) match. If not, they must verify it's them via an email.
+		* Customers can opt to disable email verification.
+		* This code is also used to notify the KeyAuth owner of account sharing, since that's against our ToS.
+		*/
+        if (in_array($role, array("developer", "seller")) && $username != "demoseller" && $username != "demodeveloper") {
+            $url = "http://ip-api.com/json/{$ip}?fields=16910340"; // returns fields: region,as,proxy,hosting
 
             $curl = curl_init($url);
             curl_setopt($curl, CURLOPT_URL, $url);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
             $resp = curl_exec($curl);
-            $json = json_decode($resp, true);
-            $region = $json["region"];
-            $asNum = explode(" ", $json["as"])[0];
-            if (!is_null($asNumSaved)) {
-                if ($asNum != $asNumSaved || $region != $regionSaved) {
-                    if ($twofactor_optional) {
-                        // 2FA verification on new login location
-                        $twofactor = misc\etc\sanitize($_POST['keyauthtwofactor']);
-                        if (empty($twofactor)) {
-                            dashboard\primary\error("Please enter 2FA code!");
-                            return;
-                        }
-
-                        require_once '../auth/GoogleAuthenticator.php';
-                        $gauth = new GoogleAuthenticator();
-                        $checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
-
-                        if (!$checkResult) {
-                            dashboard\primary\error("2FA code Invalid!");
-                            return;
-                        }
+			$httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+			
+			if($httpcode == 429) {
+				dashboard\primary\wh_log($logwebhook, "<@1090738119348867072> IP checking is rate limited", $webhookun);
+                dashboard\primary\error("Login location is rate-limited! Please try again in a minute or so.");
+                return;
+            }
+			else {
+				$json = json_decode($resp, true);
+				$region = $json["region"];
+				$asNum = explode(" ", $json["as"])[0];
+				if (!is_null($asNumSaved)) {
+					if ($asNum != $asNumSaved || $region != $regionSaved) {
+						// if user not using VPN and IP location changed, notify KeyAuth owner of account sharing
+						if(!$json->proxy && !$json->hosting && $region != $regionSaved) {
+							dashboard\primary\wh_log($logwebhook, "user `{$username}` detected account sharing **IP Address:** `{$ip}` **Old AS:** {$asNumSaved} **New AS:** {$asNum} **Old Region:** {$regionSaved} **New Region:** {$region}", $webhookun);
+							if(!$emailVerify) {
+								misc\mysql\query("UPDATE `accounts` SET `region` = ?,`asNum` = ?,`lastip` = ? WHERE `username` = ?",[$region, $asNum, $ip, $username]);
+							}
+						}
 						
-						mysqli_query($link, "UPDATE `accounts` SET `region` = '$region',`asNum` = '$asNum' WHERE `username` = '$username'");
-                    } else {
-                        // email verification on new login location
-                        header("location: ./emailVerify/");
-                        die();
-                    }
-                }
-            }
-            else {
-                mysqli_query($link, "UPDATE `accounts` SET `region` = '$region',`asNum` = '$asNum' WHERE `username` = '$username'");
-            }
+						if($emailVerify) { // only require email verification if enabled.
+							if ($twofactor_optional) {
+								// 2FA verification on new login location
+								$twofactor = misc\etc\sanitize($_POST['keyauthtwofactor']);
+								if (empty($twofactor)) {
+									dashboard\primary\error("Please enter 2FA code!");
+									return;
+								}
+		
+								require_once '../auth/GoogleAuthenticator.php';
+								$gauth = new GoogleAuthenticator();
+								$checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
+		
+								if (!$checkResult) {
+									dashboard\primary\error("2FA code Invalid!");
+									return;
+								}
+								
+								misc\mysql\query("UPDATE `accounts` SET `region` = ?,`asNum` = ?,`lastip` = ? WHERE `username` = ?",[$region, $asNum, $ip, $username]);
+							} else {
+								// email verification on new login location
+								header("location: ./emailVerify/");
+								die();
+							}
+						}
+					}
+				}
+				else {
+					misc\mysql\query("UPDATE `accounts` SET `region` = ?,`asNum` = ?,`lastip` = ? WHERE `username` = ?",[$region, $asNum, $ip, $username]);
+				}
+			}
         }
 		
 		if((!$emailVerify || $role == "tester") && $twofactor_optional) {
@@ -317,6 +356,7 @@ if (isset($_SESSION['username'])) {
 		$_SESSION['img'] = $img;
 		
 		if($securityKey) {
+            // set a temporary session variable to be used until the user completes WebAuthn
 			unset($_SESSION['username']);
 			$_SESSION['pendingUsername'] = $username;
 			header("location: ./securityKey.html");
@@ -324,28 +364,31 @@ if (isset($_SESSION['username'])) {
 		}
 
         if ($role == "Reseller" || $role == "Manager") {
-            ($result = mysqli_query($link, "SELECT `secret`, `ownerid` FROM `apps` WHERE `name` = '$app' AND `owner` = '$owner'")) or die(mysqli_error($link));
-            if (mysqli_num_rows($result) < 1) {
-                dashboard\primary\error("Application you\'re assigned to no longer exists!");
+            ($query = misc\mysql\query("SELECT `secret`, `ownerid` FROM `apps` WHERE `name` = ? AND `owner` = ?",[$app, $owner]));
+            if ($query->num_rows < 1) {
+                dashboard\primary\error("Application you're assigned to no longer exists!");
                 return;
             }
-            while ($row = mysqli_fetch_array($result)) {
-                $app = $row["secret"];
+            while ($row = mysqli_fetch_array($query->result)) {
+                $secret = $row["secret"];
                 $ownerid = $row["ownerid"];
             }
-            $_SESSION['app'] = $app;
+            $_SESSION['app'] = $secret;
+            $_SESSION['name'] = $app;
             $_SESSION['ownerid'] = $ownerid;
         }
 		
         if ($acclogs) // check if account logs enabled
         {
             $ua = misc\etc\sanitize($_SERVER['HTTP_USER_AGENT']);
-            mysqli_query($link, "INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES ('$username','" . time() . "','$ip','$ua')"); // insert ip log
+            misc\mysql\query("INSERT INTO `acclogs`(`username`, `date`, `ip`, `useragent`) VALUES (?, ?, ?, ?);",[$username, time(), $ip, $ua]); // insert ip log
             $ts = time() - 604800;
-            mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '$username' AND `date` < '$ts'"); // delete any account logs more than a week old
-
+            misc\mysql\query("DELETE FROM `acclogs` WHERE `username` = ? AND `date` < ?",[$username, $ts]); // delete any account logs more than a week old
         }
-        dashboard\primary\wh_log($logwebhook, "{$username} has logged into KeyAuth with IP `{$ip}`", $webhookun);
+		
+		if(strtolower($username) != "mak" && strtolower($username) != "itsnetworking") {
+			dashboard\primary\wh_log($logwebhook, "{$username} has logged into KeyAuth with IP `{$ip}`", $webhookun);
+		}
 
         if ($role == "Reseller") {
             header("location: ../app/?page=reseller-licenses");

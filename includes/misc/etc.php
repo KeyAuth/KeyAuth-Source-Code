@@ -7,20 +7,9 @@ function sanitize($input)
     if (empty($input) & !is_numeric($input)) { // in the event the input can't be sanitized
         return NULL;
     }
-    $search = array("\\",  "\x00", "\n",  "\r",  "'",  '"', "\x1a");
-    $replace = array("\\\\", "\\0", "\\n", "\\r", "\'", '\"', "\\Z");
-    return str_replace($search, $replace, strip_tags(trim($input))); // return string with quotes escaped to prevent SQL injection, script tags stripped to prevent XSS attack, and trimmed to remove whitespace
+    return strip_tags(trim($input)); // return string with script tags stripped to prevent XSS attack, and trimmed to remove whitespace
 }
-function random_string_upper($length = 10, $keyspace = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'): string // replaces upper-case X characters in key mask
-{ // https://github.com/FinGu/c_auth/blob/cfbd7036e69561e538e26dc47f7690dbc0d8ba53/functions/general/functions.php#L55
-    $out = '';
-    for ($i = 0; $i < $length; $i++) {
-        $rand_index = random_int(0, strlen($keyspace) - 1);
-        $out .= $keyspace[$rand_index];
-    }
-    return $out;
-}
-function random_string_lower($length = 10, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyz'): string // replaces lower-case X characters in key mask
+function random_string_gen($length = 10, $keyspace = '0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ'): string // replaces upper-case X characters in key mask
 { // https://github.com/FinGu/c_auth/blob/cfbd7036e69561e538e26dc47f7690dbc0d8ba53/functions/general/functions.php#L55
     $out = '';
     for ($i = 0; $i < $length; $i++) {

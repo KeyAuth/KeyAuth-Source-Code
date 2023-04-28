@@ -1,5 +1,4 @@
 <?php
-include '../includes/connection.php';
 include '../includes/misc/autoload.phtml';
 include '../includes/dashboard/autoload.phtml';
 
@@ -15,13 +14,19 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
+set_exception_handler(function ($exception) {
+	error_log($exception);
+	http_response_code(500);
+	\dashboard\primary\error($exception->getMessage());
+});
+
 $username = $_SESSION['username'];
-($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '$username'")) or die(mysqli_error($link));
-$row = mysqli_fetch_array($result);
+$query = misc\mysql\query("SELECT * FROM `accounts` WHERE `username` = ?",[$username]);
+$row = mysqli_fetch_array($query->result);
 
 $banned = $row['banned'];
 $lastreset = $row['lastreset'];
-if (!is_null($banned) || $_SESSION['logindate'] < $lastreset || mysqli_num_rows($result) < 1) {
+if (!is_null($banned) || $_SESSION['logindate'] < $lastreset || $query->num_rows < 1) {
     echo "<meta http-equiv='Refresh' Content='0; url=../login/'>";
     session_destroy();
     exit();
@@ -33,20 +38,17 @@ $twofactor = $row['twofactor'];
 $_SESSION['role'] = $role;
 
 $expires = $row['expires'];
-if (in_array($role, array(
-    "developer",
-    "seller"
-))) {
+if (in_array($role, array("developer", "seller"))) {
     $_SESSION['timeleft'] = dashboard\primary\expireCheck($username, $expires);
 }
 
 
 if (!$_SESSION['app']) // no app selected yet
 {
-    $result = mysqli_query($link, "SELECT * FROM `apps` WHERE `owner` = '" . $_SESSION['username'] . "'"); // select all apps where owner is current user
-    if (mysqli_num_rows($result) == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
+    $query = misc\mysql\query("SELECT * FROM `apps` WHERE `owner` = ? AND `ownerid` = ?",[$_SESSION['username'], $_SESSION['ownerid']]); // select all apps where owner is current user
+    if ($query->num_rows == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
     {
-        $row = mysqli_fetch_array($result);
+        $row = mysqli_fetch_array($query->result);
         $_SESSION['name'] = $row["name"];
         $_SESSION["selectedApp"] = $row["name"];
         $_SESSION['app'] = $row["secret"];

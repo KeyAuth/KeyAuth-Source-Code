@@ -1,13 +1,13 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
-	die();
+    die();
 }
-if($role == "Manager" && !($permissions & 64)) {
-	die('You weren\'t granted permissions to view this page.');
+if ($role == "Manager" && !($permissions & 64)) {
+    die('You weren\'t granted permissions to view this page.');
 }
-if(!isset($_SESSION['app'])) {
-	die("Application not selected.");
+if (!isset($_SESSION['app'])) {
+    die("Application not selected.");
 }
 
 if (isset($_POST['addfile'])) {
@@ -125,9 +125,9 @@ if (isset($_POST['savefile'])) {
 
     $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
 
-    mysqli_query($link, "UPDATE `files` SET `name` = '$fn',`size` = '$fs',`url` = '$url', `uploaddate` = '" . time() . "', `authed` = '$authed' WHERE `app` = '" . $_SESSION['app'] . "' AND `id` = '$fileid'");
+    $query = misc\mysql\query("UPDATE `files` SET `name` = ?,`size` = ?,`url` = ?, `uploaddate` = ?, `authed` = ? WHERE `app` = ? AND `id` = ?", [$fn, $fs, $url, time(), $authed, $_SESSION['app'], $fileid]);
 
-    if (mysqli_affected_rows($link) != 0) {
+    if ($query->affected_rows != 0) {
         misc\cache\purge('KeyAuthFile:' . ($secret ?? $_SESSION['app']) . ':' . $fileid);
         dashboard\primary\success("Successfully Updated File!");
     } else {
@@ -137,18 +137,15 @@ if (isset($_POST['savefile'])) {
 ?>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-<script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
+    <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
     <form method="POST">
-        <button data-bs-toggle="modal" type="button" data-bs-target="#create-files"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#create-files" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
             Create Files</button>
-        <button type="button" class="dt-button buttons-print btn btn-primary mr-1" data-bs-toggle="modal" type="button"
-            data-bs-target="#deleteallfiles"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All
+        <button type="button" class="dt-button buttons-print btn btn-danger mr-1" data-bs-toggle="modal" type="button" data-bs-target="#deleteallfiles"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All
             Files</button>
     </form>
     <br>
-    <div id="create-files" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
-        style="display: none;">
+    <div id="create-files" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
@@ -156,12 +153,9 @@ if (isset($_POST['savefile'])) {
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
                         <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
-                                    transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
-                                    fill="black" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
                             </svg>
                         </span>
                     </div>
@@ -170,19 +164,14 @@ if (isset($_POST['savefile'])) {
                 <div class="modal-body">
                     <form method="post">
                         <div class="form-group">
-                            <label for="recipient-name" class="control-label">File URL: <i
-                                    class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="We recommend sending the file in a Discord DM where it won't get deleted. Then copy link and put here. Make sure the link has the file extension at the end, .exe or whatever. If it doesn't, the download will not work."></i></label>
+                            <label for="recipient-name" class="control-label">File URL: <i class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="We recommend sending the file in a Discord DM where it won't get deleted. Then copy link and put here. Make sure the link has the file extension at the end, .exe or whatever. If it doesn't, the download will not work."></i></label>
                             <input type="text" class="form-control" name="url" placeholder="Link to file">
                         </div>
                         <div class="form-check">
                             <br>
                             <input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
                             <label class="form-check-label" for="flexCheckChecked">
-                                Authenticated <i class="fas fa-question-circle fa-lg text-white-50"
-                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="If checked, KeyAuth will force user to be logged in to use."></i>
+                                Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
                             </label>
                         </div>
                 </div>
@@ -211,9 +200,9 @@ if (isset($_POST['savefile'])) {
         <tbody>
             <?php
             if ($_SESSION['app']) {
-                ($result = mysqli_query($link, "SELECT * FROM `files` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
-                if (mysqli_num_rows($result) > 0) {
-                    while ($row = mysqli_fetch_array($result)) {
+                $query = misc\mysql\query("SELECT * FROM `files` WHERE `app` = ?", [$_SESSION['app']]);
+                if ($query->num_rows > 0) {
+                    while ($row = mysqli_fetch_array($query->result)) {
                         echo "<tr>";
 
                         echo "  <td>" . $row["name"] . "</td>";
@@ -222,7 +211,7 @@ if (isset($_POST['savefile'])) {
 
                         echo "  <td>" . $row["size"] . "</td>";
 
-                        echo "  <td><script>document.write(convertTimestamp(".$row["uploaddate"]."));</script></td>";
+                        echo "  <td><script>document.write(convertTimestamp(" . $row["uploaddate"] . "));</script></td>";
 
                         echo "  <td>" . (($row["authed"] ? 1 : 0) ? 'True' : 'False') . "</td>";
 
@@ -275,12 +264,9 @@ if (isset($_POST['savefile'])) {
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
                         <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
-                                    transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
-                                    fill="black" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
                             </svg>
                         </span>
                     </div>
@@ -288,7 +274,7 @@ if (isset($_POST['savefile'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all files? </p>
+                        <p> Are you sure you want to delete all files? This can not be undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">

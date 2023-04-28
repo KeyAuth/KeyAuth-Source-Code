@@ -40,14 +40,13 @@ if (isset($_POST['deletesub'])) {
 }
 if (isset($_POST['editsub'])) {
     $subscription = misc\etc\sanitize($_POST['editsub']);
-    $result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `name` = '$subscription' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) < 1) {
-        mysqli_close($link);
+    $query = misc\mysql\query("SELECT * FROM `subscriptions` WHERE `name` = ? AND `app` = ?",[$subscription, $_SESSION['app']]);
+    if ($query->num_rows < 1) {
         dashboard\primary\error("Subscription not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";
         return;
     }
-    $row = mysqli_fetch_array($result);
+    $row = mysqli_fetch_array($query->result);
     $level = $row["level"];
     echo '<div id="edit-webhook" class="modal show" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
 
@@ -98,7 +97,7 @@ if (isset($_POST['editsub'])) {
 if (isset($_POST['savesub'])) {
     $subscription = misc\etc\sanitize($_POST['subscription']);
     $level = misc\etc\sanitize($_POST['level']);
-    mysqli_query($link, "UPDATE `subscriptions` SET `level` = '$level' WHERE `name` = '$subscription' AND `app` = '" . $_SESSION['app'] . "'");
+    misc\mysql\query("UPDATE `subscriptions` SET `level` = ? WHERE `name` = ? AND `app` = ?",[$level, $subscription, $_SESSION['app']]);
     if ($_SESSION['role'] == "seller") {
         cache\purge('KeyAuthSubscriptions:' . $_SESSION['app']);
     }
@@ -193,9 +192,9 @@ if (isset($_POST['savesub'])) {
 
             <?php
             if ($_SESSION['app']) {
-                ($result = mysqli_query($link, "SELECT * FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
-                if (mysqli_num_rows($result) > 0) {
-                    while ($row = mysqli_fetch_array($result)) {
+                $query = misc\mysql\query("SELECT * FROM `subscriptions` WHERE `app` = ?",[$_SESSION['app']]);
+                if ($query->num_rows > 0) {
+                    while ($row = mysqli_fetch_array($query->result)) {
                         echo "<tr>";
                         echo "  <td>" . $row["name"] . "</td>";
                         echo "  <td>" . $row["level"] . "</td>";

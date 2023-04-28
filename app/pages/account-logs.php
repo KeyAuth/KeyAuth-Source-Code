@@ -16,28 +16,28 @@
 
         <tbody>
             <?php
-            ($result = mysqli_query($link, "SELECT * FROM `acclogs` WHERE `username` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
+            $query = misc\mysql\query("SELECT * FROM `acclogs` WHERE `username` = ?", [$_SESSION['username']]);
             $rows = array();
-            while ($r = mysqli_fetch_assoc($result)) {
+            while ($r = mysqli_fetch_assoc($query->result)) {
                 $rows[] = $r;
             }
 
             foreach ($rows as $row) {
             ?>
 
-            <tr>
+                <tr>
 
-                <td>
-                    <script>
-                    document.write(convertTimestamp(<?php echo $row["date"]; ?>));
-                    </script>
-                </td>
+                    <td>
+                        <script>
+                            document.write(convertTimestamp(<?php echo $row["date"]; ?>));
+                        </script>
+                    </td>
 
-                <td><?php echo $row["ip"]; ?></td>
+                    <td><?php echo $row["ip"]; ?></td>
 
-                <td><?php echo $row["useragent"]; ?></td>
+                    <td><?php echo $row["useragent"]; ?></td>
 
-            </tr>
+                </tr>
 
             <?php
 

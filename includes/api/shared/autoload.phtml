@@ -1,5 +1,7 @@
 <?php
 
+include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/credentials.php'; // reference credentials
+
 foreach (glob(__DIR__ . "/*.php") as $filename) {
     include $filename;
 }

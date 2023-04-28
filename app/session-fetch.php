@@ -1,6 +1,11 @@
 <?php
-include '../includes/connection.php';
 include '../includes/misc/autoload.phtml';
+
+set_exception_handler(function ($exception) {
+	error_log($exception);
+	http_response_code(500);
+	die("Error: " . $exception->getMessage());
+});
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -18,39 +23,38 @@ if(isset($_POST['draw']) ) {
 	
 	// credits to https://makitweb.com/datatables-ajax-pagination-with-search-and-sort-php/
 	
-	$draw = misc\etc\sanitize($_POST['draw']);
-	$row = misc\etc\sanitize($_POST['start']);
-	$rowperpage = misc\etc\sanitize($_POST['length']); // Rows display per page
+	$draw = intval($_POST['draw']);
+	$row = intval($_POST['start']);
+	$rowperpage = intval($_POST['length']); // Rows display per page
 	$columnIndex = misc\etc\sanitize($_POST['order'][0]['column']); // Column index
 	$columnName = misc\etc\sanitize($_POST['columns'][$columnIndex]['data']); // Column name
 	$columnSortOrder = misc\etc\sanitize($_POST['order'][0]['dir']); // asc or desc
 	$searchValue = misc\etc\sanitize($_POST['search']['value']); // Search value
 	
-	## Search 
-	$searchQuery = " ";
-	if($searchValue != ''){
-	$searchQuery = " and (`id` like '%".$searchValue."%' or 
-			`credential` like '%".$searchValue."%' or 
-			`ip` like'%".$searchValue."%' ) ";
-	}
-	
 	## Total number of records without filtering
-	$sel = mysqli_query($link,"select count(1) as allcount from `sessions` where app = '".$_SESSION['app']."'");
-	$records = mysqli_fetch_assoc($sel);
+	$sel = misc\mysql\query("select count(1) as allcount from `sessions` where app = ?",[$_SESSION['app']]);
+	$records = mysqli_fetch_assoc($sel->result);
 	$totalRecords = $records['allcount'];
 	
 	## Total number of record with filtering
-	$sel = mysqli_query($link,"select count(1) as allcount from `sessions` WHERE 1 ".$searchQuery." and app = '".$_SESSION['app']."'");
-	$records = mysqli_fetch_assoc($sel);
+	$sel = misc\mysql\query("select count(1) as allcount from `sessions` WHERE 1  and (`id` like ? or `credential` like ? or `ip` like ? ) and app = ?",["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
+	$records = mysqli_fetch_assoc($sel->result);
 	$totalRecordwithFilter = $records['allcount'];
 	
+	// whitelist certain column names and sort orders to prevent SQL injection
+	if(!in_array($columnName, array("id", "credential", "expiry", "validated", "ip", "actions"))) {
+		die("Column name is not whitelisted.");
+	}
+
+	if(!in_array($columnSortOrder, array("desc", "asc"))) {
+		die("Column sort order is not whitelisted.");
+	}
+
 	## Fetch records
-	$empQuery = "select * from `sessions` WHERE 1 ".$searchQuery." and app = '".$_SESSION['app']."' order by `".$columnName."` ".$columnSortOrder." limit ".$row.",".$rowperpage;
-	// echo $empQuery;
-	$empRecords = mysqli_query($link, $empQuery);
+	$query = misc\mysql\query("select * from `sessions` WHERE 1 and (`id` like ? or `credential` like ? or `ip` like ? ) and app = ? order by `".$columnName."` ".$columnSortOrder." limit " . $row . "," . $rowperpage,["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
 	$data = array();
 	
-	while ($row = mysqli_fetch_assoc($empRecords)) {
+	while ($row = mysqli_fetch_assoc($query->result)) {
 		$data[] = array( 
 			"id"=>$row['id'],
 			"credential"=>$row["credential"] ?? 'N/A',

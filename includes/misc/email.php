@@ -7,7 +7,7 @@ function send($username, $email, $content, $subject) {
 	global $awsSecretKey;
 	
 	if(empty($awsAccessKey)) {
-		return; // no AWS key set in /includes/connection.php
+		return;
 	}
 	
 	require_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';

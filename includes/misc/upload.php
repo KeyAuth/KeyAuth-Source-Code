@@ -4,11 +4,10 @@ namespace misc\upload;
 
 use misc\etc;
 use misc\cache;
+use misc\mysql;
 
 function add($url, $authed, $secret = null)
 {
-  global $link;
-  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $url = etc\sanitize($url);
   $authed = etc\sanitize($authed);
 
@@ -30,8 +29,8 @@ function add($url, $authed, $secret = null)
   $id = etc\generateRandomNum();
   $fn = basename($url);
   $fs = etc\formatBytes($filesize);
-  mysqli_query($link, "INSERT INTO `files` (name, id, url, size, uploaddate, app, authed) VALUES ('$fn', '$id', '$url', '$fs', '" . time() . "', '" . ($secret ?? $_SESSION['app']) . "', '$authed')");
-  if (mysqli_affected_rows($link) > 0) {
+  $query = mysql\query("INSERT INTO `files` (name, id, url, size, uploaddate, app, authed) VALUES (?, ?, ?, ?, ?, ?, ?)", [$fn, $id, $url, $fs, time(), $secret ?? $_SESSION['app'], $authed]);
+  if ($query->affected_rows > 0) {
     if ($_SESSION['role'] == "seller" || !is_null($secret)) {
       cache\purge('KeyAuthFiles:' . ($secret ?? $_SESSION['app']));
     }
@@ -42,10 +41,9 @@ function add($url, $authed, $secret = null)
 }
 function deleteAll($secret = null)
 {
-  global $link;
-  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-  mysqli_query($link, "DELETE FROM `files` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-  if (mysqli_affected_rows($link) > 0) {
+  $query = mysql\query("DELETE FROM `files` WHERE `app` = ?", [$secret ?? $_SESSION['app']]);
+
+  if ($query->affected_rows > 0) {
     cache\purgePattern('KeyAuthFile:' . ($secret ?? $_SESSION['app']));
     if ($_SESSION['role'] == "seller" || !is_null($secret)) {
       cache\purge('KeyAuthFiles:' . ($secret ?? $_SESSION['app']));
@@ -57,12 +55,11 @@ function deleteAll($secret = null)
 }
 function deleteSingular($file, $secret = null)
 {
-  global $link;
-  include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
   $file = etc\sanitize($file);
 
-  mysqli_query($link, "DELETE FROM `files` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `id` = '$file'");
-  if (mysqli_affected_rows($link) > 0) {
+  $query = mysql\query("DELETE FROM `files` WHERE `app` = ? AND `id` = ?", [$secret ?? $_SESSION['app'], $file]);
+
+  if ($query->affected_rows > 0) {
     cache\purge('KeyAuthFile:' . ($secret ?? $_SESSION['app']) . ':' . $file);
     if ($_SESSION['role'] == "seller" || !is_null($secret)) {
       cache\purge('KeyAuthFiles:' . ($secret ?? $_SESSION['app']));

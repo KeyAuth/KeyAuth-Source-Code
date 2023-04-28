@@ -7,127 +7,11 @@ require_once '../auth/GoogleAuthenticator.php';
 $gauth = new GoogleAuthenticator();
 if ($row["googleAuthCode"] == NULL) {
     $code_2factor = $gauth->createSecret();
-    $integrate_code = mysqli_query($link, "UPDATE `accounts` SET `googleAuthCode` = '$code_2factor' WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
+    misc\mysql\query("UPDATE `accounts` SET `googleAuthCode` = ? WHERE `username` = ?", [$code_2factor, $_SESSION['username']]);
 } else {
     $code_2factor = $row["googleAuthCode"];
 }
 $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2factor, 'KeyAuth');
-
-($result = mysqli_query($link, "SELECT * FROM `accounts` WHERE `username` = '" . $_SESSION['username'] . "'")) or die(mysqli_error($link));
-
-if (mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_array($result)) {
-        $acclogs = $row['acclogs'];
-        $expiry = $row["expires"];
-        $emailVerify = $row["emailVerify"];
-    }
-}
-
-if (isset($_POST['updatesettings'])) {
-    $pfp = misc\etc\sanitize($_POST['pfp']);
-    $acclogs = misc\etc\sanitize($_POST['acclogs']);
-    $emailVerify = misc\etc\sanitize($_POST['emailVerify']);
-    mysqli_query($link, "UPDATE `accounts` SET `acclogs` = '$acclogs' WHERE `username` = '" . $_SESSION['username'] . "'");
-    if ($acclogs == 0) {
-        mysqli_query($link, "DELETE FROM `acclogs` WHERE `username` = '" . $_SESSION['username'] . "'"); // delete all account logs   
-    }
-    mysqli_query($link, "UPDATE `accounts` SET `emailVerify` = '$emailVerify' WHERE `username` = '" . $_SESSION['username'] . "'");
-    if (isset($_POST['pfp']) && trim($_POST['pfp']) != '') {
-        if (!filter_var($pfp, FILTER_VALIDATE_URL)) {
-            dashboard\primary\error("Invalid Url For Profile Image!");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
-        if (strpos($pfp, "file:///") !== false) {
-            dashboard\primary\error("Url must start with https://");
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            return;
-        }
-        $_SESSION['img'] = $pfp;
-        mysqli_query($link, "UPDATE `accounts` SET `img` = '$pfp' WHERE `username` = '" . $_SESSION['username'] . "'");
-    }
-
-    dashboard\primary\success("Updated Account Settings!");
-}
-
-if (isset($_POST['submit_code'])) {
-
-    if (empty($_POST['scan_code'])) {
-        dashboard\primary\error("You must fill in all the fields!");
-    }
-
-    $code = misc\etc\sanitize($_POST['scan_code']);
-
-    $user_result = mysqli_query($link, "SELECT * from `accounts` WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
-
-    while ($row = mysqli_fetch_array($user_result)) {
-
-        $secret_code = $row['googleAuthCode'];
-    }
-
-    $checkResult = $gauth->verifyCode($secret_code, $code, 2);
-
-    if ($checkResult) {
-        $enable_2factor = mysqli_query($link, "UPDATE `accounts` SET `twofactor` = '1' WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
-        if ($enable_2factor) {
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            dashboard\primary\wh_log($logwebhook, "{$username} has enabled 2FA", $webhookun);
-            dashboard\primary\success("Two-factor security has been successfully activated on your account!");
-        } else {
-            dashboard\primary\error("There was a problem trying to activate security on your account!");
-        }
-    } else {
-        dashboard\primary\error("The code entered is incorrect");
-    }
-}
-
-if (isset($_POST['submit_code_disable'])) {
-
-    if (empty($_POST['scan_code'])) {
-        dashboard\primary\error("You must fill in all the fields!");
-    }
-
-    $code = misc\etc\sanitize($_POST['scan_code']);
-
-    $user_result = mysqli_query($link, "SELECT * from `accounts` WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
-
-    while ($row = mysqli_fetch_array($user_result)) {
-        $secret_code = $row['googleAuthCode'];
-    }
-
-    $checkResult = $gauth->verifyCode($secret_code, $code, 2);
-
-    if ($checkResult) {
-        $enable_2factor = mysqli_query($link, "UPDATE `accounts` SET `twofactor` = '0', googleAuthCode = NULL WHERE `username` = '" . $_SESSION['username'] . "'") or die(mysqli_error($link));
-
-        if ($enable_2factor) {
-            echo "<meta http-equiv='Refresh' Content='2;'>";
-            dashboard\primary\wh_log($logwebhook, "{$username} has disabled 2FA", $webhookun);
-            dashboard\primary\success("Two-factor security has been successfully disabled on your account!");
-        } else {
-            dashboard\primary\error("There was a problem trying to activate security on your account!");
-        }
-    } else {
-        dashboard\primary\error("The code entered is incorrect");
-    }
-}
-
-if (isset($_POST['deleteWebauthn'])) {
-    $name = misc\etc\sanitize($_POST['deleteWebauthn']);
-
-    mysqli_query($link, "DELETE FROM `securityKeys` WHERE `name` = '$name' AND `username` = '" . $_SESSION['username'] . "'");
-
-    if (mysqli_affected_rows($link) > 0) {
-        $result = mysqli_query($link, "SELECT 1 FROM `securityKeys` WHERE `username` = '" . $_SESSION['username'] . "'");
-        if (mysqli_num_rows($result) == 0) {
-            mysqli_query($link, "UPDATE `accounts` SET `securityKey` = 0 WHERE `username` = '" . $_SESSION['username'] . "'");
-        }
-        dashboard\primary\success("Successfully deleted security key");
-    } else {
-        dashboard\primary\error("Failed to delete security key!");
-    }
-}
-
 ?>
 
 
@@ -138,6 +22,123 @@ if (isset($_POST['deleteWebauthn'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
     <script src="https://cdn.keyauth.cc/dashboard/webauthn.js"></script>
+    <?php
+
+    $query = misc\mysql\query("SELECT * FROM `accounts` WHERE `username` = ?", [$_SESSION['username']]);
+
+    if ($query->num_rows > 0) {
+        while ($row = mysqli_fetch_array($query->result)) {
+            $acclogs = $row['acclogs'];
+            $expiry = $row["expires"];
+            $emailVerify = $row["emailVerify"];
+        }
+    }
+
+    if (isset($_POST['updatesettings'])) {
+        $pfp = misc\etc\sanitize($_POST['pfp']);
+        $acclogs = misc\etc\sanitize($_POST['acclogs']);
+        $emailVerify = misc\etc\sanitize($_POST['emailVerify']);
+        misc\mysql\query("UPDATE `accounts` SET `acclogs` = ? WHERE `username` = ?", [$acclogs, $_SESSION['username']]);
+        if ($acclogs == 0) {
+            misc\mysql\query("DELETE FROM `acclogs` WHERE `username` = ?", [$_SESSION['username']]); // delete all account logs
+        }
+        misc\mysql\query("UPDATE `accounts` SET `emailVerify` = ? WHERE `username` = ?", [$emailVerify, $_SESSION['username']]);
+        if (isset($_POST['pfp']) && trim($_POST['pfp']) != '') {
+            if (!filter_var($pfp, FILTER_VALIDATE_URL)) {
+                dashboard\primary\error("Invalid Url For Profile Image!");
+                echo "<meta http-equiv='Refresh' Content='2;'>";
+                return;
+            }
+            if (strpos($pfp, "file:///") !== false) {
+                dashboard\primary\error("Url must start with https://");
+                echo "<meta http-equiv='Refresh' Content='2;'>";
+                return;
+            }
+            $_SESSION['img'] = $pfp;
+            misc\mysql\query("UPDATE `accounts` SET `img` = ? WHERE `username` = ?", [$pfp, $_SESSION['username']]);
+        }
+
+        dashboard\primary\success("Updated Account Settings!");
+    }
+
+    if (isset($_POST['submit_code'])) {
+
+        if (empty($_POST['scan_code'])) {
+            dashboard\primary\error("You forgot to enter 2FA code!");
+        }
+
+        $code = misc\etc\sanitize($_POST['scan_code']);
+
+        $query = misc\mysql\query("SELECT `googleAuthCode` from `accounts` WHERE `username` = ?", [$_SESSION['username']]);
+
+        while ($row = mysqli_fetch_array($query->result)) {
+            $secret_code = $row['googleAuthCode'];
+        }
+
+        $checkResult = $gauth->verifyCode($secret_code, $code, 2);
+
+        if ($checkResult) {
+            $query = misc\mysql\query("UPDATE `accounts` SET `twofactor` = '1' WHERE `username` = ?", [$_SESSION['username']]);
+            if ($query->affected_rows > 0) {
+                echo "<meta http-equiv='Refresh' Content='2;'>";
+                dashboard\primary\success("Two-factor security has been successfully activated on your account!");
+                dashboard\primary\wh_log($logwebhook, "{$username} has enabled 2FA", $webhookun);
+            } else {
+                echo "<meta http-equiv='Refresh' Content='2;'>";
+                dashboard\primary\wh_log($logwebhook, "{$username} has disabled 2FA", $webhookun);
+                dashboard\primary\success("Two-factor security has been successfully disabled on your account!");
+            }
+        } else {
+            dashboard\primary\error("Invalid 2FA code!");
+        }
+    }
+
+    if (isset($_POST['submit_code_disable'])) {
+
+        if (empty($_POST['scan_code'])) {
+            dashboard\primary\error("You forgot to enter 2FA code!");
+        }
+
+        $code = misc\etc\sanitize($_POST['scan_code']);
+
+        $query = misc\mysql\query("SELECT `googleAuthCode` from `accounts` WHERE `username` = ?", [$_SESSION['username']]);
+
+        while ($row = mysqli_fetch_array($query->result)) {
+            $secret_code = $row['googleAuthCode'];
+        }
+
+        $checkResult = $gauth->verifyCode($secret_code, $code, 2);
+
+        if ($checkResult) {
+            $query = misc\mysql\query("UPDATE `accounts` SET `twofactor` = '0', `googleAuthCode` = NULL WHERE `username` = ?", [$_SESSION['username']]);
+
+            if ($query->affected_rows > 0) {
+                dashboard\primary\success("Successfully disabled 2FA!");
+            } else {
+                dashboard\primary\error("Failed to disable 2FA!");
+            }
+        } else {
+            dashboard\primary\error("Invalid 2FA code!");
+        }
+    }
+
+    if (isset($_POST['deleteWebauthn'])) {
+        $name = misc\etc\sanitize($_POST['deleteWebauthn']);
+
+        $query = misc\mysql\query("DELETE FROM `securityKeys` WHERE `name` = ? AND `username` = ?", [$name, $_SESSION['username']]);
+
+        if ($query->affected_rows > 0) {
+            $query = misc\mysql\query("SELECT 1 FROM `securityKeys` WHERE `username` = ?", [$_SESSION['username']]);
+            if ($query->num_rows == 0) {
+                misc\mysql\query("UPDATE `accounts` SET `securityKey` = 0 WHERE `username` = ?", [$_SESSION['username']]);
+            }
+            dashboard\primary\success("Successfully deleted security key");
+        } else {
+            dashboard\primary\error("Failed to delete security key!");
+        }
+    }
+
+    ?>
 
     <div class="row">
 
@@ -301,7 +302,7 @@ if (isset($_POST['deleteWebauthn'])) {
                         <br>
 
                         <button name="updatesettings" class="btn btn-success"> <i class="fa fa-check"></i> Save</button>
-                        <a type="button" class="btn btn-info" target="popup" onclick="window.open('https://discord.com/api/oauth2/authorize?client_id=1091046318237040751&redirect_uri=https%3A%2F%2F<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>%2Fapi%2Fdiscord%2F&response_type=code&scope=identify%20guilds.join','popup','width=600,height=600'); return false;">
+                        <a type="button" class="btn btn-info" target="popup" onclick="window.open('https://<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>/api/discord/','popup','width=500,height=800'); return false;">
                             <i class="fab fa-discord"></i> Link Discord</a>
                         <?php if (!$twofactor) {
                             echo '                <a class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#twofa"><i class="fa fa-lock"></i>Enable 2FA</a>';
@@ -465,10 +466,10 @@ if (isset($_POST['deleteWebauthn'])) {
                                                 <div class="fv-row mb-10">
                                                     <!--begin::Label-->
                                                     <?php
-                                                    $result = mysqli_query($link, "SELECT * FROM `securityKeys` WHERE `username` = '" . $_SESSION['username'] . "'");
-                                                    if (mysqli_num_rows($result) > 0) {
-                                                        while ($row = mysqli_fetch_array($result)) {
-                                                            echo $row["name"] . "  <button style=\"border: none;padding:0;background:0;color:#FF0000;padding-left:5px;\" value=\"" . $row["name"] . "\"name=\"deleteWebauthn\" onclick=\"return confirm('Are you sure you want to delete security key?')\">Delete</button><br>";
+                                                    $query = misc\mysql\query("SELECT * FROM `securityKeys` WHERE `username` = ?", [$_SESSION['username']]);
+                                                    if ($query->num_rows > 0) {
+                                                        while ($row = mysqli_fetch_array($query->result)) {
+                                                            echo $row["name"] . "  <button style=\"border: none;padding:0;background:0;color:#FF0000;padding-left:5px;\" value=\"" . $row["name"] . "\"name=\"deleteWebauthn\" onclick=\"return confirm('Are you sure you want to delete security key? This can not be undone.')\">Delete</button><br>";
                                                         }
                                                         echo "<br>";
                                                     }
@@ -496,18 +497,6 @@ if (isset($_POST['deleteWebauthn'])) {
                         <!--end::Modal dialog-->
                     </div>
                     <!--end::Modal - disable 2fa App-->
-
-
-                    <?php
-
-
-
-
-
-
-
-
-                    ?>
 
                 </div>
 

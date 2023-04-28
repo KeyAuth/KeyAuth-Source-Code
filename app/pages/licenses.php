@@ -55,14 +55,13 @@ if (isset($_POST['unbankey'])) {
 }
 if (isset($_POST['editkey'])) {
     $key = misc\etc\sanitize($_POST['editkey']);
-    $result = mysqli_query($link, "SELECT * FROM `keys` WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
-    if (mysqli_num_rows($result) < 1) {
-        mysqli_close($link);
+    $query = misc\mysql\query("SELECT * FROM `keys` WHERE `key` = ? AND `app` = ?",[$key, $_SESSION['app']]);
+    if ($query->num_rows < 1) {
         error("Key not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";
         return;
     }
-    $row = mysqli_fetch_array($result);
+    $row = mysqli_fetch_array($query->result);
 ?>
 <div id="edit-key" class="modal show" role="dialog" aria-labelledby="myModalLabel" style="display: block;"
     aria-modal="true">
@@ -132,9 +131,9 @@ if (isset($_POST['savekey'])) {
     if (!empty($duration)) {
         $expiry = misc\etc\sanitize($_POST['expiry']);
         $duration = $duration * $expiry;
-        mysqli_query($link, "UPDATE `keys` SET `expires` = '$duration' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+        misc\mysql\query("UPDATE `keys` SET `expires` = ? WHERE `key` = ? AND `app` = ?",[$duration, $key, $_SESSION['app']]);
     }
-    mysqli_query($link, "UPDATE `keys` SET `level` = '$level' WHERE `key` = '$key' AND `app` = '" . $_SESSION['app'] . "'");
+    misc\mysql\query("UPDATE `keys` SET `level` = ? WHERE `key` = ? AND `app` = ?",[$level, $key, $_SESSION['app']]);
     dashboard\primary\success("Successfully Updated Settings!");
 }
 
@@ -156,13 +155,13 @@ if (isset($_POST['importkeys'])) {
 			}
 			else {
 				if(!in_array($level, $levels)) {
-					mysqli_query($link, "INSERT INTO `subscriptions`(`name`, `level`, `app`) VALUES ('rank  ".$level."','$level', '" . $_SESSION['app'] . "')");
+                    misc\mysql\query("INSERT INTO `subscriptions`(`name`, `level`, `app`) VALUES (?, ?, ?)",["rank " . $level, $level, $_SESSION['app']]);
 					$levels[] = $level; // prevent doing an insert statement for the same level twice
 				}
 				$usedby = NULL;
 			}
 			
-			mysqli_query($link, "INSERT INTO `keys`(`key`, `expires`, `status`, `level`, `genby`, `gendate`, `usedby`, `app`) VALUES ('$license','$expires', '$status', '$level', '" . $_SESSION['username'] . "', UNIX_TIMESTAMP(), NULLIF('$usedby', ''), '" . $_SESSION['app'] . "')");
+			misc\mysql\query("INSERT INTO `keys`(`key`, `expires`, `status`, `level`, `genby`, `gendate`, `usedby`, `app`) VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP(), NULLIF(?, ''), ?)",[$license, $expires, $status, $level, $_SESSION['username'], $usedby, $_SESSION['app']]);
 		}
 	}
 	else {
@@ -191,8 +190,8 @@ if (isset($_POST['importkeys'])) {
 				return;
 			}
 			$expiry = $third * 86400;
-			mysqli_query($link, "INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$first','$expiry','Not Used','$second','" . $_SESSION['username'] . "','" . time() . "','" . $_SESSION['app'] . "')");
-		}
+            misc\mysql\query("INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES (?, ?,'Not Used', ?, ?, ?, ?)",[$first, $expiry, $second, $_SESSION['username'], time(), $_SESSION['app']]);
+        }
 	}
     dashboard\primary\success("Successfully imported licenses!");
 }
@@ -219,7 +218,7 @@ if (isset($_POST['delkeys'])) {
     $resp = misc\license\deleteAll();
     switch ($resp) {
         case 'failure':
-            dashboard\primary\error("Didn\'t find any keys!");
+            dashboard\primary\error("Didn't find any keys!");
             break;
         case 'success':
             dashboard\primary\success("Deleted All Keys!");
@@ -233,7 +232,7 @@ if (isset($_POST['deleteallunused'])) {
     $resp = misc\license\deleteAllUnused();
     switch ($resp) {
         case 'failure':
-            dashboard\primary\error("Didn\'t find any unused keys!");
+            dashboard\primary\error("Didn't find any unused keys!");
             break;
         case 'success':
             dashboard\primary\success("Deleted All Unused Keys!");
@@ -247,7 +246,7 @@ if (isset($_POST['deleteallused'])) {
     $resp = misc\license\deleteAllUsed();
     switch ($resp) {
         case 'failure':
-            dashboard\primary\error("Didn\'t find any used keys!");
+            dashboard\primary\error("Didn't find any used keys!");
             break;
         case 'success':
             dashboard\primary\success("Deleted All Used Keys!");
@@ -265,14 +264,20 @@ if (isset($_POST['genkeys'])) {
             dashboard\primary\error("You can only generate 100 licenses at a time");
             break;
         case 'tester_limit':
-            dashboard\primary\error("Tester plan only allows for 50 licenses, please upgrade!");
+            dashboard\primary\error("Tester plan only allows for 10 licenses, please upgrade!");
             break;
         case 'dupe_custom_key':
-            dashboard\primary\error("Can\'t do custom key with amount greater than one");
+            dashboard\primary\error("Can't do custom key with amount greater than one");
             break;
         default:
-            mysqli_query($link, "UPDATE `apps` SET `format` = '" . misc\etc\sanitize($_POST['mask']) . "',`amount` = '" . misc\etc\sanitize($_POST['amount']) . "',`lvl` = '" . misc\etc\sanitize($_POST['level']) . "',`note` = '" . misc\etc\sanitize($_POST['note']) . "',`duration` = '" . misc\etc\sanitize($_POST['duration']) . "',`unit` = '" . misc\etc\sanitize($_POST['expiry']) . "' WHERE `secret` = '" . $_SESSION['app'] . "'");
-            if (misc\etc\sanitize($_POST['amount']) > 1) {
+            $mask = misc\etc\sanitize($_POST['mask']);
+            $amount = intval($_POST['amount']);
+            $level = misc\etc\sanitize($_POST['level']);
+            $note = misc\etc\sanitize($_POST['note']);
+            $duration = misc\etc\sanitize($_POST['duration']);
+            $expiry = misc\etc\sanitize($_POST['expiry']);
+            misc\mysql\query("UPDATE `apps` SET `format` = ?,`amount` = ?,`lvl` = ?,`note` = ?,`duration` = ?,`unit` = ? WHERE `secret` = ?",[$mask, $amount, $level, $note, $duration, $expiry, $_SESSION['app']]);
+            if ($_POST['amount'] > 1) {
                 $_SESSION['keys_array'] = $key;
             } else {
                 echo "<script>navigator.clipboard.writeText('" . array_values($key)[0] . "');</script>";
@@ -290,6 +295,9 @@ if (isset($_POST['genkeys'])) {
 	<div class="alert alert-primary" role="alert">
 		Please join the new Discord server <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
 	</div>
+    <div class="alert alert-warning alert-rounded">
+        The license mask has changed from "X/x" to "*" (STAR - Press SHIFT + 8). Using "*" will now generate random characters.
+    </div>
     <form method="POST">
         <button type="button" data-bs-toggle="modal" data-bs-target="#create-keys"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
@@ -303,13 +311,13 @@ if (isset($_POST['genkeys'])) {
         <button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i
                 class="fas fa-download fa-sm text-white-50"></i> Download All keys</button>
         <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allkeys"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
+            class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All keys</button>
         <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allunusedkeys"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
+            class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All Unused Keys</button>
         <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allusedkeys"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
+            class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All Used Keys</button>
 
     </form>
@@ -346,8 +354,8 @@ if (isset($_POST['genkeys'])) {
                     <!--end::Close-->
                 </div>
                 <?php
-                ($result = mysqli_query($link, "SELECT * FROM `apps` WHERE `secret` = '" . $_SESSION['app'] . "'")) or die(mysqli_error($link));
-                $row = mysqli_fetch_array($result);
+                $query = misc\mysql\query("SELECT `format`, `amount`, `lvl`, `note`, `duration`, `unit` FROM `apps` WHERE `secret` = ?",[$_SESSION['app']]);
+                $row = mysqli_fetch_array($query->result);
 
                 $format = $row['format'];
                 $amt = $row['amount'];
@@ -369,13 +377,13 @@ if (isset($_POST['genkeys'])) {
                             <label for="recipient-name" class="control-label">Key Mask: <i
                                     class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
                                     data-bs-placement="top"
-                                    title="Format keys are in. You can do custom by putting whatever, or do capital X or lowercase X for random character"></i></label>
+                                    title="Format keys are in. You can do custom by putting whatever, or do * for random character"></i></label>
                             <input type="text" class="form-control" value="<?php if (!is_null($format)) {
                                                                                 echo $format;
                                                                             } else {
-                                                                                echo "XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX";
+                                                                                echo "******-******-******-******-******-******";
                                                                             } ?>"
-                                placeholder="Key Format. X is capital random char, x is lowercase" name="mask" required
+                                placeholder="Using * will assign a random character." name="mask" required
                                 maxlength="49">
                         </div>
                         <div class="form-group">
@@ -385,15 +393,15 @@ if (isset($_POST['genkeys'])) {
                                     title="This needs to coordinate to the level of subscription you want to give to user when they redeem license. If it's blank, go to subscriptions tab and create subscription"></i></label>
                             <select name="level" class="form-control">
                                 <?php
-                                ($result = mysqli_query($link, "SELECT DISTINCT `level` FROM `subscriptions` WHERE `app` = '" . $_SESSION['app'] . "' ORDER BY `level` ASC"));
-                                if (mysqli_num_rows($result) > 0) {
-                                    while ($row = mysqli_fetch_array($result)) {
+                                $query = misc\mysql\query("SELECT DISTINCT `level` FROM `subscriptions` WHERE `app` = ? ORDER BY `level` ASC",[$_SESSION['app']]);
+                                if ($query->num_rows > 0) {
+                                    while ($row = mysqli_fetch_array($query->result)) {
 										
-										$resultSubs = mysqli_query($link, "SELECT `name` FROM `subscriptions` WHERE `level` = '" . $row["level"] . "' AND `app` = '" . $_SESSION['app'] . "'");
+                                        $queryName = misc\mysql\query("SELECT `name` FROM `subscriptions` WHERE `level` = ? AND `app` = ?",[$row["level"], $_SESSION['app']]);
 										
 										$name = " (";
 										$count = 0;
-										while ($rowSubs = mysqli_fetch_array($resultSubs)) {
+										while ($rowSubs = mysqli_fetch_array($queryName->result)) {
 											$count++;
 											if($count > 1) {
 												$name .= ", " . $rowSubs["name"];
@@ -664,7 +672,7 @@ if (isset($_POST['genkeys'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all keys? </p>
+                        <p> Are you sure you want to delete all keys? This can not be undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">
@@ -703,7 +711,7 @@ if (isset($_POST['genkeys'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all unused keys? </p>
+                        <p> Are you sure you want to delete all unused keys? This can not be undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">
@@ -742,7 +750,7 @@ if (isset($_POST['genkeys'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all used keys? </p>
+                        <p> Are you sure you want to delete all used keys? This can not be undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">

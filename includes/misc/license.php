@@ -5,24 +5,21 @@ namespace misc\license;
 use misc\etc;
 use misc\cache;
 use misc\user;
+use misc\mysql;
 
-function license_masking($mask) // subsitute random characters for upper-case and lower-case random character variables, X or x
+function license_masking($mask) // substitute random characters for upper-case and lower-case random character variables, X or x
 {
 	$mask_arr = str_split($mask);
 	$size_of_mask = count($mask_arr);
 	for ($i = 0; $i < $size_of_mask; $i++) {
-		if ($mask_arr[$i] === 'X') {
-			$mask_arr[$i] = etc\random_string_upper(1);
-		} else if ($mask_arr[$i] === 'x') {
-			$mask_arr[$i] = etc\random_string_lower(1);
-		}
+		if ($mask_arr[$i] === '*') {
+            $mask_arr[$i] = etc\random_string_gen(1);
+        }
 	}
 	return implode('', $mask_arr);
 }
 function createLicense($amount, $mask, $duration, $level, $note, $expiry = null, $secret = null, $owner = null)
 {
-	global $link;
-	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$amount = etc\sanitize($amount);
 	$mask = etc\sanitize($mask);
 	$duration = etc\sanitize($duration);
@@ -44,15 +41,15 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 		$expiry = 86400; // set unit to day(s) if license expiry unit isn't specified (as it isn't with SellerAPI)
 	}
 	$duration = $duration * $expiry;
-	if ($amount > 1 && strpos($mask, 'X') === false && strpos($mask, 'x') === false) {
+	if ($amount > 1 && strpos($mask, '*') === false) {
 		return 'dupe_custom_key';
 	}
 
 	switch ($_SESSION['role']) {
 		case 'tester':
-			$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `genby` = '" . $_SESSION['username'] . "'");
-			$currkeys = mysqli_num_rows($result);
-			if ($currkeys + $amount > 50) {
+			$query = mysql\query("SELECT 1 FROM `keys` WHERE `genby` = ? AND `app` = ?",[$_SESSION['username'], $_SESSION['app']]);
+			$currkeys = $query->num_rows;
+			if ($currkeys + $amount > 10) {
 				return 'tester_limit';
 			}
 			break;
@@ -60,8 +57,8 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 			if ($amount < 0) {
 				return 'no_negative';
 			}
-			$result = mysqli_query($link, "SELECT `keylevels`, `balance` FROM `accounts` WHERE `username` = 	'" . $_SESSION['username'] . "'");
-			$row = mysqli_fetch_array($result);
+			$query = mysql\query("SELECT `keylevels`, `balance` FROM `accounts` WHERE `username` = ?",[$_SESSION['username']]);
+			$row = mysqli_fetch_array($query->result);
 			$keylevels = explode("|", $row['keylevels']);
 			$balance = explode("|", $row['balance']);
 			if ($row['keylevels'] != "N/A" && !in_array($level, $keylevels)) {
@@ -106,7 +103,7 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 				return 'insufficient_balance';
 			}
 			$balance = $day . '|' . $week . '|' . $month . '|' . $threemonth . '|' . $sixmonth . '|' . $lifetime;
-			mysqli_query($link, "UPDATE `accounts` SET `balance` = '$balance' WHERE `username` = '" . $_SESSION['username'] . "'");
+			$query = mysql\query("UPDATE `accounts` SET `balance` = ? WHERE `username` = ?",[$balance, $_SESSION['username']]);
 			break;
 		case 'seller':
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
@@ -122,7 +119,7 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 	for ($i = 0; $i < $amount; $i++) {
 
 		$license = license_masking($mask);
-		mysqli_query($link, "INSERT INTO `keys` (`key`, `note`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES ('$license',NULLIF('$note', ''), '$duration','Not Used','$level','" . ($owner ?? $_SESSION['username']) . "', '" . time() . "', '" . ($secret ?? $_SESSION['app']) . "')");
+		$query = mysql\query("INSERT INTO `keys` (`key`, `note`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES (?, NULLIF(?, ''), ?, 'Not Used', ?, ?, ?, ?)",[$license, $note, $duration, $level, $owner ?? $_SESSION['username'], time(), $secret ?? $_SESSION['app']]);
 		$licenses[] = $license;
 	}
 
@@ -130,14 +127,12 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 }
 function addTime($time, $expiry, $secret = null)
 {
-	global $link;
-	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$time = etc\sanitize($time);
 	$expiry = etc\sanitize($expiry);
 
 	$time = $time * $expiry;
-	mysqli_query($link, "UPDATE `keys` SET `expires` = `expires`+$time WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `status` = 'Not Used'");
-	if (mysqli_affected_rows($link) > 0) {
+	$query = mysql\query("UPDATE `keys` SET `expires` = `expires`+? WHERE `app` = ? AND `status` = 'Not Used'",[$time, $secret ?? $_SESSION['app']]);
+	if ($query->affected_rows > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
 		}
@@ -148,10 +143,8 @@ function addTime($time, $expiry, $secret = null)
 }
 function deleteAll($secret = null)
 {
-	global $link;
-	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-	mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "'");
-	if (mysqli_affected_rows($link) > 0) {
+	$query = mysql\query("DELETE FROM `keys` WHERE `app` = ?",[$secret ?? $_SESSION['app']]);
+	if ($query->affected_rows > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
 		}
@@ -162,10 +155,8 @@ function deleteAll($secret = null)
 }
 function deleteAllUnused($secret = null)
 {
-	global $link;
-	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-	mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `status` = 'Not Used'");
-	if (mysqli_affected_rows($link) > 0) {
+	$query = mysql\query("DELETE FROM `keys` WHERE `app` = ? AND `status` = 'Not Used'",[$secret ?? $_SESSION['app']]);
+	if ($query->affected_rows > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
 		}
@@ -176,10 +167,8 @@ function deleteAllUnused($secret = null)
 }
 function deleteAllUsed($secret = null)
 {
-	global $link;
-	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-	mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `status` = 'Used'");
-	if (mysqli_affected_rows($link) > 0) {
+	$query = mysql\query("DELETE FROM `keys` WHERE `app` = ? AND `status` = 'Used'",[$secret ?? $_SESSION['app']]);
+	if ($query->affected_rows > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
 		}
@@ -190,62 +179,96 @@ function deleteAllUsed($secret = null)
 }
 function deleteSingular($key, $userToo, $secret = null)
 {
-	global $link;
-	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-	$key = etc\sanitize($key);
-	$userToo = etc\sanitize($userToo);
+    $key = etc\sanitize($key);
+    $userToo = etc\sanitize($userToo);
 
-	if ($_SESSION['role'] == "Reseller") {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
-		if (mysqli_num_rows($result) < 1) {
-			return 'nope';
-		}
-	}
+    if ($_SESSION['role'] == "Reseller") {
+        $query = mysql\query("SELECT 1 FROM `keys` WHERE `app` = ? AND `key` = ? AND `genby` = ?",[$secret ?? $_SESSION['app'], $key, $_SESSION['username']]);
+        if ($query->num_rows < 1) {
+            return 'nope';
+        }
+    }
 
-	if ($userToo) {
-		$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
-		$row = mysqli_fetch_array($result);
-		$usedby = $row['usedby'];
-		
-		user\deleteSingular($usedby, $secret);
-	}
-	mysqli_query($link, "DELETE FROM `subs` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'"); // delete any subscriptions created with key
-	mysqli_query($link, "DELETE FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
-	if (mysqli_affected_rows($link) > 0) {
-		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
-			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
-			cache\purge('KeyAuthKey:' . ($secret ?? $_SESSION['app']) . ':' . $key);
-		}
-		return 'success';
-	} else {
-		return 'failure';
-	}
+    if ($userToo) {
+        $query = mysql\query("SELECT `usedby` FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
+        $row = mysqli_fetch_array($query->result);
+        $usedby = $row['usedby'];
+
+        user\deleteSingular($usedby, $secret);
+    }
+
+    $query = mysql\query("DELETE FROM `subs` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);// delete any subscriptions created with key
+    $query = mysql\query("DELETE FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
+    if ($query->affected_rows > 0) {
+        if ($_SESSION['role'] == "seller" || !is_null($secret)) {
+            cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
+            cache\purge('KeyAuthKey:' . ($secret ?? $_SESSION['app']) . ':' . $key);
+        }
+        return 'success';
+    } else {
+        return 'failure';
+    }
 }
+
+function deleteMultiple($keys, $userToo, $secret = null) {
+    $keys = explode(', ', $keys);
+    $userToo = etc\sanitize($userToo);
+
+    foreach ($keys as $key) {
+        $key = etc\sanitize(trim($key));
+
+        if ($_SESSION['role'] == "Reseller") {
+            $query = mysql\query("SELECT 1 FROM `keys` WHERE `app` = ? AND `key` = ? AND `genby` = ?",[$secret ?? $_SESSION['app'], $key, $_SESSION['username']]);
+            if ($query->num_rows < 1) {
+                return 'nope';
+            }
+        }
+
+        if ($userToo) {
+            $query = mysql\query("SELECT `usedby` FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
+            $row = mysqli_fetch_array($query->result);
+            $usedby = $row['usedby'];
+
+            user\deleteSingular($usedby, $secret);
+        }
+
+        $query = mysql\query("DELETE FROM `subs` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);// delete any subscriptions created with key
+        $query = mysql\query("DELETE FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
+        if ($query->affected_rows > 0) {
+            if ($_SESSION['role'] == "seller" || !is_null($secret)) {
+                cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
+                cache\purge('KeyAuthKey:' . ($secret ?? $_SESSION['app']) . ':' . $key);
+            }
+        } else {
+            return 'failure';
+        }
+    }
+    return 'success';
+}
+
 function ban($key, $reason, $userToo, $secret = null)
 {
-	global $link;
-	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$key = etc\sanitize($key);
 	$reason = etc\sanitize($reason);
 	$userToo = etc\sanitize($userToo);
 
 	if ($_SESSION['role'] == "Reseller") {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
-		if (mysqli_num_rows($result) === 0) {
+		$query = mysql\query("SELECT 1 FROM `keys` WHERE `app` = ? AND `key` = ? AND `genby` = ?", [$secret ?? $_SESSION['app'], $key, $_SESSION['username']]);
+		if ($query->num_rows === 0) {
 			return 'nope';
 		}
 	}
 
 	if ($userToo) {
-		$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
-		$row = mysqli_fetch_array($result);
+		$query = mysql\query("SELECT `usedby` FROM `keys` WHERE `app` = ? AND `key` = ?", [$secret ?? $_SESSION['app'], $key]);
+		$row = mysqli_fetch_array($query->result);
 		$usedby = $row['usedby'];
 		
 		user\ban($usedby, $reason, $secret);
 	}
 
-	mysqli_query($link, "UPDATE `keys` SET `banned` = '$reason', `status` = 'Banned' WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
-	if (mysqli_affected_rows($link) > 0) {
+	$query = mysql\query("UPDATE `keys` SET `banned` = ?, `status` = 'Banned' WHERE `app` = ? AND `key` = ?",[$reason, $secret ?? $_SESSION['app'], $key]);
+	if ($query->affected_rows > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
 		}
@@ -256,30 +279,27 @@ function ban($key, $reason, $userToo, $secret = null)
 }
 function unban($key, $secret = null)
 {
-	global $link;
-	include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
 	$key = etc\sanitize($key);
 
 	if ($_SESSION['role'] == "Reseller") {
-		$result = mysqli_query($link, "SELECT 1 FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key' AND `genby` = '" . $_SESSION['username'] . "'");
-		if (mysqli_num_rows($result) === 0) {
+		$query = mysql\query("SELECT 1 FROM `keys` WHERE `app` = ? AND `key` = ? AND `genby` = ?",[$secret ?? $_SESSION['app'], $key, $_SESSION['username']]);
+		if ($query->num_rows === 0) {
 			return 'nope';
 		}
 	}
 
 	$status = "Not Used";
-	$result = mysqli_query($link, "SELECT `usedby` FROM `keys` WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'");
-	if (mysqli_num_rows($result) > 0) {
-		$row = mysqli_fetch_array($result);
+	$query = mysql\query("SELECT `usedby` FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
+	if ($query->num_rows > 0) {
+		$row = mysqli_fetch_array($query->result);
 		$usedby = $row['usedby'];
 		$status = "Used";
 		
 		user\unban($usedby, $secret);
 	}
 
-
-	mysqli_query($link, "UPDATE `keys` SET `banned` = NULL, `status` = '$status' WHERE `app` = '" . ($secret ?? $_SESSION['app']) . "' AND `key` = '$key'"); // update key from banned to its old status
-	if (mysqli_affected_rows($link) > 0) {
+	$query = mysql\query("UPDATE `keys` SET `banned` = NULL, `status` = ? WHERE `app` = ? AND `key` = ?",[$status, $secret ?? $_SESSION['app'], $key]);// update key from banned to its old status
+	if ($query->affected_rows > 0) {
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
 		}

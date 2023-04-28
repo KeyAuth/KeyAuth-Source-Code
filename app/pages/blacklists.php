@@ -1,13 +1,13 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
-	die();
+    die();
 }
-if($role == "Manager" && !($permissions & 512)) {
-	die('You weren\'t granted permissions to view this page.');
+if ($role == "Manager" && !($permissions & 512)) {
+    die('You weren\'t granted permissions to view this page.');
 }
-if(!isset($_SESSION['app'])) {
-	die("Application not selected.");
+if (!isset($_SESSION['app'])) {
+    die("Application not selected.");
 }
 if (isset($_POST['addblack'])) {
     $resp = misc\blacklist\add($_POST['blackdata'], $_POST['blacktype']);
@@ -78,22 +78,18 @@ if (isset($_POST['addwhite'])) {
 
     <form method="post">
 
-        <button data-bs-toggle="modal" type="button" data-bs-target="#create-blacklist"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#create-blacklist" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
             Create Blacklist</button>
-        <button data-bs-toggle="modal" type="button" data-bs-target="#delete-blacklists"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#delete-blacklists" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All Blacklists</button>
-		<button data-bs-toggle="modal" type="button" data-bs-target="#create-whitelist"
-            class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#create-whitelist" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
             Create Whitelist</button>
     </form>
     <br>
 
 
 
-    <div id="create-blacklist" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
-        style="display: none;">
+    <div id="create-blacklist" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
 
         <div class="modal-dialog">
 
@@ -106,12 +102,9 @@ if (isset($_POST['addwhite'])) {
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
                         <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
-                                    transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
-                                    fill="black" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
                             </svg>
                         </span>
                     </div>
@@ -137,8 +130,7 @@ if (isset($_POST['addwhite'])) {
 
                             <label for="recipient-name" class="control-label">Blacklist Data:</label>
 
-                            <input type="text" class="form-control" placeholder="IP or HWID to blacklist"
-                                name="blackdata" required>
+                            <input type="text" class="form-control" placeholder="IP or HWID to blacklist" name="blackdata" required>
 
                         </div>
 
@@ -174,12 +166,9 @@ if (isset($_POST['addwhite'])) {
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
                         <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
-                                    transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
-                                    fill="black" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
                             </svg>
                         </span>
                     </div>
@@ -187,7 +176,7 @@ if (isset($_POST['addwhite'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all blacklists? </p>
+                        <p> Are you sure you want to delete all blacklists? This can not be undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">
@@ -199,9 +188,8 @@ if (isset($_POST['addwhite'])) {
             </div>
         </div>
     </div>
-	
-	<div id="create-whitelist" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
-        style="display: none;">
+
+    <div id="create-whitelist" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
 
         <div class="modal-dialog">
 
@@ -214,12 +202,9 @@ if (isset($_POST['addwhite'])) {
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
                         <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
-                                    transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
-                                    fill="black" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
                             </svg>
                         </span>
                     </div>
@@ -234,8 +219,7 @@ if (isset($_POST['addwhite'])) {
 
                             <label for="recipient-name" class="control-label">IP Address:</label>
 
-                            <input type="text" class="form-control" placeholder="IP to whitelist from VPN check"
-                                name="ip" required>
+                            <input type="text" class="form-control" placeholder="IP to whitelist from VPN check" name="ip" required>
 
                         </div>
 

@@ -1,6 +1,11 @@
 <?php
-include '../includes/connection.php';
 include '../includes/misc/autoload.phtml';
+
+set_exception_handler(function ($exception) {
+	error_log($exception);
+	http_response_code(500);
+	die("Error: " . $exception->getMessage());
+});
 
 if (session_status() === PHP_SESSION_NONE) {
 	session_start();
@@ -18,41 +23,38 @@ if (isset($_POST['draw'])) {
 
 	// credits to https://makitweb.com/datatables-ajax-pagination-with-search-and-sort-php/
 
-	$draw = misc\etc\sanitize($_POST['draw']);
-	$row = misc\etc\sanitize($_POST['start']);
-	$rowperpage = misc\etc\sanitize($_POST['length']); // Rows display per page
+	$draw = intval($_POST['draw']);
+	$row = intval($_POST['start']);
+	$rowperpage = intval($_POST['length']); // Rows display per page
 	$columnIndex = misc\etc\sanitize($_POST['order'][0]['column']); // Column index
 	$columnName = misc\etc\sanitize($_POST['columns'][$columnIndex]['data']); // Column name
 	$columnSortOrder = misc\etc\sanitize($_POST['order'][0]['dir']); // asc or desc
 	$searchValue = misc\etc\sanitize($_POST['search']['value']); // Search value
 
-	## Search 
-	$searchQuery = " ";
-	if ($searchValue != '') {
-		$searchQuery = " and (`key` like '%" . $searchValue . "%' or 
-			`note` like '%" . $searchValue . "%' or 
-			`genby` like'%" . $searchValue . "%' or 
-			`usedby` like'%" . $searchValue . "%' ) ";
-	}
-
 	## Total number of records without filtering
-	$sel = mysqli_query($link, "select count(1) as allcount from `keys` where app = '" . $_SESSION['app'] . "'");
-	$records = mysqli_fetch_assoc($sel);
+	$sel = misc\mysql\query("select count(1) as allcount from `keys` where app = ?",[$_SESSION['app']]);
+	$records = mysqli_fetch_assoc($sel->result);
 	$totalRecords = $records['allcount'];
 
 	## Total number of record with filtering
-	$sel = mysqli_query($link, "select count(1) as allcount from `keys` WHERE 1 " . $searchQuery . " and app = '" . $_SESSION['app'] . "'");
-	$records = mysqli_fetch_assoc($sel);
+	$sel = misc\mysql\query("select count(1) as allcount from `keys` WHERE 1  and (`key` like ? or `note` like ? or `genby` like ? or `usedby` like ? ) and app = ?",["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
+	$records = mysqli_fetch_assoc($sel->result);
 	$totalRecordwithFilter = $records['allcount'];
 
+	// whitelist certain column names and sort orders to prevent SQL injection
+	if(!in_array($columnName, array("key", "gendate", "genby", "expires", "note", "usedon", "usedby", "status", "actions"))) {
+		die("Column name is not whitelisted.");
+	}
+
+	if(!in_array($columnSortOrder, array("desc", "asc"))) {
+		die("Column sort order is not whitelisted.");
+	}
+
 	## Fetch records
-	$empQuery = "select * from `keys` WHERE 1 " . $searchQuery . " and app = '" . $_SESSION['app'] . "' order by `" . $columnName . "` " . $columnSortOrder . " limit " . $row . "," . $rowperpage;
-	// echo $empQuery;
-	$empRecords = mysqli_query($link, $empQuery);
-	
+	$query = misc\mysql\query("select * from `keys` WHERE 1  and (`key` like ? or `note` like ? or `genby` like ? or `usedby` like ? ) and app = ? order by `".$columnName."` ".$columnSortOrder." limit " . $row . "," . $rowperpage,["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
 	$data = array();
 
-	while ($row = mysqli_fetch_assoc($empRecords)) {
+	while ($row = mysqli_fetch_assoc($query->result)) {
 
 		## If only one or two keys exists then we will use custom margin to fix the bugging menu
 		$banBtns = "";

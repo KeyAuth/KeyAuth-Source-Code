@@ -4,6 +4,8 @@ namespace api\v1_0;
 use api\shared\primary;
 use misc\etc;
 use misc\cache;
+use misc\mysql;
+
 #region enc region
 function Encrypt($string, $enckey)
 {
@@ -17,10 +19,8 @@ function Decrypt($string, $enckey)
 #region rgstr region
 function register($un, $key, $pw, $email, $hwid, $secret)
 {
-    global $link; // needed to refrence active MySQL connection
-    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-    $result = mysqli_query($link, "SELECT `minUsernameLength`, `blockLeakedPasswords` FROM `apps` WHERE `secret` = '$secret'");
-    $row = mysqli_fetch_array($result);
+    $query = mysql\query("SELECT `minUsernameLength`, `blockLeakedPasswords` FROM `apps` WHERE `secret` = ?",[$secret]);
+    $row = mysqli_fetch_array($query->result);
     $minUsernameLength = $row['minUsernameLength'];
     $blockLeakedPasswords = $row['blockLeakedPasswords'];
 
@@ -33,21 +33,21 @@ function register($un, $key, $pw, $email, $hwid, $secret)
     }
 
     // search username
-    $result = mysqli_query($link, "SELECT 1 FROM `users` WHERE `username` = '$un' AND `app` = '$secret'");
+    $query = mysql\query("SELECT 1 FROM `users` WHERE `username` = ? AND `app` = ?",[$un, $secret]);
     // if username already in existence
-    if (mysqli_num_rows($result) >= 1) {
+    if ($query->num_rows >= 1) {
         return 'username_taken';
     }
     // search for key
-    $result = mysqli_query($link, "SELECT `expires`, `status`, `level`, `genby` FROM `keys` WHERE `key` = '$key' AND `app` = '$secret'");
+    $query = mysql\query("SELECT `expires`, `status`, `level`, `genby` FROM `keys` WHERE `key` = ? AND `app` = ?",[$key, $secret]);
     // check if key exists
-    if (mysqli_num_rows($result) < 1) {
+    if ($query->num_rows < 1) {
         return 'key_not_found';
     }
     // if key does exist
-    elseif (mysqli_num_rows($result) > 0) {
+    elseif ($query->num_rows > 0) {
         // gather key info
-        while ($row = mysqli_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($query->result)) {
             $expires = $row['expires'];
             $status = $row['status'];
             $level = $row['level'];
@@ -61,35 +61,35 @@ function register($un, $key, $pw, $email, $hwid, $secret)
                 return 'key_banned';
         }
         $ip = primary\getIp();
-        $hwidBlackCheck = mysqli_query($link, "SELECT 1 FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '$ip') AND `app` = '$secret'");
-        if (mysqli_num_rows($hwidBlackCheck) > 0) {
-            mysqli_query($link, "UPDATE `keys` SET `status` = 'Banned',`banned` = 'This key has been banned as the client was blacklisted.' WHERE `key` = '$un' AND `app` = '$secret'");
-			cache\purge('KeyAuthKeys:' . $secret);
+        $hwidBlackCheck = mysql\query("SELECT 1 FROM `bans` WHERE (`hwid` = ? OR `ip` = ?) AND `app` = ?",[$hwid, $ip, $secret]);
+        if ($hwidBlackCheck->num_rows > 0) {
+            $query = mysql\query("UPDATE `keys` SET `status` = 'Banned',`banned` = 'This key has been banned as the client was blacklisted.' WHERE `key` = ? AND `app` = ?",[$un, $secret]);
+            cache\purge('KeyAuthKeys:' . $secret);
             return 'hwid_blacked';
         }
         // add current time to key time
         $expiry = $expires + time();
-        $result = mysqli_query($link, "SELECT `name` FROM `subscriptions` WHERE `app` = '$secret' AND `level` = '$level'");
-        $num = mysqli_num_rows($result);
-        if ($num == 0) {
+        $query = mysql\query("SELECT `name` FROM `subscriptions` WHERE `app` = ? AND `level` = ?", [$secret, $level]);
+        if ($query->num_rows == 0) {
             return 'no_subs_for_level';
         }
         // update key to used
-        mysqli_query($link, "UPDATE `keys` SET `status` = 'Used',`usedon` = '" . time() . "',`usedby` = '$un' WHERE `key` = '$key'");
+        mysql\query("UPDATE `keys` SET `status` = 'Used',`usedon` = ?,`usedby` = ? WHERE `key` = ? AND `app` = ?",[time(), $un, $key, $secret]);
+
 		cache\purge('KeyAuthKeys:' . $secret);
-        while ($row = mysqli_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($query->result)) {
             // add each subscription that user's key applies to
             $subname = $row['name'];
-            mysqli_query($link, "INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`, `key`) VALUES ('$un','$subname', '$expiry', '$secret','$key')");
+            mysql\query("INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`, `key`) VALUES (?, ?, ?, ?, ?)",[$un, $subname, $expiry, $secret, $key]);
+
         }
         $password = password_hash($pw, PASSWORD_BCRYPT);
-        $createdate = time();
         // create user
-        mysqli_query($link, "INSERT INTO `users` (`username`, `email`, `password`, `hwid`, `app`,`owner`,`createdate`, `lastlogin`, `ip`) VALUES ('$un',SHA(LOWER(NULLIF('$email', ''))),'$password', NULLIF('$hwid', ''), '$secret', '$genby', '$createdate', '$createdate', '$ip')");
-        $result = mysqli_query($link, "SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "");
+        mysql\query("INSERT INTO `users` (`username`, `email`, `password`, `hwid`, `app`,`owner`,`createdate`, `lastlogin`, `ip`) VALUES (?, SHA(LOWER(NULLIF(?, ''))), ?, NULLIF(?, ''), ?, ?, ?, ?, ?)",[$un, $email, $password, $hwid, $secret, $genby, time(), time(), $ip]);
+        $query = mysql\query("SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = ? AND `app` = ? AND `expiry` > " . time() . "",[$un, $secret]);
         $rows = array();
-        if(mysqli_num_rows($result) > 0) {
-			while ($r = mysqli_fetch_assoc($result)) {
+        if($query->num_rows > 0) {
+			while ($r = mysqli_fetch_assoc($query->result)) {
 				$timeleft = $expiry - time();
 				$r += ["timeleft" => $timeleft];
 				$rows[] = $r;
@@ -97,7 +97,7 @@ function register($un, $key, $pw, $email, $hwid, $secret)
 		}
 		else {
 			$timeleft = $expiry - time();
-			$rows = array("subscription" => "$subname", "key" => "$key", "expiry" => "$expiry", "timeleft" => $timeleft);
+			$rows = array("subscription" => "$subname", "key" => "$key", "expiry" => "$expiry", "timeleft" => "$timeleft");
 		}
 		
         cache\purge('KeyAuthUser:' . $secret . ':' . $un);
@@ -108,7 +108,7 @@ function register($un, $key, $pw, $email, $hwid, $secret)
             "subscriptions" => $rows,
             "ip" => $ip,
             "hwid" => $hwid,
-            "createdate" => "$createdate",
+            "createdate" => "". time() ."",
             "lastlogin" => "" . time() . ""
         );
     }
@@ -118,7 +118,7 @@ function register($un, $key, $pw, $email, $hwid, $secret)
 function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
 {
     // Find username
-    $row = cache\fetch('KeyAuthUser:' . $secret . ':' . $un, "SELECT * FROM `users` WHERE `username` = '$un' AND `app` = '$secret'", 0);
+    $row = cache\fetch('KeyAuthUser:' . $secret . ':' . $un, "SELECT * FROM `users` WHERE `username` = ? AND `app` = ?", [$un, $secret], 0);
     // if not found
     if ($row == "not_found") {
         return 'un_not_found';
@@ -136,11 +136,10 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
     }
     $ip = primary\getIp();
 
-    $row = cache\fetch('KeyAuthBlacklist:' . $secret . ':' . $ip . ':' . $hwid, "SELECT 1 FROM `bans` WHERE (`hwid` = '$hwid' OR `ip` = '$ip') AND `app` = '$secret'", 0);
+    $row = cache\fetch('KeyAuthBlacklist:' . $secret . ':' . $ip . ':' . $hwid, "SELECT 1 FROM `bans` WHERE (`hwid` = ? OR `ip` = ?) AND `app` = ?", [$hwid, $ip, $secret], 0);
     if ($row != "not_found") {
-        global $link;
-        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        mysqli_query($link, "UPDATE `users` SET `banned` = 'User is blacklisted' WHERE `username` = '$un' AND `app` = '$secret'");
+        $query = mysql\query("UPDATE `users` SET `banned` = 'User is blacklisted' WHERE `username` = ? AND `app` = ?",[$un, $secret]);
+
         cache\purge('KeyAuthUser:' . $secret . ':' . $un);
         return 'hwid_blacked';
     }
@@ -157,9 +156,8 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
         }
     } else {
         $pass_encrypted = password_hash($pw, PASSWORD_BCRYPT);
-        global $link;
-        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        mysqli_query($link, "UPDATE `users` SET `password` = '$pass_encrypted' WHERE `username` = '$un' AND `app` = '$secret'");
+        $query = mysql\query("UPDATE `users` SET `password` = ? WHERE `username` = ? AND `app` = ?",[$pass_encrypted, $un, $secret]);
+
         cache\purge('KeyAuthUser:' . $secret . ':' . $un);
     }
     // check if hwid enabled for application
@@ -168,22 +166,24 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
         if ($hwid != NULL && strpos($hwidd, $hwid) === false && $hwidd != NULL) {
             return 'hwid_mismatch';
         } else if ($hwidd == NULL && $hwid != NULL) {
-            global $link;
-            include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-            mysqli_query($link, "UPDATE `users` SET `hwid` = NULLIF('$hwid', '') WHERE `username` = '$un' AND `app` = '$secret'");
+            $query = mysql\query("UPDATE `users` SET `hwid` = NULLIF(?, '') WHERE `username` = ? AND `app` = ?",[$hwid, $un, $secret]);
+
             cache\purge('KeyAuthUser:' . $secret . ':' . $un);
         }
     }
-    $rows = cache\fetch('KeyAuthSubs:' . $secret . ':' . $un, "SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `expiry` > " . time() . "", 1);
+    $rows = cache\fetch('KeyAuthSubs:' . $secret . ':' . $un, "SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = ? AND `app` = ? AND `expiry` > ?", [$un, $secret, time()], 1, null, "ssi");
+    if($_SERVER['HTTP_USER_AGENT'] == "PostmanRuntime/7.31.3") {
+        var_dump($rows);
+    }
+    
     if ($rows == "not_found") {
-        global $link;
-        include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-        $result = mysqli_query($link, "SELECT `paused` FROM `subs` WHERE `user` = '$un' AND `app` = '$secret' AND `paused` = 1");
-        if (mysqli_num_rows($result) >= 1) {
+        $query = mysql\query("SELECT `paused` FROM `subs` WHERE `user` = ? AND `app` = ? AND `paused` = 1",[$un, $secret]);
+        if ($query->num_rows >= 1) {
             return 'sub_paused';
         }
         return 'no_active_subs';
     }
+    
 	
 	$rowsFinal = array();  
 	foreach ($rows as $row) {
@@ -192,16 +192,14 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
 		$rowsFinal[] = $row;
 	}
 
-    global $link;
-    include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/connection.php'; // create connection with MySQL
-    mysqli_query($link, "UPDATE `users` SET `ip` = NULLIF('$ip', ''),`lastlogin` = " . time() . " WHERE `username` = '$un' AND `app` = '$secret'");
+    $query = mysql\query("UPDATE `users` SET `ip` = NULLIF(?, ''),`lastlogin` = " . time() . " WHERE `username` = ? AND `app` = ?",[$ip, $un, $secret]);
 
     return array(
         "username" => "$un",
         "subscriptions" => $rowsFinal,
         "ip" => $ip,
         "hwid" => $hwidd,
-        "createdate" => $createdate,
+        "createdate" => "$createdate",
         "lastlogin" => "" . time() . ""
     );
 }
