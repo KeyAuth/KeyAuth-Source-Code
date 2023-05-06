@@ -479,7 +479,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                                                     </label>
                                                     <!--end::Label-->
                                                     <!--begin::Input-->
-                                                    <input type="text" name="webauthn_name" id="webauthn_name" maxlength="99" placeholder="Pick a name for security key" class="form-control mb-4">
+                                                    <input type="text" name="webauthn_name" id="webauthn_name" maxlength="99" placeholder="Pick a name for security key" class="form-control mb-4" required>
                                                     <!--end::Input-->
                                                 </div>
                                                 <!--end::Input group-->

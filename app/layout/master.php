@@ -20,7 +20,13 @@
                 <!--begin::Post-->
                 <div class="post d-flex flex-column-fluid" id="kt_post">
 
-                    <?php include __DIR__ . "/../pages/{$page}.php"; ?>
+                    <?php
+                        // prevent directory traversal
+                        if(str_contains($page, ".")) {
+                            die("Page name is invalid");
+                        }
+                        require __DIR__ . "/../pages/{$page}.php";
+                    ?>
 
                 </div>
                 <!--end::Post-->

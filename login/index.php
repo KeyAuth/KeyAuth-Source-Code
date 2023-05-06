@@ -138,7 +138,7 @@ set_exception_handler(function ($exception) {
                             <label class="form-label fs-6 fw-bolder text-light">Username</label>
                             <!--end::Label-->
                             <!--begin::Input-->
-                            <input class="form-control text-light" type="text" name="username" placeholder="Enter username" autocomplete="on" />
+                            <input class="form-control text-light" type="text" required name="username" placeholder="Enter username" autocomplete="on" />
                             <div class="form-group row">
                                 </br>
                                 <!--end::Input-->
@@ -157,7 +157,7 @@ set_exception_handler(function ($exception) {
                                 </div>
                                 <!--end::Wrapper-->
                                 <!--begin::Input-->
-                                <input class="form-control text-light" type="password" name="password" placeholder="Password" autocomplete="on" />
+                                <input class="form-control text-light" type="password" required name="password" placeholder="Password" autocomplete="on" />
                                 <!--end::Input-->
                             </div>
                             <div class="fv-row mb-10">

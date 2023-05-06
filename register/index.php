@@ -110,14 +110,6 @@ set_exception_handler(function ($exception) {
 					<img alt="Logo" src="https://cdn.keyauth.cc/v2/assets/media/logos/favicon.ico" class="h-80px" />
 				</a>
 				<!--end::Logo-->
-				<?php
-				if (isset($_GET['af'])) {
-				?>
-					<div class="alert alert-danger">We're no longer doing the affiliate system as people
-						didn't buy afterwards and rather abused it.</div>
-				<?php
-				}
-				?>
 				<!--begin::Wrapper-->
 				<form method="post">
 					<div class="bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
@@ -206,7 +198,6 @@ set_exception_handler(function ($exception) {
 							<!--end::Hint-->
 						</div>
 
-						<input type="hidden" name="referrer" value="<?php echo $_SERVER['HTTP_REFERER']; ?>">
 						<!--end::Input group=-->
 						<!--begin::Input group-->
 						<!--end::Input group-->
@@ -324,7 +315,7 @@ set_exception_handler(function ($exception) {
 						<h1>Welcome!</h1> 
 						<p>Please join our Discord server for updates and account help <a href=\"https://discord.gg/keyauth\">https://discord.gg/keyauth</a></p>
 						<p>KeyAuth code can be seen here <a href=\"https://github.com/KeyAuth/\">https://github.com/KeyAuth/</a></p>
-						<p>KeyAuth API documentation can be seen here <a href=\"https://docs.keyauth.cc/\">https://docs.keyauth.cc/</a></p>
+						<p>KeyAuth API documentation can be seen here <a href=\"https://keyauth.readme.io/\">https://keyauth.readme.io/</a></p>
 						<p>Please leave a review on TrustPilot if you enjoy KeyAuth <a href=\"https://trustpilot.com/review/keyauth.com\">https://trustpilot.com/review/keyauth.com</a></p>
 						<p style=\"margin-top: 20px;\">Thanks,<br><b>KeyAuth.</b></p>
 					</body> 

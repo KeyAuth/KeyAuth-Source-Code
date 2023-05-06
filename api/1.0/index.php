@@ -36,6 +36,9 @@ $webhook = $row['webhook'];
 $appdisabled = $row['appdisabled'];
 $hashcheck = $row['hashcheck'];
 $serverhash = $row['hash'];
+$sessionexpiry = $row['session'];
+$killOtherSessions = $row['killOtherSessions'];
+$forceHwid = $row['forceHwid'];
 
 $banned = $row['banned'];
 $owner = $row['owner'];
@@ -58,8 +61,6 @@ $keybanned = $row['keybanned'];
 $userbanned = $row['userbanned'];
 $sessionunauthed = $row['sessionunauthed'];
 $hashcheckfail = $row['hashcheckfail'];
-$sessionexpiry = $row['session'];
-$killOtherSessions = $row['killOtherSessions'];
 
 // why using null coalescing operators? because if I add a field and it's not in redis cache, it'll be NULL
 $loggedInMsg = $row['loggedInMsg'] ?? "Logged in!";
@@ -67,6 +68,7 @@ $pausedApp = $row['pausedApp'] ?? "Application is currently paused, please wait 
 $unTooShort = $row['unTooShort'] ?? "Username too short, try longer one.";
 $pwLeaked = $row['pwLeaked'] ?? "This password has been leaked in a data breach (not from us), please use a different one.";
 $chatHitDelay = $row['chatHitDelay'] ?? "Chat slower, you've hit the delay limit";
+$minHwid = $row['minHwid'] ?? 20;
 
 if ($banned) {
     die(api\v1_0\Encrypt(json_encode(array(
@@ -345,6 +347,20 @@ switch (hex2bin($_POST['type'])) {
         // Read in password
         $password = misc\etc\sanitize(api\v1_0\Decrypt($_POST['pass'], $enckey));
 
+        if(strlen($hwid) < $minHwid && !is_null($hwid)) {
+            die(api\v1_0\Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "HWID must be {$minHwid} or more characters, change this in app settings."
+            )), $enckey));
+        }
+
+        if($forceHwid && is_null($hwid)) {
+            die(api\v1_0\Encrypt(json_encode(array(
+                "success" => true,
+                "message" => "Force HWID is enabled, disable in app settings if you want to use blank HWIDs"
+            )), $enckey));
+        }
+
         $resp = api\v1_0\login($username, $password, $hwid, $secret, $hwidenabled);
         switch ($resp) {
             case 'un_not_found':
@@ -411,11 +427,24 @@ switch (hex2bin($_POST['type'])) {
 
         $hwid = misc\etc\sanitize(api\v1_0\Decrypt($_POST['hwid'], $enckey));
 
+        if(strlen($hwid) < $minHwid && !is_null($hwid)) {
+            die(api\v1_0\Encrypt(json_encode(array(
+                "success" => false,
+                "message" => "HWID must be {$minHwid} or more characters, change this in app settings."
+            )), $enckey));
+        }
+
+        if($forceHwid && is_null($hwid)) {
+            die(api\v1_0\Encrypt(json_encode(array(
+                "success" => true,
+                "message" => "Force HWID is enabled, disable in app settings if you want to use blank HWIDs"
+            )), $enckey));
+        }
+
         $resp = api\v1_0\login($checkkey, $checkkey, $hwid, $secret, $hwidenabled);
         switch ($resp) {
             case 'un_not_found':
                 break; // user not registered yet or user was deleted
-
             case 'hwid_mismatch':
                 die(api\v1_0\Encrypt(json_encode(array(
                     "success" => false,
@@ -533,7 +562,7 @@ switch (hex2bin($_POST['type'])) {
         $session = api\shared\primary\getSession($sessionid, $secret);
         $enckey = $session["enckey"];
 
-        $rows = misc\cache\fetch('KeyAuthOnlineUsers:' . $secret, "SELECT DISTINCT `credential` FROM `sessions` WHERE `validated` = 1 AND `app` = ?", [$secret], 1, 1800);
+        $rows = misc\cache\fetch('KeyAuthOnlineUsers:' . $secret, "SELECT DISTINCT CONCAT(LEFT(`credential`, 10), IF(LENGTH(`credential`) > 10, REPEAT('*', LENGTH(`credential`) - 10), '')) AS `credential` FROM `sessions` WHERE `validated` = 1 AND `app` = ?", [$secret], 1, 1800);
 
         if ($rows == "not_found") {
             die(api\v1_0\Encrypt(json_encode(array(
@@ -982,7 +1011,7 @@ switch (hex2bin($_POST['type'])) {
         $ip = api\shared\primary\getIp();
         misc\blacklist\add($ip, "IP Address", $secret);
 
-        misc\mysql\query("UPDATE `users` SET `banned` = ? WHERE `username` = ?", [$reason, $credential]);
+        misc\mysql\query("UPDATE `users` SET `banned` = ? WHERE `username` = ? AND `app` = ?", [$reason, $credential, $secret]);
 
         if ($query->affected_rows != 0) {
             misc\cache\purge('KeyAuthUser:' . $secret . ':' . $credential);

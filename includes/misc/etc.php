@@ -9,6 +9,25 @@ function sanitize($input)
     }
     return strip_tags(trim($input)); // return string with script tags stripped to prevent XSS attack, and trimmed to remove whitespace
 }
+
+function random_string_lower($length = 10, $keyspace = "abcdefghijklmnopqrstuvwxyz"): string {
+    $out = '';
+    for ($i = 0; $i < $length; $i++){
+        $rand_index = random_int(0, strlen($keyspace) -1);
+        $out .= $keyspace[$rand_index];
+    }
+    return $out;
+}
+
+function random_string_upper($length = 10, $keyspace = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"): string {
+    $out = '';
+    for ($i = 0; $i < $length; $i++){
+        $rand_index = random_int(0, strlen($keyspace) -1);
+        $out .= $keyspace[$rand_index];
+    }
+    return $out;
+}
+
 function random_string_gen($length = 10, $keyspace = '0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ'): string // replaces upper-case X characters in key mask
 { // https://github.com/FinGu/c_auth/blob/cfbd7036e69561e538e26dc47f7690dbc0d8ba53/functions/general/functions.php#L55
     $out = '';

@@ -127,10 +127,9 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
     // get all rows from username query
     $pass = $row['password'];
     //$expires = $row['expires'];
-    $hwidd = $row['hwid'];
+    $serverHwid = $row['hwid'];
     $banned = $row['banned'];
     $createdate = $row['createdate'];
-    $lastlogin = $row['lastlogin'];
     if ($banned != NULL) {
         return 'user_banned';
     }
@@ -163,9 +162,9 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
     // check if hwid enabled for application
     if ($hwidenabled == "1") {
         // check if hwid in db contains hwid recieved
-        if ($hwid != NULL && strpos($hwidd, $hwid) === false && $hwidd != NULL) {
+        if (!is_null($hwid) && !str_contains($serverHwid, $hwid) && !is_null($serverHwid)) {
             return 'hwid_mismatch';
-        } else if ($hwidd == NULL && $hwid != NULL) {
+        } else if (is_null($serverHwid) && !is_null($hwid)) {
             $query = mysql\query("UPDATE `users` SET `hwid` = NULLIF(?, '') WHERE `username` = ? AND `app` = ?",[$hwid, $un, $secret]);
 
             cache\purge('KeyAuthUser:' . $secret . ':' . $un);
@@ -198,7 +197,7 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
         "username" => "$un",
         "subscriptions" => $rowsFinal,
         "ip" => $ip,
-        "hwid" => $hwidd,
+        "hwid" => $serverHwid,
         "createdate" => "$createdate",
         "lastlogin" => "" . time() . ""
     );

@@ -14,21 +14,27 @@ function add($url, $authed, $secret = null)
   if (!filter_var($url, FILTER_VALIDATE_URL)) {
     return 'invalid';
   }
+
+  if(str_contains($url, "localhost") || str_contains($url, "127.0.0.1") || str_contains($url, "file:/"))
+		return 'no_local';
+
   $file = file_get_contents($url);
   $filesize = strlen($file);
-  if ($filesize > 10000000 && $role == "tester") {
-    error("Users with tester plan may only upload files up to 10MB. Paid plans may upload up to 50MB.");
-    return;
-  } else if ($filesize > 50000000 && ($role == "developer" || $role == "Manager")) {
-    error("File size limit is 50 MB.");
-    return;
+  if ($filesize > 10000000 && $_SESSION['role'] == "tester") {
+    return 'tester_file_exceed';
+  } else if ($filesize > 50000000 && ($_SESSION['role'] == "developer" || $_SESSION['role'] == "Manager")) {
+    return 'dev_file_exceed';
   } else if ($filesize > 75000000) {
-    error("File size limit is 75 MB.");
-    return;
+    return 'seller_file_exceed';
   }
   $id = etc\generateRandomNum();
   $fn = basename($url);
   $fs = etc\formatBytes($filesize);
+
+  if (strlen($fn) > 49) {
+    return 'name_too_large';
+  }
+
   $query = mysql\query("INSERT INTO `files` (name, id, url, size, uploaddate, app, authed) VALUES (?, ?, ?, ?, ?, ?, ?)", [$fn, $id, $url, $fs, time(), $secret ?? $_SESSION['app'], $authed]);
   if ($query->affected_rows > 0) {
     if ($_SESSION['role'] == "seller" || !is_null($secret)) {

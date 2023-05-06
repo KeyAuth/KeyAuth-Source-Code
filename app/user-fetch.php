@@ -32,46 +32,58 @@ if (isset($_POST['draw'])) {
 	$searchValue = misc\etc\sanitize($_POST['search']['value']); // Search value
 
 	## Total number of records without filtering
-	$sel = misc\mysql\query("select count(1) as allcount from `users` where app = ?",[$_SESSION['app']]);
+	$sel = misc\mysql\query("select count(1) as allcount from `users` where app = ?", [$_SESSION['app']]);
 	$records = mysqli_fetch_assoc($sel->result);
 	$totalRecords = $records['allcount'];
 
-	## Total number of record with filtering
-	$sel = misc\mysql\query("select count(1) as allcount from `users` WHERE 1  and (`username` like ? or `hwid` like ? or `ip` like ? or `banned` like ? ) and app = ?",["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
-	$records = mysqli_fetch_assoc($sel->result);
-	$totalRecordwithFilter = $records['allcount'];
-
+	$totalRecordwithFilter = $totalRecords;
+	if (!is_null($searchValue)) { // don't double query if no search value was provided
+		## Total number of record with filtering
+		$sel = misc\mysql\query("select count(1) as allcount from `users` WHERE 1  and (`username` like ? or `hwid` like ? or `ip` like ? or `banned` like ? ) and app = ?", ["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
+		$records = mysqli_fetch_assoc($sel->result);
+		$totalRecordwithFilter = $records['allcount'];
+	}
 	// whitelist certain column names and sort orders to prevent SQL injection
-	if(!in_array($columnName, array("username", "hwid", "ip", "createdate", "lastlogin", "banned", "actions"))) {
+	if (!in_array($columnName, array("username", "hwid", "ip", "createdate", "lastlogin", "banned"))) {
 		die("Column name is not whitelisted.");
 	}
 
-	if(!in_array($columnSortOrder, array("desc", "asc"))) {
+	if (!in_array($columnSortOrder, array("desc", "asc"))) {
 		die("Column sort order is not whitelisted.");
 	}
 
 	## Fetch records
-	$query = misc\mysql\query("select * from `users` WHERE 1 and (`username` like ? or `hwid` like ? or `ip` like ? or `banned` like ? ) and app = ? order by `".$columnName."` ".$columnSortOrder." limit " . $row . "," . $rowperpage,["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
+	$query = misc\mysql\query("select * from `users` WHERE 1 and (`username` like ? or `hwid` like ? or `ip` like ? or `banned` like ? ) and app = ? order by `" . $columnName . "` " . $columnSortOrder . " limit " . $row . "," . $rowperpage, ["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
 	$data = array();
 
 	while ($row = mysqli_fetch_assoc($query->result)) {
 
 		## If User is banned show only unban and if not show only ban.
 		$banBtns = "";
-		if ($row['banned'] ? true : false) { $banned = $row['banned']; $banBtns = '<button class="btn menu-link px-3" style="font-size:0.95rem;" name="unbanuser" value="' . urlencode($row['username']) . '">Unban</button>'; } else { $banned = "N/A"; $banBtns = '<a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#ban-user" onclick="banuser(\''.urlencode($row["username"]).'\')">Ban</a>';}
+		if ($row['banned'] ? true : false) {
+			$banned = $row['banned'];
+			$banBtns = '<button class="btn menu-link px-3" style="font-size:0.95rem;" name="unbanuser" value="' . urlencode($row['username']) . '">Unban</button>';
+		} else {
+			$banned = "N/A";
+			$banBtns = '<a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#ban-user" onclick="banuser(\'' . urlencode($row["username"]) . '\')">Ban</a>';
+		}
 
 		## Add Extra Margin to buttons if value is 1 or 2, because datatables with ajax breaks it.
 		$MarginManager = "";
-		if ($totalRecordwithFilter < 2) { $MarginManager = "margin-bottom: 120px;"; } else { $MarginManager = "margin-bottom: 0px;"; }
+		if ($totalRecordwithFilter < 2) {
+			$MarginManager = "margin-bottom: 120px;";
+		} else {
+			$MarginManager = "margin-bottom: 0px;";
+		}
 
 		$data[] = array(
 			"username" => $row['username'],
-			"hwid" => $row['hwid'] ?? 'N/A',
-			"ip" => $row['ip'] ?? 'N/A',
+			"hwid" => '<span class="secret">' . ($row['hwid'] ?? 'N/A') . '</span>',
+			"ip" => '<span class="secret">' . ($row['ip'] ?? 'N/A') . '</span>',
 			"createdate" => '<div id="' . $row['username'] . '-createdate"><script>document.getElementById("' . $row['username'] . '-createdate").innerHTML=convertTimestamp(' . $row["createdate"] . ');</script></div>',
 			"lastlogin" => '<div id="' . $row['username'] . '-lastlogin"><script>document.getElementById("' . $row['username'] . '-lastlogin").innerHTML=convertTimestamp(' . $row["lastlogin"] . ');</script></div>',
 			"banned" => $banned,
-			"actions" => '<tr><form method="POST" style="' . $MarginManager . '"><td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="svg-icon svg-icon-5 m-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z"fill="currentColor" /></svg></span></a><div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4"style=""><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="deleteuser" value="' . urlencode($row["username"]) . '">Delete</button></div><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="resetuser" value="'.$row["username"].'">Reset HWID</button></div><div class="menu-item px-3">' . $banBtns . '</div><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="pauseuser" value="' . urlencode($row['username']) . '">Pause</button><button class="btn menu-link px-3" style="font-size:0.95rem;" name="unpauseuser" value="' . urlencode($row['username']) . '">Unpause</button></div><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="edituser"value="' . urlencode($row['username']) . '">Edit</button></div></div></td></form></tr>',
+			"actions" => '<tr><form method="POST" style="' . $MarginManager . '"><td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="svg-icon svg-icon-5 m-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z"fill="currentColor" /></svg></span></a><div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4"style=""><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="deleteuser" value="' . urlencode($row["username"]) . '">Delete</button></div><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="resetuser" value="' . $row["username"] . '">Reset HWID</button></div><div class="menu-item px-3">' . $banBtns . '</div><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="pauseuser" value="' . urlencode($row['username']) . '">Pause</button><button class="btn menu-link px-3" style="font-size:0.95rem;" name="unpauseuser" value="' . urlencode($row['username']) . '">Unpause</button></div><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="edituser"value="' . urlencode($row['username']) . '">Edit</button></div></div></td></form></tr>',
 		);
 	}
 

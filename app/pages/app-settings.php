@@ -42,6 +42,8 @@ if (isset($_POST['resethash'])) {
 if (isset($_POST['updatesettings'])) {
     $status = misc\etc\sanitize($_POST['statusinput']);
     $hwid = misc\etc\sanitize($_POST['hwidinput']);
+    $forceHwid = misc\etc\sanitize($_POST['forceHwid']);
+    $minHwid = misc\etc\sanitize($_POST['minHwid']);
     $vpn = misc\etc\sanitize($_POST['vpninput']);
     $hashstatus = misc\etc\sanitize($_POST['hashinput']);
     $ver = misc\etc\sanitize($_POST['version']);
@@ -123,6 +125,12 @@ if (isset($_POST['updatesettings'])) {
         return;
     }
 
+    if((!is_null($webhook) && !str_contains($webhook, "discord")) || (!is_null($webhook) && str_contains($webhook, "localhost")) || (!is_null($webhook) && str_contains($webhook, "127.0.0.1"))) {
+        dashboard\primary\error("Webhook URL is supposed to be a Discord webhook!");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        return;
+    }
+
     if($_SESSION['role'] == "tester" && $vpn) {
         dashboard\primary\error("You must upgrade to developer or seller to use VPN block!");
         echo "<meta http-equiv='Refresh' Content='2;'>";
@@ -170,6 +178,8 @@ if (isset($_POST['updatesettings'])) {
 		`blockLeakedPasswords` = ?,
 		`hashcheck` = ?,
 		`hwidcheck` = ?,
+                `forceHwid` = ?,
+                `minHwid` = ?,
 		`vpnblock` = ?,
 		`ver` = ?,
 		`download` = NULLIF(?, ''),
@@ -227,6 +237,8 @@ if (isset($_POST['updatesettings'])) {
             $blockLeakedPasswords,
             $hashstatus,
             $hwid,
+            $forceHwid,
+            $minHwid,
             $vpn,
             $ver,
             $dl,
@@ -312,7 +324,7 @@ if (isset($_POST['updatesettings'])) {
                                                         <label for="recipient-name" class="control-label">Application
                                                                 hash:</label>
                                                         <input type="text" class="form-control" name="hash"
-                                                                placeholder="MD5 program hash to add">
+                                                                placeholder="MD5 program hash to add" required>
                                                 </div>
                                 </div>
                                 <div class="modal-footer">
@@ -376,6 +388,8 @@ if (isset($_POST['updatesettings'])) {
             while ($row = mysqli_fetch_array($query->result)) {
                 $enabled = $row['enabled'];
                 $hwidcheck = $row['hwidcheck'];
+                $forceHwid = $row['forceHwid'];
+                $minHwid = $row['minHwid'];
                 $vpnblock = $row['vpnblock'];
                 $panelstatus = $row['panelstatus'];
                 $customDomain = $row['customDomain'];
@@ -463,7 +477,7 @@ if (isset($_POST['updatesettings'])) {
                                         <label for="example-tel-input" class="col-2 col-form-label">API custom domain <i
                                                         class="fas fa-question-circle fa-lg text-white-50"
                                                         data-bs-toggle="tooltip" data-bs-placement="top"
-                                                        title="Most auths get blocked by some internet providers falsely. Using a custom domain will fix this, watch tutorial video on youtube.com/keyauth. Must have developer plan or higher."></i></label>
+                                                        title="Most auths get blocked by some internet providers falsely. Using a custom domain will fix this, watch tutorial video on youtube.com/keyauth"></i></label>
                                         <div class="col-10">
                                                 <label class="form-control" style="height:auto;">
                                                         You just need to set a CNAME record to <code>api.keyauth.win</code> Make sure you're using Cloudflare! 
@@ -488,7 +502,34 @@ if (isset($_POST['updatesettings'])) {
                                         </div>
                                 </div>
                                 <br>
-
+                                <div class="form-group row">
+                                        <label for="example-text-input" class="col-2 col-form-label">Force HWID Lock <i
+                                                        class="fas fa-question-circle fa-lg text-white-50"
+                                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        title="Deny users logging in with blank HWID (disable for PHP example)"></i></label>
+                                        <div class="col-10">
+                                                <select class="form-control" name="forceHwid">
+                                                        <option value="0"
+                                                                <?= $forceHwid == 0 ? ' selected="selected"' : ''; ?>>
+                                                                Disabled</option>
+                                                        <option value="1"
+                                                                <?= $forceHwid == 1 ? ' selected="selected"' : ''; ?>>
+                                                                Enabled</option>
+                                                </select>
+                                        </div>
+                                </div>
+                                <br>
+                                <div class="form-group row">
+                                        <label for="example-text-input" class="col-2 col-form-label">Minimum HWID length <i
+                                                        class="fas fa-question-circle fa-lg text-white-50"
+                                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        title="Deny users logging in with a HWID shorter than this number in characters."></i></label>
+                                        <div class="col-10">
+                                                <input class="form-control" type="number" name="minHwid"
+                                                        value="<?php echo $minHwid; ?>" placeholder="Minimum HWID length in characters">
+                                        </div>
+                                </div>
+                                <br>
                                 <div class="form-group row">
                                         <label for="example-text-input" class="col-2 col-form-label">VPN Block <i
                                                         class="fas fa-question-circle fa-lg text-white-50"
@@ -529,9 +570,8 @@ if (isset($_POST['updatesettings'])) {
                                                         data-bs-toggle="tooltip" data-bs-placement="top"
                                                         title="If you change this, the download link will be opened on your user's computer when they run the loader with the old version."></i></label>
                                         <div class="col-10">
-                                                <input class="form-control" maxlength="10" name="version"
-                                                        value="<?php echo $verr; ?>" placeholder="<?php echo $verr; ?>"
-                                                        placeholder="Application Verion..">
+                                                <input class="form-control" maxlength="5" name="version"
+                                                        value="<?php echo $verr; ?>" placeholder="Application Verion.." required>
                                         </div>
                                 </div>
                                 <br>
@@ -540,7 +580,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" name="download" value="<?php echo $dll; ?>"
                                                         type="text"
-                                                        placeholder="URL Link That Will Be Opened If Version doesn't match (auto update)">
+                                                        placeholder="URL Link That Will Be Opened If Version doesn't match (auto update)" maxlength="120">
                                         </div>
                                 </div>
                                 <br>
@@ -626,7 +666,7 @@ if (isset($_POST['updatesettings'])) {
                                                 <input class="form-control" name="customerPanelIcon"
                                                         value="<?php echo $customerPanelIcon; ?>"
                                                         placeholder="https://cdn.keyauth.cc/front/assets/img/favicon.png"
-                                                        type="text">
+                                                        type="text" required>
                                         </div>
                                 </div>
                                 <br>
@@ -675,7 +715,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input name="cooldownduration" type="number" class="form-control"
                                                         value="<?php echo $cooldown / $cooldownUnit; ?>"
-                                                        placeholder="Multiplied by selected cooldown unit">
+                                                        placeholder="Multiplied by selected cooldown unit" required>
                                         </div>
                                 </div>
                                 <br>
@@ -714,7 +754,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input name="sessionduration" type="number" class="form-control"
                                                         value="<?php echo $session / $sessionUnit; ?>"
-                                                        placeholder="Multiplied by selected expiry unit">
+                                                        placeholder="Multiplied by selected expiry unit" required>
                                         </div>
                                 </div>
                                 <br>
@@ -744,7 +784,7 @@ if (isset($_POST['updatesettings'])) {
                                                         title="Reject registrations with username having character count under this number"></i></label>
                                         <div class="col-10">
                                                 <input name="minUsernameLength" type="number" class="form-control"
-                                                        value="<?php echo $minUsernameLength; ?>">
+                                                        value="<?php echo $minUsernameLength; ?>" required>
                                         </div>
                                 </div>
                                 <br>
@@ -775,7 +815,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="appdisabled"
                                                         id="defaultconfig-3" value="<?php echo $appdisabled; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -785,7 +825,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="hashcheckfail"
                                                         id="defaultconfig-3" value="<?php echo $hashcheckfail; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -795,7 +835,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="vpnblocked"
                                                         id="defaultconfig-3" value="<?php echo $vpnblocked; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -805,7 +845,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="usernametaken"
                                                         id="defaultconfig-3" value="<?php echo $usernametaken; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -815,7 +855,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="keynotfound"
                                                         id="defaultconfig-3" value="<?php echo $keynotfound; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -824,7 +864,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="keyused"
                                                         id="defaultconfig-3" value="<?php echo $keyused; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -834,7 +874,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="keybanned"
                                                         id="defaultconfig-3" value="<?php echo $keybanned; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -843,7 +883,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="nosublevel"
                                                         id="defaultconfig-3" value="<?php echo $nosublevel; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -853,7 +893,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="userbanned"
                                                         id="defaultconfig-3" value="<?php echo $userbanned; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -863,7 +903,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="usernamenotfound"
                                                         id="defaultconfig-3" value="<?php echo $usernamenotfound; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -873,7 +913,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="passmismatch"
                                                         id="defaultconfig-3" value="<?php echo $passmismatch; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -883,7 +923,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="hwidmismatch"
                                                         id="defaultconfig-3" value="<?php echo $hwidmismatch; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -893,7 +933,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="noactivesubs"
                                                         id="defaultconfig-3" value="<?php echo $noactivesubs; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -903,7 +943,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="hwidblacked"
                                                         id="defaultconfig-3" value="<?php echo $hwidblacked; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -912,7 +952,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="pausedsub"
                                                         id="defaultconfig-3" value="<?php echo $pausedsub; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -922,7 +962,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="sessionunauthed"
                                                         id="defaultconfig-3" value="<?php echo $sessionunauthed; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -932,7 +972,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="loggedInMsg"
                                                         id="defaultconfig-3" value="<?php echo $loggedInMsg; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -942,7 +982,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="pausedApp"
                                                         id="defaultconfig-3" value="<?php echo $pausedApp; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -952,7 +992,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="unTooShort"
                                                         id="defaultconfig-3" value="<?php echo $unTooShort; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -962,7 +1002,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="pwLeaked"
                                                         id="defaultconfig-3" value="<?php echo $pwLeaked; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>
@@ -972,7 +1012,7 @@ if (isset($_POST['updatesettings'])) {
                                         <div class="col-10">
                                                 <input class="form-control" maxlength="100" name="chatHitDelay"
                                                         id="defaultconfig-3" value="<?php echo $chatHitDelay; ?>"
-                                                        placeholder="Custom response you'd like. Max 100 chars">
+                                                        placeholder="Custom response you'd like. Max 100 chars" required>
                                         </div>
                                 </div>
                                 <br>

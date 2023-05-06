@@ -36,6 +36,9 @@ $webhook = $row['webhook'];
 $appdisabled = $row['appdisabled'];
 $hashcheck = $row['hashcheck'];
 $serverhash = $row['hash'];
+$sessionexpiry = $row['session'];
+$killOtherSessions = $row['killOtherSessions'];
+$forceHwid = $row['forceHwid'];
 
 $banned = $row['banned'];
 $owner = $row['owner'];
@@ -58,8 +61,6 @@ $keybanned = $row['keybanned'];
 $userbanned = $row['userbanned'];
 $sessionunauthed = $row['sessionunauthed'];
 $hashcheckfail = $row['hashcheckfail'];
-$sessionexpiry = $row['session'];
-$killOtherSessions = $row['killOtherSessions'];
 
 // why using null coalescing operators? because if I add a field and it's not in redis cache, it'll be NULL
 $loggedInMsg = $row['loggedInMsg'] ?? "Logged in!";
@@ -67,6 +68,7 @@ $pausedApp = $row['pausedApp'] ?? "Application is currently paused, please wait 
 $unTooShort = $row['unTooShort'] ?? "Username too short, try longer one.";
 $pwLeaked = $row['pwLeaked'] ?? "This password has been leaked in a data breach (not from us), please use a different one.";
 $chatHitDelay = $row['chatHitDelay'] ?? "Chat slower, you've hit the delay limit";
+$minHwid = $row['minHwid'] ?? 20;
 
 if ($banned) {
     die(json_encode(array(
@@ -134,19 +136,10 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $enckey = NULL;
 
-        $row = misc\cache\fetch('KeyAuthStateDuplicates:' . $secret . ':' . $ip, "SELECT `id`, `expiry` FROM `sessions` WHERE `app` = ? AND `ip` = ? AND `validated` = 0 AND `expiry` > ? LIMIT 1", [$secret, $ip, time()], 0);
-        if ($row != "not_found") {
-            $sessionid = $row['id'];
-            goto dupe;
-        }
-
         $sessionid = misc\etc\generateRandomString();
         // session init
         $time = time() + $sessionexpiry;
         misc\mysql\query("INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES (?, ?, ?, ?, NULLIF(?, ''), ?)", [$sessionid, $secret, $time, time(), $enckey, $ip]);
-        misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
-
-        dupe:
 
         $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
 
@@ -244,7 +237,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
 
                 $ip = api\shared\primary\getIp();
-                misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 die(json_encode(array(
                     "success" => true,
                     "message" => "$loggedInMsg",
@@ -360,6 +352,20 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // optional param for web loader
         $token = misc\etc\sanitize($_POST['token'] ?? $_GET['token']);
 
+        if(strlen($hwid) < $minHwid && !is_null($hwid)) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "HWID must be {$minHwid} or more characters, change this in app settings."
+            )));
+        }
+
+        if($forceHwid && is_null($hwid)) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Force HWID is enabled, disable in app settings if you want to use blank HWIDs"
+            )));
+        }
+
         $resp = api\v1_0\login($username, $password, $hwid, $secret, $hwidenabled, $token);
         switch ($resp) {
             case 'un_not_found':
@@ -412,7 +418,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
 
                 $ip = api\shared\primary\getIp();
-                misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 die(json_encode(array(
                     "success" => true,
                     "message" => "$loggedInMsg",
@@ -428,11 +433,24 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
 
+        if(strlen($hwid) < $minHwid && !is_null($hwid)) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "HWID must be {$minHwid} or more characters, change this in app settings."
+            )));
+        }
+        
+        if($forceHwid && is_null($hwid)) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Force HWID is enabled, disable in app settings if you want to use blank HWIDs"
+            )));
+        }
+
         $resp = api\v1_0\login($checkkey, $checkkey, $hwid, $secret, $hwidenabled);
         switch ($resp) {
             case 'un_not_found':
                 break; // user not registered yet or user was deleted
-
             case 'hwid_mismatch':
                 die(json_encode(array(
                     "success" => false,
@@ -478,7 +496,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
 
                 $ip = api\shared\primary\getIp();
-                misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 die(json_encode(array(
                     "success" => true,
                     "message" => "$loggedInMsg",
@@ -544,7 +561,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
 
                 $ip = api\shared\primary\getIp();
-                misc\cache\purge('KeyAuthStateDuplicates:' . $secret . ':' . $ip);
                 die(json_encode(array(
                     "success" => true,
                     "message" => "$loggedInMsg",
@@ -555,7 +571,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
 
-        $rows = misc\cache\fetch('KeyAuthOnlineUsers:' . $secret, "SELECT DISTINCT `credential` FROM `sessions` WHERE `validated` = 1 AND `app` = ?", [$secret], 1, 1800);
+        $rows = misc\cache\fetch('KeyAuthOnlineUsers:' . $secret, "SELECT DISTINCT CONCAT(LEFT(`credential`, 10), IF(LENGTH(`credential`) > 10, REPEAT('*', LENGTH(`credential`) - 10), '')) AS `credential` FROM `sessions` WHERE `validated` = 1 AND `app` = ?", [$secret], 1, 1800);
 
         if ($rows == "not_found") {
             die(json_encode(array(
@@ -998,7 +1014,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $ip = api\shared\primary\getIp();
         misc\blacklist\add($ip, "IP Address", $secret);
 
-        misc\mysql\query("UPDATE `users` SET `banned` = ? WHERE `username` = ?", [$reason, $credential]);
+        misc\mysql\query("UPDATE `users` SET `banned` = ? WHERE `username` = ? AND `app` = ?", [$reason, $credential, $secret]);
         if ($query->affected_rows != 0) {
             misc\cache\purge('KeyAuthUser:' . $secret . ':' . $credential);
             die(json_encode(array(

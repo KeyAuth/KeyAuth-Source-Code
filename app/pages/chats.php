@@ -93,7 +93,16 @@ if (isset($_POST['editchan'])) {
 
                     <h4 class="modal-title">Edit Channel</h4>
 
-                    <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                     <!--begin::Close-->
+                     <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
+                        <span class="svg-icon svg-icon-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
+                            </svg>
+                        </span>
+                    </div>
+                    <!--end::Close-->
 
                 </div>
 
@@ -130,7 +139,7 @@ if (isset($_POST['editchan'])) {
 
                 <div class="modal-footer">
 
-                    <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                    <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
 
                     <button class="btn btn-danger waves-effect waves-light" value="<?php echo $chan; ?>" name="savechan">Save</button>
 
@@ -483,7 +492,7 @@ if (isset($_POST['deletechan'])) {
                             <label for="recipient-name" class="control-label">Time
                                 Muted:</label>
 
-                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time muted">
+                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time muted" required>
 
                         </div>
 

@@ -18,6 +18,12 @@ if (isset($_POST['genwebhook'])) {
         $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
         $resp = misc\webhook\add($_POST['baselink'], $_POST['useragent'], $authed);
         switch ($resp) {
+            case 'invalid_url':
+                dashboard\primary\error("URL isn't a valid URL");
+                break;
+            case 'no_local':
+                dashboard\primary\error("URL can't be a local path! Must be a remote URL accessible by the open internet");
+                break;
             case 'failure':
                 dashboard\primary\error("Failed to add webhook!");
                 break;
@@ -81,13 +87,22 @@ if (isset($_POST['editwebhook'])) {
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Edit Webhook</h4>
-                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <!--begin::Close-->
+                                                <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
+                                                    <span class="svg-icon svg-icon-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <!--end::Close-->
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post"> 
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Webhook Endpoint:</label>
-                                                        <input type="text" class="form-control" name="baselink" value="' . $baselink . '" required>
+                                                        <input type="url" class="form-control" name="baselink" value="' . $baselink . '" required>
 														<input type="hidden" name="webhook" value="' . $webhook . '">
                                                     </div>
 													<div class="form-group">
@@ -96,7 +111,7 @@ if (isset($_POST['editwebhook'])) {
                                                     </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                                 <button class="btn btn-danger waves-effect waves-light" name="savewebhook">Save</button>
 												</form>
                                             </div>
@@ -110,6 +125,18 @@ if (isset($_POST['savewebhook'])) {
 
     $baselink = misc\etc\sanitize($_POST['baselink']);
     $useragent = misc\etc\sanitize($_POST['useragent']);
+
+    if (!filter_var($baseLink, FILTER_VALIDATE_URL)) {
+        dashboard\primary\error("URL isn't a valid URL");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
+
+    if(str_contains($baselink, "localhost") || str_contains($baselink, "127.0.0.1")) {
+        dashboard\primary\error("URL can't be a local path! Must be a remote URL accessible by the open internet");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
 
     misc\mysql\query("UPDATE `webhooks` SET `baselink` = ?,`useragent` = ? WHERE `webid` = ? AND `app` = ?",[$baselink, $useragent, $webhook, $_SESSION['app']]);
 
@@ -247,7 +274,7 @@ if (isset($_POST['savewebhook'])) {
 
                         echo "  <td>" . $row["webid"] . "</td>";
 
-                        echo "  <td>" . $row["baselink"] . "</td>";
+                        echo "  <td><span class=\"secret\">" . $row["baselink"] . "</span></td>";
 
                         echo "  <td>" . $row["useragent"] . "</td>";
 

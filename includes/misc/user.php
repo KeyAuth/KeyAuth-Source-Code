@@ -38,7 +38,7 @@ function resetSingular($username, $secret = null)
 	$username = etc\sanitize($username);
 
 	if ($_SESSION['role'] == "Reseller") {
-		$query = mysql\query("SELECT 1 FROM `users` WHERE `app` = ?AND `username` = ? AND `owner` = ?", [$secret ?? $_SESSION['app'], $username, $_SESSION['username']]);
+		$query = mysql\query("SELECT 1 FROM `users` WHERE `app` = ? AND `username` = ? AND `owner` = ?", [$secret ?? $_SESSION['app'], $username, $_SESSION['username']]);
 		if ($query->num_rows < 1) {
 			return 'nope';
 		}
@@ -95,13 +95,13 @@ function ban($username, $reason, $secret = null)
 	$reason = etc\sanitize($reason);
 
 	if ($_SESSION['role'] == "Reseller") {
-		$query = mysql\query("SELECT 1 FROM `users` WHERE `app` = ?AND `username` = ? AND `owner` = ?", [$secret ?? $_SESSION['app'], $username, $_SESSION['username']]);
+		$query = mysql\query("SELECT 1 FROM `users` WHERE `app` = ? AND `username` = ? AND `owner` = ?", [$secret ?? $_SESSION['app'], $username, $_SESSION['username']]);
 		if ($query->num_rows < 1) {
 			return 'nope';
 		}
 	}
 
-	$query = mysql\query("SELECT * FROM `users` WHERE `app` = ?AND `username` = ?", [$secret ?? $_SESSION['app'], $username]);
+	$query = mysql\query("SELECT * FROM `users` WHERE `app` = ? AND `username` = ?", [$secret ?? $_SESSION['app'], $username]);
 	if ($query->num_rows < 1) {
 		return 'missing';
 	}
@@ -131,13 +131,13 @@ function unban($username, $secret = null)
 	$username = etc\sanitize($username);
 
 	if ($_SESSION['role'] == "Reseller") {
-		$query = mysql\query("SELECT 1 FROM `users` WHERE `app` = ?AND `username` = ? AND `owner` = ?", [$secret ?? $_SESSION['app'], $username, $_SESSION['username']]);
+		$query = mysql\query("SELECT 1 FROM `users` WHERE `app` = ? AND `username` = ? AND `owner` = ?", [$secret ?? $_SESSION['app'], $username, $_SESSION['username']]);
 		if ($query->num_rows < 1) {
 			return 'nope';
 		}
 	}
 
-	$query = mysql\query("SELECT `hwid`, `ip` FROM `users` WHERE `app` = ?AND `username` = ?", [$secret ?? $_SESSION['app'], $username]);
+	$query = mysql\query("SELECT `hwid`, `ip` FROM `users` WHERE `app` = ? AND `username` = ?", [$secret ?? $_SESSION['app'], $username]);
 	if ($query->num_rows < 1) {
 		return 'missing';
 	}
@@ -150,7 +150,7 @@ function unban($username, $secret = null)
 	}
 
 	$query = mysql\query("DELETE FROM `bans` WHERE `hwid` = ? OR `ip` = ? AND `app` = ?", [$hwid, $ip, $secret ?? $_SESSION['app']]);
-	$query = mysql\query("UPDATE `users` SET `banned` = NULL WHERE `app` = ?AND `username` = ?", [$secret ?? $_SESSION['app'], $username]);
+	$query = mysql\query("UPDATE `users` SET `banned` = NULL WHERE `app` = ? AND `username` = ?", [$secret ?? $_SESSION['app'], $username]);
 	if ($query->affected_rows > 0) {
 		cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
@@ -167,7 +167,7 @@ function deleteVar($username, $var, $secret = null)
 	$username = etc\sanitize($username);
 	$var = etc\sanitize($var);
 
-	$query = mysql\query("DELETE FROM `uservars` WHERE `app` = ?AND `user` = ? AND `name` = ?", [$secret ?? $_SESSION['app'], $username, $var]);
+	$query = mysql\query("DELETE FROM `uservars` WHERE `app` = ? AND `user` = ? AND `name` = ?", [$secret ?? $_SESSION['app'], $username, $var]);
 	if ($query->affected_rows > 0) {
 		cache\purge('KeyAuthUserVar:' . ($secret ?? $_SESSION['app']) . ':' . $var . ':' . $username);
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
@@ -183,7 +183,7 @@ function deleteSub($username, $sub, $secret = null)
 	$username = etc\sanitize($username);
 	$sub = etc\sanitize($sub);
 
-	$query = mysql\query("DELETE FROM `subs` WHERE `app` = ?AND `user` = ? AND `subscription` = ?", [$secret ?? $_SESSION['app'], $username, $sub]);
+	$query = mysql\query("DELETE FROM `subs` WHERE `app` = ? AND `user` = ? AND `subscription` = ?", [$secret ?? $_SESSION['app'], $username, $sub]);
 
 	if ($query->affected_rows > 0) {
 		cache\purge('KeyAuthSubs:' . ($secret ?? $_SESSION['app']) . ':' . $username);
@@ -353,6 +353,20 @@ function deleteAll($secret = null)
 function resetAll($secret = null)
 {
 	$query = mysql\query("UPDATE `users` SET `hwid` = NULL WHERE `app` = ?", [$secret ?? $_SESSION['app']]);
+	if ($query->affected_rows > 0) {
+		cache\purgePattern('KeyAuthUser:' . ($secret ?? $_SESSION['app']));
+		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
+			cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
+			cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
+		}
+		return 'success';
+	} else {
+		return 'failure';
+	}
+}
+function unbanAll($secret = null)
+{
+	$query = mysql\query("UPDATE `users` SET `banned` = NULL WHERE `app` = ?", [$secret ?? $_SESSION['app']]);
 	if ($query->affected_rows > 0) {
 		cache\purgePattern('KeyAuthUser:' . ($secret ?? $_SESSION['app']));
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {

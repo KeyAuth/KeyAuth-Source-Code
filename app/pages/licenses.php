@@ -110,7 +110,11 @@ if (isset($_POST['editkey'])) {
                                 data-placement="top"
                                 title="Editing license duration after the license has been used will do nothing. Used licenses become users so you need to go to users tab and click extend user(s) instead"></i></label>
                         <input name="duration" type="number" class="form-control"
-                            placeholder="Multiplied by selected Expiry unit">
+                            placeholder="Multiplied by selected Expiry unit" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">New Note:</label>
+                        <textarea class="form-control" name="editNote" placeholder="New Note" required rows="3"></textarea>
                     </div>
             </div>
             <div class="modal-footer">
@@ -128,12 +132,15 @@ if (isset($_POST['savekey'])) {
     $key = misc\etc\sanitize($_POST['savekey']);
     $level = misc\etc\sanitize($_POST['level']);
     $duration = misc\etc\sanitize($_POST['duration']);
+    $note = misc\etc\sanitize($_POST['editNote']);
     if (!empty($duration)) {
         $expiry = misc\etc\sanitize($_POST['expiry']);
         $duration = $duration * $expiry;
         misc\mysql\query("UPDATE `keys` SET `expires` = ? WHERE `key` = ? AND `app` = ?",[$duration, $key, $_SESSION['app']]);
+        misc\mysql\query("UPDATE `keys` SET `note` = ? WHERE `key` = ? AND `app` = ?",[$note, $key, $_SESSION['app']]);
     }
     misc\mysql\query("UPDATE `keys` SET `level` = ? WHERE `key` = ? AND `app` = ?",[$level, $key, $_SESSION['app']]);
+    misc\mysql\query("UPDATE `keys` SET `note` = ? WHERE `key` = ? AND `app` = ?",[$note, $key, $_SESSION['app']]);
     dashboard\primary\success("Successfully Updated Settings!");
 }
 
@@ -295,9 +302,6 @@ if (isset($_POST['genkeys'])) {
 	<div class="alert alert-primary" role="alert">
 		Please join the new Discord server <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
 	</div>
-    <div class="alert alert-warning alert-rounded">
-        The license mask has changed from "X/x" to "*" (STAR - Press SHIFT + 8). Using "*" will now generate random characters.
-    </div>
     <form method="POST">
         <button type="button" data-bs-toggle="modal" data-bs-target="#create-keys"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
@@ -371,7 +375,7 @@ if (isset($_POST['genkeys'])) {
                             <input type="number" min="1" class="form-control" name="amount" placeholder="Default 1"
                                 value="<?php if (!is_null($amt)) {
                                                                                                                         echo $amt;
-                                                                                                                    } ?>">
+                                                                                                                    } ?>" required>
                         </div>
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">Key Mask: <i
@@ -386,6 +390,26 @@ if (isset($_POST['genkeys'])) {
                                 placeholder="Using * will assign a random character." name="mask" required
                                 maxlength="49">
                         </div>
+                        <br>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" name="lowercaseLetters" type="checkbox" id="flexCheckChecked" checked>
+                                    <label class="form-check-label" for="flexCheckChecked">
+                                        Lowercase Letters <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, lowercase letters will be added to generated keys."></i>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" name="capitalLetters" type="checkbox" id="flexCheckChecked" checked>
+                                    <label class="form-check-label" for="flexCheckChecked">
+                                        Capital Letters <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, capital letters will be added to generated keys."></i>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">License Level: <i
                                     class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
@@ -451,11 +475,11 @@ if (isset($_POST['genkeys'])) {
                                     class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="When the key is redeemed, a subscription with the duration of the key will be added to the user who redeemed the key."></i></label>
-                            <input name="duration" type="number" class="form-control"
+                            <input name="duration" type="text" class="form-control"
                                 placeholder="Multiplied by selected Expiry unit"
                                 value="<?php if (!is_null($dur)) {
                                                                                                                                                     echo $dur;
-                                                                                                                                                } ?>" required>
+                                                                                                                                                } ?>" required pattern="\d*" maxlength="4">
                         </div>
                 </div>
                 <div class="modal-footer">
@@ -549,7 +573,7 @@ if (isset($_POST['genkeys'])) {
                                     class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip"
                                     data-placement="top"
                                     title="If the key is used, this will do nothing. Used keys are turned into users so if you want to add time to a user, go to users tab and click extend user(s)"></i></label>
-                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time">
+                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time" required>
                         </div>
                 </div>
                 <div class="modal-footer">

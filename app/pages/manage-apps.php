@@ -513,7 +513,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                     <th>Action</th>
                     <?php
 					$rows = array();
-                    $query = misc\mysql\query("SELECT * FROM `apps` WHERE `owner` = ? AND `ownerid` = ?",[$_SESSION['username'], $_SESSION['ownerid']]);
+                    $query = misc\mysql\query("SELECT * FROM `apps` WHERE `owner` = ? AND `ownerid` = ? ORDER BY `name` ASC",[$_SESSION['username'], $_SESSION['ownerid']]);
 					while ($r = mysqli_fetch_assoc($query->result)) {
 						$rows[] = $r;
 					}
@@ -587,7 +587,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                                     </label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
-                                    <input type="text" placeholder="Application Name"
+                                    <input type="text" required placeholder="Application Name"
                                         class="form-control form-control-lg form-control-solid" name="appname" />
                                     <!--end::Input-->
                                 </div>
@@ -646,7 +646,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                                     </label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
-                                    <input type="text" placeholder="New Application Name"
+                                    <input type="text" required placeholder="New Application Name"
                                         class="form-control form-control-lg form-control-solid" name="appname" />
                                     <!--end::Input-->
                                 </div>

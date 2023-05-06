@@ -270,7 +270,20 @@ if (isset($_POST['resetall'])) {
             break;
     }
 }
-
+if (isset($_POST['unbanall'])) {
+    $resp = misc\user\unbanAll();
+    switch ($resp) {
+        case 'failure':
+            dashboard\primary\error("Failed to unban all users!");
+            break;
+        case 'success':
+            dashboard\primary\success("Successfully unbanned all users!");
+            break;
+        default:
+            dashboard\primary\error("Unhandled Error! Contact us if you need help");
+            break;
+    }
+}
 if (isset($_POST['deleteuser'])) {
     $resp = misc\user\deleteSingular(urldecode($_POST['deleteuser']));
     switch ($resp) {
@@ -353,13 +366,14 @@ if (isset($_POST['unbanuser'])) {
 }
 if (isset($_POST['pauseuser'])) {
     $user = misc\etc\sanitize(urldecode($_POST['pauseuser']));
-    $query = misc\mysql\query("SELECT * FROM `subs` WHERE `app` = ? AND `expiry` = ? AND `user` > ?", [$_SESSION['app'], time(), $user], "sis");
+    $query = misc\mysql\query("SELECT * FROM `subs` WHERE `app` = ? AND `expiry` > ? AND `user` = ?", [$_SESSION['app'], time(), $user], "sis");
+    $updateQuery = NULL;
     while ($row = mysqli_fetch_array($query->result)) {
         $expires = $row['expiry'];
-        $exp = $expires - time();
-        misc\mysql\query("UPDATE `subs` SET `paused` = 1, `expiry` = ? WHERE `app` = ? AND `id` = ?", [$exp, $_SESSION['app'], $row['id']]);
+        $exp = (int)$expires - time();
+        $updateQuery = misc\mysql\query("UPDATE `subs` SET `paused` = 1, `expiry` = ? WHERE `app` = ? AND `id` = ?", [$exp, $_SESSION['app'], $row['id']], "iss");
     }
-    if ($query->affected_rows > 0) {
+    if ($updateQuery->affected_rows > 0) {
         misc\cache\purge('KeyAuthSubs:' . $_SESSION['app'] . ':' . $user);
         dashboard\primary\success("Successfully paused user", $format);
     } else {
@@ -369,12 +383,13 @@ if (isset($_POST['pauseuser'])) {
 if (isset($_POST['unpauseuser'])) {
     $user = misc\etc\sanitize(urldecode($_POST['unpauseuser']));
     $query = misc\mysql\query("SELECT * FROM `subs` WHERE `app` = ? AND `user` = ? AND `paused` = 1", [$_SESSION['app'], $user]);
+    $updateQuery = NULL;
     while ($row = mysqli_fetch_array($query->result)) {
         $expires = $row['expiry'];
-        $exp = $expires + time();
-        misc\mysql\query("UPDATE `subs` SET `paused` = 0, `expiry` = ? WHERE `app` = ? AND `id` = ?", [$exp, $_SESSION['app'], $row['id']]);
+        $exp = (int)$expires + time();
+        $updateQuery = misc\mysql\query("UPDATE `subs` SET `paused` = 0, `expiry` = ? WHERE `app` = ? AND `id` = ?", [$exp, $_SESSION['app'], $row['id']], "iss");
     }
-    if ($query->affected_rows > 0) {
+    if ($updateQuery->affected_rows > 0) {
         misc\cache\purge('KeyAuthSubs:' . $_SESSION['app'] . ':' . $user);
         dashboard\primary\success("Successfully unpaused user", $format);
     } else {
@@ -404,6 +419,8 @@ if (isset($_POST['unpauseuser'])) {
             Delete Expired Users</button>
         <button type="button" data-bs-toggle="modal" data-bs-target="#reset-allusers" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-redo-alt fa-sm text-white-50"></i>
             HWID Reset All Users</button>
+        <button type="button" data-bs-toggle="modal" data-bs-target="#unban-allusers" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-users fa-sm text-white-50"></i>
+            Unban All Users</button>
     </form>
 
     <div id="create-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
@@ -450,7 +467,8 @@ if (isset($_POST['unpauseuser'])) {
 
                         <div class="form-group">
 
-                            <label for="recipient-name" class="control-label">Subscription: </label>
+                            <label for="recipient-name" class="control-label">Subscription:
+                            </label>
 
                             <select name="sub" class="form-control">
 
@@ -469,7 +487,8 @@ if (isset($_POST['unpauseuser'])) {
 
                         <div class="form-group">
 
-                            <label for="recipient-name" class="control-label">Subscription Expiry:</label>
+                            <label for="recipient-name" class="control-label">Subscription
+                                Expiry:</label>
 
                             <?php
                             echo '<input class="form-control" type="datetime-local" name="expiry" value="' . date("Y-m-d\TH:i", time()) . '" required>';
@@ -547,7 +566,7 @@ if (isset($_POST['unpauseuser'])) {
                             <datalist id="vars">
 
                                 <?php
-                                $query = misc\mysql\query("SELECT DISTINCT `name` FROM `uservars` WHERE `app` = ?",[$_SESSION['app']]);
+                                $query = misc\mysql\query("SELECT DISTINCT `name` FROM `uservars` WHERE `app` = ?", [$_SESSION['app']]);
                                 if ($query->num_rows > 0) {
                                     while ($row = mysqli_fetch_array($query->result)) {
                                         echo "  <option value=\"" . $row["name"] . "\">" . $row["name"] . "</option>";
@@ -560,9 +579,11 @@ if (isset($_POST['unpauseuser'])) {
                         </div>
 
                         <div class="form-group">
-                            <label for="recipient-name" class="control-label">Variable Data: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Assigns variable to selected user(s) which you can get and set from loader"></i></label>
-                            <input type="text" class="form-control" name="data" placeholder="User variable data" required>
+                            <label for="recipient-name" class="control-label">Variable Data:
+                                <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Assigns variable to selected user(s) which you can get and set from loader"></i></label>
+                            <textarea class="form-control" name="data" placeholder="User variable data" required rows="3"></textarea>
                         </div>
+                        <br>
                         <div class="form-check">
                             <input class="form-check-input" name="readOnly" type="checkbox" id="flexCheckChecked">
                             <label class="form-check-label" for="flexCheckChecked">
@@ -623,7 +644,8 @@ if (isset($_POST['unpauseuser'])) {
 
                         <div class="form-group">
 
-                            <label for="recipient-name" class="control-label">Import from auth.gg:</label>
+                            <label for="recipient-name" class="control-label">Import from
+                                auth.gg:</label>
 
                             <input class="form-control" name="authgg" placeholder="Paste in JSON from developers.auth.gg">
 
@@ -690,7 +712,7 @@ if (isset($_POST['unpauseuser'])) {
                             <select name="sub" class="form-control">
 
                                 <?php
-                                $query = misc\mysql\query("SELECT * FROM `subscriptions` WHERE `app` = ? ORDER BY `level` ASC",[$_SESSION['app']]);
+                                $query = misc\mysql\query("SELECT * FROM `subscriptions` WHERE `app` = ? ORDER BY `level` ASC", [$_SESSION['app']]);
                                 if ($query->num_rows > 0) {
                                     while ($row = mysqli_fetch_array($query->result)) {
                                         echo "  <option value=\"" . $row["name"] . "\">" . $row["name"] . "</option>";
@@ -703,7 +725,8 @@ if (isset($_POST['unpauseuser'])) {
                         </div>
 
                         <div class="form-group">
-                            <label for="recipient-name" class="control-label">Unit Of Time To Add:</label>
+                            <label for="recipient-name" class="control-label">Unit Of Time
+                                To Add:</label>
                             <select name="expiry" class="form-control">
                                 <option value="86400">Days</option>
                                 <option value="60">Minutes</option>
@@ -716,8 +739,9 @@ if (isset($_POST['unpauseuser'])) {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="recipient-name" class="control-label">Time To Add:</label>
-                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time">
+                            <label for="recipient-name" class="control-label">Time To
+                                Add:</label>
+                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time" required>
                         </div>
                         <br>
                         <input class="form-check-input" style="color:white;border-color:white;" name="activeOnly" type="checkbox" id="flexCheckChecked">
@@ -785,7 +809,7 @@ if (isset($_POST['unpauseuser'])) {
                             <select name="sub" class="form-control">
 
                                 <?php
-                                $query = misc\mysql\query("SELECT * FROM `subscriptions` WHERE `app` = ? ORDER BY `level` ASC",[$_SESSION['app']]);
+                                $query = misc\mysql\query("SELECT * FROM `subscriptions` WHERE `app` = ? ORDER BY `level` ASC", [$_SESSION['app']]);
                                 if ($query->num_rows > 0) {
                                     while ($row = mysqli_fetch_array($query->result)) {
                                         echo "  <option value=\"" . $row["name"] . "\">" . $row["name"] . "</option>";
@@ -798,7 +822,8 @@ if (isset($_POST['unpauseuser'])) {
                         </div>
 
                         <div class="form-group">
-                            <label for="recipient-name" class="control-label">Unit Of Time To Subtract:</label>
+                            <label for="recipient-name" class="control-label">Unit Of Time
+                                To Subtract:</label>
                             <select name="expiry" class="form-control">
                                 <option value="86400">Days</option>
                                 <option value="60">Minutes</option>
@@ -811,8 +836,9 @@ if (isset($_POST['unpauseuser'])) {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="recipient-name" class="control-label">Time To Subtract:</label>
-                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time">
+                            <label for="recipient-name" class="control-label">Time To
+                                Subtract:</label>
+                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time" required>
                         </div>
 
 
@@ -823,58 +849,6 @@ if (isset($_POST['unpauseuser'])) {
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 
                     <button class="btn btn-danger waves-effect waves-light" name="subtractuser">Subtract</button>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div id="rename-app" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-
-        <div class="modal-dialog">
-
-            <div class="modal-content">
-
-                <div class="modal-header d-flex align-items-center">
-
-                    <h4 class="modal-title">Rename Application</h4>
-
-                    <!--begin::Close-->
-                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                        <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                            </svg>
-                        </span>
-                    </div>
-                    <!--end::Close-->
-                </div>
-
-                <div class="modal-body">
-
-                    <form method="post">
-
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Name:</label>
-
-                            <input type="text" class="form-control" name="name" placeholder="New Application Name">
-
-                        </div>
-
-                </div>
-
-                <div class="modal-footer">
-
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
-                    <button class="btn btn-danger waves-effect waves-light" name="renameapp">Add</button>
 
                     </form>
 
@@ -914,7 +888,8 @@ if (isset($_POST['unpauseuser'])) {
 
                         <div class="form-group">
 
-                            <label for="recipient-name" class="control-label">Ban reason:</label>
+                            <label for="recipient-name" class="control-label">Ban
+                                reason:</label>
 
                             <input type="text" class="form-control" name="reason" placeholder="Reason for ban" required>
 
@@ -963,7 +938,8 @@ if (isset($_POST['unpauseuser'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all users? This can not be undone.</p>
+                        <p> Are you sure you want to delete all users? This can not be undone.
+                        </p>
                     </label>
                 </div>
                 <div class="modal-footer">
@@ -999,7 +975,8 @@ if (isset($_POST['unpauseuser'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all expired users? This can not be undone.</p>
+                        <p> Are you sure you want to delete all expired users? This can not be
+                            undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">
@@ -1036,7 +1013,8 @@ if (isset($_POST['unpauseuser'])) {
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to hwid reset all users? This can not be undone.</p>
+                        <p> Are you sure you want to hwid reset all users? This can not be
+                            undone.</p>
                     </label>
                 </div>
                 <div class="modal-footer">
@@ -1049,6 +1027,44 @@ if (isset($_POST['unpauseuser'])) {
         </div>
     </div>
     <!--end::Modal - HWID reset all users-->
+
+    <!--begin::Modal - Unban all users-->
+    <div class="modal fade" tabindex="-1" id="unban-allusers">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-900px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header">
+                    <h2 class="modal-title">Unban All Users</h2>
+
+                    <!--begin::Close-->
+                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                        <span class="svg-icon svg-icon-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
+                            </svg>
+                        </span>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <div class="modal-body">
+                    <label class="fs-5 fw-bold mb-2">
+                        <p> Are you sure you want to unban all users? This can not be undone.
+                        </p>
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <form method="post">
+                        <button class="btn btn-light" data-bs-dismiss="modal">No</button>
+                        <button name="unbanall" class="btn btn-danger">Yes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Modal - Unban all users-->
 
     <table id="kt_datatable_users" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
         <thead>
@@ -1072,7 +1088,7 @@ if (isset($_POST['unpauseuser'])) {
 
     if (isset($_POST['edituser'])) {
         $un = misc\etc\sanitize(urldecode($_POST['edituser']));
-        $query = misc\mysql\query("SELECT * FROM `users` WHERE `username` = ? AND `app` = ?",[$un, $_SESSION['app']]);
+        $query = misc\mysql\query("SELECT * FROM `users` WHERE `username` = ? AND `app` = ?", [$un, $_SESSION['app']]);
         if ($query->num_rows == 0) {
             error("User not Found!");
             echo "<meta http-equiv='Refresh' Content='2'>";
@@ -1126,12 +1142,13 @@ if (isset($_POST['unpauseuser'])) {
 
                             <div class="form-group">
 
-                                <label for="recipient-name" class="control-label">Active Subscriptions: <i class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="List of non-expired, non-paused subscriptions. Change selection if you want to delete one of them."></i></label>
+                                <label for="recipient-name" class="control-label">Active
+                                    Subscriptions: <i class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="List of non-expired, non-paused subscriptions. Change selection if you want to delete one of them."></i></label>
 
                                 <select class="form-control" name="sub">
 
                                     <?php
-                                    $query = misc\mysql\query("SELECT * FROM `subs` WHERE `user` = ? AND `app` = ? AND `expiry` > ?",[$un, $_SESSION['app'], time()], "ssi");
+                                    $query = misc\mysql\query("SELECT * FROM `subs` WHERE `user` = ? AND `app` = ? AND `expiry` > ?", [$un, $_SESSION['app'], time()], "ssi");
                                     $rows = array();
                                     while ($r = mysqli_fetch_assoc($query->result)) {
                                         $rows[] = $r;
@@ -1141,7 +1158,8 @@ if (isset($_POST['unpauseuser'])) {
                                         $value = "[" . $subrow['subscription'] . "] - Expires: <script>document.write(convertTimestamp(" . $subrow["expiry"] . "));</script>";
                                     ?>
 
-                                        <option value="<?php echo $sub; ?>"><?php echo $value; ?></option>
+                                        <option value="<?php echo $sub; ?>">
+                                            <?php echo $value; ?></option>
 
                                     <?php
                                     }
@@ -1153,12 +1171,13 @@ if (isset($_POST['unpauseuser'])) {
 
                             <div class="form-group">
 
-                                <label for="recipient-name" class="control-label">User Variables: <i class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="List of variables assigned to this user. Change selection if you want to delete one of them."></i></label>
+                                <label for="recipient-name" class="control-label">User
+                                    Variables: <i class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="List of variables assigned to this user. Change selection if you want to delete one of them."></i></label>
 
                                 <select class="form-control" name="var">
 
                                     <?php
-                                    $query = misc\mysql\query("SELECT `name`,`data` FROM `uservars` WHERE `user` = ? AND `app` = ?",[$un, $_SESSION['app']]);
+                                    $query = misc\mysql\query("SELECT `name`,`data` FROM `uservars` WHERE `user` = ? AND `app` = ?", [$un, $_SESSION['app']]);
                                     $rows = array();
                                     while ($r = mysqli_fetch_assoc($query->result)) {
                                         $rows[] = $r;
@@ -1167,7 +1186,8 @@ if (isset($_POST['unpauseuser'])) {
                                         $value = $varrow['name'] . " : " . $varrow["data"];
                                     ?>
 
-                                        <option value="<?php echo $varrow['name']; ?>"><?php echo $value; ?></option>
+                                        <option value="<?php echo $varrow['name']; ?>">
+                                            <?php echo $value; ?></option>
 
                                     <?php
                                     }
@@ -1179,7 +1199,8 @@ if (isset($_POST['unpauseuser'])) {
 
                             <div class="form-group">
 
-                                <label for="recipient-name" class="control-label">Additional HWID:</label>
+                                <label for="recipient-name" class="control-label">Additional
+                                    HWID:</label>
 
                                 <input type="text" class="form-control" name="hwid" placeholder="Enter HWID if you want this key to support multiple computers">
 
@@ -1207,9 +1228,11 @@ if (isset($_POST['unpauseuser'])) {
 
                         <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
 
-                        <button class="btn btn-warning waves-effect waves-light" value="<?php echo urlencode($un); ?>" name="deletesub">Delete Subscription</button>
+                        <button class="btn btn-warning waves-effect waves-light" value="<?php echo urlencode($un); ?>" name="deletesub">Delete
+                            Subscription</button>
 
-                        <button class="btn btn-primary waves-effect waves-light" value="<?php echo urlencode($un); ?>" name="deletevar">Delete Variable</button>
+                        <button class="btn btn-primary waves-effect waves-light" value="<?php echo urlencode($un); ?>" name="deletevar">Delete
+                            Variable</button>
 
                         <button class="btn btn-danger waves-effect waves-light" value="<?php echo urlencode($un); ?>" name="saveuser">Save</button>
 

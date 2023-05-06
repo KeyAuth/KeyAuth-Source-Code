@@ -58,7 +58,16 @@ if (isset($_POST['editsub'])) {
 
 												<h4 class="modal-title">Edit Subscription</h4>
 
-                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                                                <!--begin::Close-->
+                                                <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
+                                                    <span class="svg-icon svg-icon-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <!--end::Close-->
 
                                             </div>
 
@@ -80,7 +89,7 @@ if (isset($_POST['editsub'])) {
 
                                             <div class="modal-footer">
 
-                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
 
                                                 <button class="btn btn-danger waves-effect waves-light" name="savesub">Save</button>
 
@@ -99,7 +108,7 @@ if (isset($_POST['savesub'])) {
     $level = misc\etc\sanitize($_POST['level']);
     misc\mysql\query("UPDATE `subscriptions` SET `level` = ? WHERE `name` = ? AND `app` = ?",[$level, $subscription, $_SESSION['app']]);
     if ($_SESSION['role'] == "seller") {
-        cache\purge('KeyAuthSubscriptions:' . $_SESSION['app']);
+        misc\cache\purge('KeyAuthSubscriptions:' . $_SESSION['app']);
     }
     dashboard\primary\success("Successfully Updated Settings!");
     echo "<meta http-equiv='Refresh' Content='2'>";
@@ -146,7 +155,7 @@ if (isset($_POST['savesub'])) {
                             <label for="recipient-name" class="control-label">Subscription Name:</label>
 
                             <input type="text" class="form-control" name="subname" placeholder="Anything you want"
-                                required>
+                                required maxlength="49">
 
                         </div>
 

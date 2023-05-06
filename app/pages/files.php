@@ -17,11 +17,26 @@ if (isset($_POST['addfile'])) {
         case 'invalid':
             dashboard\primary\error("URL not valid!");
             break;
+        case 'no_local':
+            dashboard\primary\error("URL can't be a local path! Must be a remote URL accessible by the open internet");
+            break;
         case 'failure':
             dashboard\primary\error("Failed to add file!");
             break;
         case 'success':
             dashboard\primary\success("Successfully added file!");
+            break;
+        case 'tester_file_exceed':
+            dashboard\primary\error("Tester plan may only upload files up to 10MB. Upgrade for larger file size.");
+            break;
+        case 'dev_file_exceed':
+            dashboard\primary\error("File size limit is 50 MB.");
+            break;
+        case 'seller_file_exceed':
+            dashboard\primary\error("File size limit is 75 MB.");
+            break;
+        case 'name_too_large':
+            dashboard\primary\error("File name is too large! Rename it to have a shorter name.");
             break;
         default:
             dashboard\primary\error("Unhandled Error! Contact us if you need help");
@@ -67,13 +82,22 @@ if (isset($_POST['editfile'])) {
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Edit File</h4>
-                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                                                <!--begin::Close-->
+                                                <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
+                                                    <span class="svg-icon svg-icon-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <!--end::Close-->
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post">
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">File URL: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="We recommend sending the file in a Discord DM where it won\'t get deleted. Then copy link and put here. Make sure the link has the file extension at the end, .exe or whatever. If it doesn\'t, the download will not work."></i></label>
-                                                        <input type="text" class="form-control" name="url" placeholder="Link to file">
+                                                        <input type="url" class="form-control" name="url" placeholder="Link to file" required>
                                                     </div>
 													<div class="form-check">
 													<input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
@@ -83,7 +107,7 @@ if (isset($_POST['editfile'])) {
 													</div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                                 <button class="btn btn-danger waves-effect waves-light" value="' . $file . '" name="savefile">Save</button>
 												</form>
                                             </div>
@@ -98,6 +122,12 @@ if (isset($_POST['savefile'])) {
 
     if (!filter_var($url, FILTER_VALIDATE_URL)) {
         dashboard\primary\error("Invalid Url!");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        return;
+    }
+
+    if(str_contains($url, "localhost") || str_contains($url, "127.0.0.1") || str_contains($url, "file:/")) {
+        dashboard\primary\error("URL can't be a local path! Must be a remote URL accessible by the open internet");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     }
@@ -122,6 +152,12 @@ if (isset($_POST['savefile'])) {
 
     $fn = basename($url);
     $fs = misc\etc\formatBytes($filesize);
+
+    if(strlen($fn) > 49) {
+        dashboard\primary\error("File name is too large! Rename it to have a shorter name.");
+        echo "<meta http-equiv='Refresh' Content='2;'>";
+        return;
+    }
 
     $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
 
@@ -165,7 +201,7 @@ if (isset($_POST['savefile'])) {
                     <form method="post">
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">File URL: <i class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="We recommend sending the file in a Discord DM where it won't get deleted. Then copy link and put here. Make sure the link has the file extension at the end, .exe or whatever. If it doesn't, the download will not work."></i></label>
-                            <input type="text" class="form-control" name="url" placeholder="Link to file">
+                            <input type="url" class="form-control" name="url" placeholder="Link to file" required>
                         </div>
                         <div class="form-check">
                             <br>

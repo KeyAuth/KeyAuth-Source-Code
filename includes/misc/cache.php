@@ -51,11 +51,6 @@ function fetch($redisKey, $sqlQuery, $args = [], $multiRowed, $expiry = null, $t
 			$redis->expire($redisKey, $ttl);
 		}
 
-		if (strpos($redisKey, 'KeyAuthStateDuplicates:') !== false) { // ensure no users stay logged in for longer than they're supposed to
-			$ttl = intval($data["expiry"] - time());
-			$redis->expire($redisKey, $ttl);
-		}
-
 		global $keyauthStatsToken;
 		if ($redisKey == "KeyAuthStats" && !empty($keyauthStatsToken)) {
 			$channels = [1093264776605470871, 1093264777217855580, 1093264777981218836, 1093264778723610666];

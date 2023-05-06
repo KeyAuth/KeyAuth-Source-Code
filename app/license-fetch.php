@@ -32,36 +32,47 @@ if (isset($_POST['draw'])) {
 	$searchValue = misc\etc\sanitize($_POST['search']['value']); // Search value
 
 	## Total number of records without filtering
-	$sel = misc\mysql\query("select count(1) as allcount from `keys` where app = ?",[$_SESSION['app']]);
+	$sel = misc\mysql\query("select count(1) as allcount from `keys` where app = ?", [$_SESSION['app']]);
 	$records = mysqli_fetch_assoc($sel->result);
 	$totalRecords = $records['allcount'];
 
-	## Total number of record with filtering
-	$sel = misc\mysql\query("select count(1) as allcount from `keys` WHERE 1  and (`key` like ? or `note` like ? or `genby` like ? or `usedby` like ? ) and app = ?",["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
-	$records = mysqli_fetch_assoc($sel->result);
-	$totalRecordwithFilter = $records['allcount'];
+	$totalRecordwithFilter = $totalRecords;
+	if (!is_null($searchValue)) { // don't double query if no search value was provided
+		## Total number of record with filtering
+		$sel = misc\mysql\query("select count(1) as allcount from `keys` WHERE 1  and (`key` like ? or `note` like ? or `genby` like ? or `usedby` like ? ) and app = ?", ["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
+		$records = mysqli_fetch_assoc($sel->result);
+		$totalRecordwithFilter = $records['allcount'];
+	}
 
 	// whitelist certain column names and sort orders to prevent SQL injection
-	if(!in_array($columnName, array("key", "gendate", "genby", "expires", "note", "usedon", "usedby", "status", "actions"))) {
+	if (!in_array($columnName, array("key", "gendate", "genby", "expires", "note", "usedon", "usedby", "status"))) {
 		die("Column name is not whitelisted.");
 	}
 
-	if(!in_array($columnSortOrder, array("desc", "asc"))) {
+	if (!in_array($columnSortOrder, array("desc", "asc"))) {
 		die("Column sort order is not whitelisted.");
 	}
 
 	## Fetch records
-	$query = misc\mysql\query("select * from `keys` WHERE 1  and (`key` like ? or `note` like ? or `genby` like ? or `usedby` like ? ) and app = ? order by `".$columnName."` ".$columnSortOrder." limit " . $row . "," . $rowperpage,["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
+	$query = misc\mysql\query("select * from `keys` WHERE 1  and (`key` like ? or `note` like ? or `genby` like ? or `usedby` like ? ) and app = ? order by `" . $columnName . "` " . $columnSortOrder . " limit " . $row . "," . $rowperpage, ["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
 	$data = array();
 
 	while ($row = mysqli_fetch_assoc($query->result)) {
 
 		## If only one or two keys exists then we will use custom margin to fix the bugging menu
 		$banBtns = "";
-		if ($row['status'] == "Banned") { $banBtns = '<button class="btn menu-link px-3" style="font-size:0.95rem;" name="unbankey" value="' . $row['key'] . '">Unban</button>'; } else { $banBtns = '<a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#ban-key" onclick="bankey(\'' . $row["key"] . '\')">Ban</a>'; }
+		if ($row['status'] == "Banned") {
+			$banBtns = '<button class="btn menu-link px-3" style="font-size:0.95rem;" name="unbankey" value="' . $row['key'] . '">Unban</button>';
+		} else {
+			$banBtns = '<a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#ban-key" onclick="bankey(\'' . $row["key"] . '\')">Ban</a>';
+		}
 
 		$MarginManager = "";
-		if ($totalRecordwithFilter < 2) { $MarginManager = "margin-bottom: 20px;"; } else { $MarginManager = "margin-bottom: 0px;"; }
+		if ($totalRecordwithFilter < 2) {
+			$MarginManager = "margin-bottom: 20px;";
+		} else {
+			$MarginManager = "margin-bottom: 0px;";
+		}
 
 		$data[] = array(
 			"key" => $row['key'],

@@ -75,9 +75,8 @@ if (isset($_POST['deletevar'])) {
     }
 }
 
-if (isset($_POST['editvar'])) // edit modal
-
-{
+// edit modal
+if (isset($_POST['editvar'])) {
     $variable = misc\etc\sanitize($_POST['editvar']);
 
     $query = misc\mysql\query("SELECT * FROM `vars` WHERE `varid` = ? AND `app` = ?",[$variable, $_SESSION['app']]);
@@ -96,15 +95,25 @@ if (isset($_POST['editvar'])) // edit modal
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
 												<h4 class="modal-title">Edit Variable</h4>
-                                                <button type="button" onClick="window.location.href=window.location.href" class="close ml-auto" data-dismiss="modal" aria-hidden="true">x</button>
+                                                <!--begin::Close-->
+                                                <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
+                                                    <span class="svg-icon svg-icon-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
+                                                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <!--end::Close-->
                                             </div>
                                             <div class="modal-body">
                                                 <form method="post"> 
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Variable Data:</label>
-                                                        <input type="text" class="form-control" name="msg" value="' . $data . '" required>
+                                                        <textarea class="form-control" name="msg" required rows="3">'.$data.'</textarea>
 														<input type="hidden" name="variable" value="' . $variable . '">
                                                     </div>
+                                                    <br>
 													<div class="form-check">
 													<input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
 													<label class="form-check-label" for="flexCheckChecked">
@@ -113,7 +122,7 @@ if (isset($_POST['editvar'])) // edit modal
 													</div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                                 <button class="btn btn-danger waves-effect waves-light" name="savevar">Save</button>
 												</form>
                                             </div>
@@ -172,8 +181,9 @@ if (isset($_POST['savevar'])) {
                         </div>
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">Variable Data: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Get string from KeyAuth server, where it's more secure"></i></label>
-                            <input type="text" class="form-control" placeholder="Value of Variable" name="vardata" required>
+                                <textarea class="form-control" name="vardata" placeholder="Value of Variable" required rows="3"></textarea>
                         </div>
+                        <br>
                         <div class="form-check">
                             <input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
                             <label class="form-check-label" for="flexCheckChecked">

@@ -12,6 +12,12 @@ function add($baseLink, $userAgent, $authed, $secret = null)
 	$userAgent = etc\sanitize($userAgent);
 	$authed = intval($authed);
 
+	if (!filter_var($baseLink, FILTER_VALIDATE_URL))
+		return 'invalid_url';
+
+	if(str_contains($baseLink, "localhost") || str_contains($baseLink, "127.0.0.1"))
+		return 'no_local';
+
 	$webid = etc\generateRandomString();
 	if (is_null($userAgent))
 		$userAgent = "KeyAuth";

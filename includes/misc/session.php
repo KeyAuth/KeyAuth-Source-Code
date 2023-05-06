@@ -12,7 +12,6 @@ function killAll($secret = null)
 	if ($query->affected_rows > 0) {
 		cache\purgePattern('KeyAuthState:' . ($secret ?? $_SESSION['app']));
 		cache\purge('KeyAuthSessions:' . ($secret ?? $_SESSION['app']));
-		cache\purgePattern('KeyAuthStateDuplicates:' . ($secret ?? $_SESSION['app']));
 		return 'success';
 	} else {
 		return 'failure';
@@ -24,7 +23,6 @@ function killSingular($id, $secret = null)
 
 	$query = mysql\query("SELECT `ip` FROM `sessions` WHERE `app` = ? AND `id` = ?",[$secret ?? $_SESSION['app'], $id]);
 	$row = mysqli_fetch_array($query->result);
-	cache\purge('KeyAuthStateDuplicates:' . ($secret ?? $_SESSION['app']) . ':' . $row['ip']);
 
 	$query = mysql\query("DELETE FROM `sessions` WHERE `app` = ? AND `id` = ?",[$secret ?? $_SESSION['app'], $id]);
 	if ($query->affected_rows > 0) {

@@ -13,7 +13,18 @@ function license_masking($mask) // substitute random characters for upper-case a
 	$size_of_mask = count($mask_arr);
 	for ($i = 0; $i < $size_of_mask; $i++) {
 		if ($mask_arr[$i] === '*') {
-            $mask_arr[$i] = etc\random_string_gen(1);
+            if (isset($_POST['lowercaseLetters']) && $_POST['lowercaseLetters'] == 'on') {
+                $mask_arr[$i] = etc\random_string_lower(1);
+            }
+            elseif (isset($_POST['capitalLetters']) && $_POST['capitalLetters'] == 'on') {
+                $mask_arr[$i] = etc\random_string_upper(1);
+            }
+            elseif (isset($_POST['lowercaseLetters']) && $_POST['lowercaseLetters'] == 'on' && isset($_POST['capitalLetters']) && $_POST['capitalLetters'] == 'on'){
+                $mask_arr[$i] = etc\random_string_gen(1);
+            }
+            else{
+                $mask_arr[$i] = etc\random_string_gen(1);
+            }
         }
 	}
 	return implode('', $mask_arr);
@@ -125,6 +136,7 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 
 	return $licenses;
 }
+
 function addTime($time, $expiry, $secret = null)
 {
 	$time = etc\sanitize($time);

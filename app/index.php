@@ -15,7 +15,11 @@ if (!isset($_SESSION['username'])) {
 }
 
 set_exception_handler(function ($exception) {
+    error_log("\n--------------------------------------------------------------\n");
 	error_log($exception);
+    error_log("\nRequest data:");
+    error_log(print_r($_POST, true));
+    error_log("\n--------------------------------------------------------------");
 	http_response_code(500);
 	\dashboard\primary\error($exception->getMessage());
 });
