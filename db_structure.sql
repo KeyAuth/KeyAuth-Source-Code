@@ -1,77 +1,64 @@
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
+
 CREATE TABLE `acclogs` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `username` varchar(65) DEFAULT NULL,
   `date` varchar(10) NOT NULL,
   `ip` varchar(45) NOT NULL,
-  `useragent` varchar(199) NOT NULL,
-  PRIMARY KEY (`id`)
+  `useragent` varchar(399) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `accounts` (
-  `username` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
-  `email` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
-  `password` varchar(60) COLLATE utf8_unicode_ci NOT NULL,
-  `ownerid` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `role` varchar(65) COLLATE utf8_unicode_ci NOT NULL,
-  `app` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `owner` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `banned` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `username` varchar(65) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `email` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `password` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `ownerid` varchar(65) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `role` varchar(65) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `app` varchar(65) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `owner` varchar(49) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `banned` varchar(99) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `locked` int NOT NULL DEFAULT '0',
-  `warning` varchar(999) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `warning` varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `admin` int NOT NULL DEFAULT '0',
-  `img` varchar(200) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://cdn.keyauth.cc/assets/img/favicon.png',
-  `balance` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `keylevels` varchar(49) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
-  `expires` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `registrationip` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `lastip` varchar(49) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `region` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `asNum` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `img` varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'https://cdn.keyauth.cc/assets/img/favicon.png',
+  `balance` varchar(49) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `keylevels` varchar(49) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
+  `expires` varchar(49) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `registrationip` varchar(49) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `lastip` varchar(49) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `region` varchar(99) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `asNum` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `twofactor` int NOT NULL DEFAULT '0',
-  `googleAuthCode` varchar(59) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `googleAuthCode` varchar(59) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `darkmode` int NOT NULL DEFAULT '0',
   `acclogs` int NOT NULL DEFAULT '1',
   `lastreset` int DEFAULT NULL,
   `emailVerify` int NOT NULL DEFAULT '1',
   `permissions` bit(64) NOT NULL DEFAULT b'11111111111',
-  `afCode` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `affiliatedBy` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `securityKey` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`username`),
-  KEY `idx_email_sha1` (`email`,`username`),
-  KEY `idx_accounts_owner` (`owner`)
+  `afCode` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `affiliatedBy` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `securityKey` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `afLogs` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `afCode` varchar(50) DEFAULT NULL,
   `referrer` varchar(3000) DEFAULT NULL,
   `username` varchar(65) DEFAULT NULL,
   `date` int DEFAULT NULL,
-  `action` varchar(40) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `action` varchar(40) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `apps` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `owner` varchar(65) NOT NULL,
   `name` varchar(40) NOT NULL,
   `secret` varchar(64) NOT NULL,
@@ -140,91 +127,63 @@ CREATE TABLE `apps` (
   `killOtherSessions` int NOT NULL DEFAULT '0',
   `cooldownUnit` int NOT NULL DEFAULT '86400',
   `sessionUnit` int NOT NULL DEFAULT '3600',
-  `minUsernameLength` int NOT NULL DEFAULT '0',
+  `minUsernameLength` int NOT NULL DEFAULT '1',
   `blockLeakedPasswords` int NOT NULL DEFAULT '0',
   `forceEncryption` int NOT NULL DEFAULT '0',
   `customDomainAPI` varchar(253) DEFAULT NULL,
   `customerPanelIcon` varchar(99) NOT NULL DEFAULT 'https://cdn.keyauth.cc/front/assets/img/favicon.png',
-  PRIMARY KEY (`id`),
-  KEY `sellerkey_idx` (`sellerkey`),
-  KEY `name_owner_idx` (`name`,`owner`),
-  KEY `idx_apps_secret` (`secret`),
-  KEY `idx_apps_owner_ownerid` (`owner`,`ownerid`),
-  KEY `idx_apps_customdomain` (`customDomain`)
+  `forceHwid` int DEFAULT '1',
+  `minHwid` int DEFAULT '20'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `auditLog` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `user` varchar(65) NOT NULL,
   `event` varchar(999) NOT NULL,
   `time` int NOT NULL,
-  `app` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `bans` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `hwid` varchar(500) DEFAULT NULL,
   `ip` varchar(49) DEFAULT NULL,
   `type` varchar(5) DEFAULT NULL,
-  `app` varchar(64) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_bans_hwid_ip_app` (`hwid`,`ip`,`app`),
-  KEY `idx_bans_app_hwid_ip` (`app`,`hwid`,`ip`)
+  `app` varchar(64) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `buttons` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `text` varchar(99) NOT NULL,
   `value` varchar(99) NOT NULL,
-  `app` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `value` (`value`,`app`)
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `chatmsgs` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `author` varchar(70) NOT NULL,
   `message` varchar(2000) NOT NULL,
   `timestamp` int NOT NULL,
   `channel` varchar(50) NOT NULL,
-  `app` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `chatmutes` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `user` varchar(70) NOT NULL,
   `time` int NOT NULL,
-  `app` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `chats` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `name` varchar(50) NOT NULL,
   `delay` int NOT NULL,
-  `app` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `one name per app` (`name`,`app`)
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `emailverify` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `secret` varchar(32) NOT NULL,
   `email` varchar(40) NOT NULL,
   `time` int NOT NULL,
@@ -232,30 +191,23 @@ CREATE TABLE `emailverify` (
   `asNum` varchar(20) DEFAULT NULL,
   `newEmail` varchar(40) DEFAULT NULL,
   `newUsername` varchar(99) DEFAULT NULL,
-  `oldUsername` varchar(99) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `oldUsername` varchar(99) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `files` (
-  `pk` int NOT NULL AUTO_INCREMENT,
+  `pk` int NOT NULL,
   `name` varchar(49) NOT NULL,
   `id` varchar(49) NOT NULL,
   `url` varchar(2048) DEFAULT NULL,
   `size` varchar(49) NOT NULL,
   `uploaddate` varchar(49) NOT NULL,
   `app` varchar(64) NOT NULL,
-  `authed` int NOT NULL DEFAULT '1',
-  PRIMARY KEY (`pk`),
-  KEY `idx_app_id` (`app`,`id`)
+  `authed` int NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `keys` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `key` varchar(49) NOT NULL,
+  `id` int NOT NULL,
+  `key` varchar(70) NOT NULL,
   `note` varchar(69) DEFAULT NULL,
   `expires` varchar(49) NOT NULL,
   `status` varchar(49) NOT NULL,
@@ -265,138 +217,97 @@ CREATE TABLE `keys` (
   `usedon` int DEFAULT NULL,
   `usedby` varchar(70) DEFAULT NULL,
   `app` varchar(64) NOT NULL,
-  `banned` varchar(99) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `app_index` (`app`),
-  KEY `idx_app_key` (`app`,`key`)
+  `banned` varchar(99) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `logs` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `logdate` varchar(49) NOT NULL,
   `logdata` varchar(275) NOT NULL,
   `credential` varchar(70) DEFAULT NULL,
   `pcuser` varchar(32) DEFAULT NULL,
-  `logapp` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_logs_logapp_logdata_credential_pcuser` (`logapp`,`logdata`,`credential`,`pcuser`)
+  `logapp` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `orders` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `orderID` varchar(36) NOT NULL,
   `username` varchar(65) NOT NULL,
-  `date` int DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `date` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
+CREATE TABLE `resets` (
+  `id` int NOT NULL,
+  `secret` char(32) NOT NULL,
+  `email` varchar(40) NOT NULL,
+  `time` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE `resetUsers` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `secret` varchar(32) NOT NULL,
   `email` varchar(40) NOT NULL,
   `username` varchar(70) NOT NULL,
   `app` varchar(64) NOT NULL,
-  `time` int NOT NULL,
-  PRIMARY KEY (`id`)
+  `time` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `resets` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `secret` char(32) NOT NULL,
-  `email` varchar(40) NOT NULL,
-  `time` int NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `securityKeys` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `username` varchar(65) DEFAULT NULL,
   `name` varchar(99) DEFAULT NULL,
   `credentialId` varchar(999) DEFAULT NULL,
-  `credentialPublicKey` varchar(999) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `credentialPublicKey` varchar(999) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `sellerLogs` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `ip` varchar(45) NOT NULL,
   `path` varchar(999) NOT NULL,
   `date` int NOT NULL,
-  `app` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `sessions` (
   `id` varchar(10) NOT NULL,
-  `credential` varchar(255) DEFAULT NULL,
+  `credential` varchar(70) DEFAULT NULL,
   `app` varchar(64) NOT NULL,
   `expiry` int NOT NULL,
   `created_at` int DEFAULT NULL,
   `enckey` varchar(100) DEFAULT NULL,
   `validated` int NOT NULL DEFAULT '0',
   `ip` varchar(45) DEFAULT NULL,
-  `pk` int NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`pk`),
-  KEY `session index` (`id`,`app`),
-  KEY `app_validated_expiry_index` (`app`,`validated`,`expiry`)
+  `pk` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `subs` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user` varchar(49) NOT NULL,
+  `id` int NOT NULL,
+  `user` varchar(70) NOT NULL,
   `subscription` varchar(49) NOT NULL,
   `expiry` varchar(49) NOT NULL,
   `app` varchar(64) NOT NULL,
-  `key` varchar(49) DEFAULT NULL,
-  `paused` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `user_app_paused_idx` (`user`,`app`,`paused`),
-  KEY `idx_subs_user_app_expiry` (`user`,`app`,`expiry`)
+  `key` varchar(70) DEFAULT NULL,
+  `paused` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `subscriptions` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `name` varchar(49) NOT NULL,
   `level` varchar(49) NOT NULL,
-  `app` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `app_level_idx` (`app`,`level`)
+  `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `support` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(49) NOT NULL,
+  `id` int NOT NULL,
+  `username` varchar(65) NOT NULL,
   `time` int NOT NULL,
   `message` varchar(200) DEFAULT NULL,
   `staff` int NOT NULL DEFAULT '0',
-  `ownerid` varchar(65) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `ownerid` varchar(65) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `users` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `username` varchar(70) NOT NULL,
   `email` varchar(40) DEFAULT NULL,
   `password` varchar(60) DEFAULT NULL,
@@ -407,68 +318,238 @@ CREATE TABLE `users` (
   `lastlogin` int DEFAULT NULL,
   `banned` varchar(99) DEFAULT NULL,
   `ip` varchar(49) DEFAULT NULL,
-  `cooldown` int DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user index` (`username`,`app`),
-  KEY `app_index` (`app`)
+  `cooldown` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `uservars` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `name` varchar(99) NOT NULL,
   `data` varchar(500) NOT NULL,
   `user` varchar(70) NOT NULL,
   `app` varchar(64) NOT NULL,
-  `readOnly` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user vars` (`name`,`user`,`app`),
-  KEY `idx_uservars_app` (`app`)
+  `readOnly` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `vars` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `varid` varchar(49) NOT NULL,
   `msg` varchar(20000) NOT NULL,
   `app` varchar(64) NOT NULL,
-  `authed` int NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`),
-  KEY `idx_vars_varid_app` (`varid`,`app`,`msg`(50),`authed`),
-  KEY `index_app` (`app`),
-  KEY `idx_vars_app_varid_msg` (`app`,`varid`,`msg`(50))
+  `authed` int NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `webhooks` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `webid` varchar(10) NOT NULL,
   `baselink` varchar(200) NOT NULL,
   `useragent` varchar(49) NOT NULL DEFAULT 'KeyAuth',
   `app` varchar(64) NOT NULL,
-  `authed` int NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`),
-  KEY `baselink` (`baselink`)
+  `authed` int NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `whitelist` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `ip` varchar(49) NOT NULL,
-  `app` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+CREATE TABLE `whitelist` (
+  `id` int NOT NULL,
+  `ip` varchar(49) NOT NULL,
+  `app` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+ALTER TABLE `acclogs`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `accounts`
+  ADD PRIMARY KEY (`username`),
+  ADD KEY `idx_email_sha1` (`email`,`username`),
+  ADD KEY `idx_accounts_owner` (`owner`);
+
+ALTER TABLE `afLogs`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `apps`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sellerkey_idx` (`sellerkey`),
+  ADD KEY `name_owner_idx` (`name`,`owner`),
+  ADD KEY `idx_apps_secret` (`secret`),
+  ADD KEY `idx_apps_owner_ownerid` (`owner`,`ownerid`),
+  ADD KEY `idx_apps_customdomain` (`customDomain`);
+
+ALTER TABLE `auditLog`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `bans`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_bans_hwid_ip_app` (`hwid`,`ip`,`app`),
+  ADD KEY `idx_bans_app_hwid_ip` (`app`,`hwid`,`ip`);
+
+ALTER TABLE `buttons`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `value` (`value`,`app`);
+
+ALTER TABLE `chatmsgs`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `chatmutes`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `chats`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `one name per app` (`name`,`app`);
+
+ALTER TABLE `emailverify`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `files`
+  ADD PRIMARY KEY (`pk`),
+  ADD KEY `idx_app_id` (`app`,`id`);
+
+ALTER TABLE `keys`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `app_index` (`app`),
+  ADD KEY `idx_app_key` (`app`,`key`);
+
+ALTER TABLE `logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_logs_logapp_logdata_credential_pcuser` (`logapp`,`logdata`,`credential`,`pcuser`);
+
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `resets`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `resetUsers`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `securityKeys`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `sellerLogs`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `sessions`
+  ADD PRIMARY KEY (`pk`),
+  ADD KEY `session index` (`id`,`app`),
+  ADD KEY `app_validated_expiry_index` (`app`,`validated`,`expiry`);
+
+ALTER TABLE `subs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_app_paused_idx` (`user`,`app`,`paused`),
+  ADD KEY `idx_subs_user_app_expiry` (`user`,`app`,`expiry`),
+  ADD KEY `app_subscription_expiry_idx` (`app`,`subscription`,`expiry`);
+
+ALTER TABLE `subscriptions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `app_level_idx` (`app`,`level`);
+
+ALTER TABLE `support`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user index` (`username`,`app`),
+  ADD KEY `app_index` (`app`);
+
+ALTER TABLE `uservars`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user vars` (`name`,`user`,`app`),
+  ADD KEY `idx_uservars_app` (`app`);
+
+ALTER TABLE `vars`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_vars_varid_app` (`varid`,`app`,`msg`(50),`authed`),
+  ADD KEY `index_app` (`app`),
+  ADD KEY `idx_vars_app_varid_msg` (`app`,`varid`,`msg`(50));
+
+ALTER TABLE `webhooks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `baselink` (`baselink`);
+
+ALTER TABLE `whitelist`
+  ADD PRIMARY KEY (`id`);
+
+
+ALTER TABLE `acclogs`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `afLogs`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `apps`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `auditLog`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `bans`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `buttons`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `chatmsgs`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `chatmutes`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `chats`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `emailverify`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `files`
+  MODIFY `pk` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `keys`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `logs`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `orders`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `resets`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `resetUsers`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `securityKeys`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `sellerLogs`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `sessions`
+  MODIFY `pk` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `subs`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `subscriptions`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `support`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `uservars`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `vars`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `webhooks`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `whitelist`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+COMMIT;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
