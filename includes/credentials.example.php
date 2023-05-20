@@ -8,7 +8,7 @@ NOTE: change this file name from credentials.example.php to credentials.php
 error_reporting(0);
 
 $databaseHost = "localhost";
-$databaseUsernmae = "root";
+$databaseUsername = "root";
 $databasePassword = "";
 $databaseName = "main";
 
