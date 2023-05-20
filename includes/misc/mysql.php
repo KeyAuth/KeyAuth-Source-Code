@@ -19,7 +19,7 @@ function query($query, $args = [], $types = null)
 
 	global $mysqlRequireSSL;
 	global $databaseHost;
-	global $databaseUsernmae;
+	global $databaseUsername;
 	global $databasePassword;
 	global $databaseName;
 
@@ -30,7 +30,7 @@ function query($query, $args = [], $types = null)
 			$connection->ssl_set(NULL, NULL, "/etc/ssl/certs/ca-bundle.crt", NULL, NULL);
 		}
 
-		$connection->real_connect($databaseHost, $databaseUsernmae, $databasePassword, $databaseName);
+		$connection->real_connect($databaseHost, $databaseUsername, $databasePassword, $databaseName);
 
 		if (!$connection)
 			die($connection->connect_error);
