@@ -24,6 +24,12 @@ login/accShare/
 login/emailVerify/
 sitemap.xml
 includes/credentials.php
+includes/redis.php
+app\pages\application-functions.php
+app\pages\application-prompts.php
+app\pages\bug-bounty.php
+app\pages\forms.php
+app\pages\staff-panel.php
 
 # purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 api/reseller/
@@ -36,9 +42,3 @@ app/pages/reseller-users.php
 app/pages/seller-settings.php
 app/pages/seller-logs.php
 app/pages/webloader.php
-
-# contains MySQL credentials, discord webhooks, and API keys
-includes/connection.php
-
-# contains Redis password
-/includes/redis.php
