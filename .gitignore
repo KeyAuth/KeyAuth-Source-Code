@@ -25,11 +25,11 @@ login/emailVerify/
 sitemap.xml
 includes/credentials.php
 includes/redis.php
-app\pages\application-functions.php
-app\pages\application-prompts.php
-app\pages\bug-bounty.php
-app\pages\forms.php
-app\pages\staff-panel.php
+app/pages/application-functions.php
+app/pages/application-prompts.php
+app/pages/bug-bounty.php
+app/pages/forms.php
+app/pages/staff-panel.php
 
 # purchase KeyAuth enterprise for these files https://shop.keyauth.cc/product/6361c20e415e9
 api/reseller/
