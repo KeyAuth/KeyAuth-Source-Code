@@ -11,12 +11,12 @@ $page = isset($_GET['page']) ? $_GET['page'] : "manage-apps";
     <div class="menu menu-lg-rounded menu-column menu-lg-row menu-state-bg menu-title-gray-700 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-400 fw-bold my-5 my-lg-0 align-items-stretch"
         id="#kt_header_menu" data-kt-menu="true">
         <div class="menu-item me-lg-1">
-            <a class="menu-link py-3" target="_blank" href="https://docs.keyauth.cc">
+            <a class="menu-link py-3" target="_blank" href="https://keyauth.readme.io">
                 <span class="menu-title">Documentation</span>
             </a>
         </div>
         <?php if ($_SESSION['timeleft']) { ?>
-        <a class="menu-link py-3" href="?page=account">
+        <a class="menu-link py-3" href="?page=account-settings">
             <span class="badge badge-warning">Your account subscription expires, in less than a month, check account
                 details for exact date.</span>
         </a>

@@ -1,17 +1,22 @@
 <?php
-if ($_SESSION['role'] == "Reseller") {
+if ($_SESSION['role'] == "Reseller") 
+{
     header("location: ./?page=reseller-licenses");
     die();
 }
-if ($role == "Manager" && !($permissions & 1024)) {
+if ($role == "Manager" && !($permissions & 1024)) 
+{
     die('You weren\'t granted permissions to view this page.');
 }
-if (!isset($_SESSION['app'])) {
+if (!isset($_SESSION['app'])) 
+{
     die("Application not selected.");
 }
-if (isset($_POST['addhash'])) {
+if (isset($_POST['addhash'])) 
+{
     $resp = misc\app\addHash($_POST['hash']);
-    switch ($resp) {
+    switch ($resp) 
+    {
         case 'failure':
             dashboard\primary\error("Failed add hash!");
             break;
@@ -24,9 +29,11 @@ if (isset($_POST['addhash'])) {
     }
 }
 
-if (isset($_POST['resethash'])) {
+if (isset($_POST['resethash'])) 
+{
     $resp = misc\app\resetHash();
-    switch ($resp) {
+    switch ($resp) 
+    {
         case 'failure':
             dashboard\primary\error("Failed reset hash!");
             break;
@@ -39,7 +46,8 @@ if (isset($_POST['resethash'])) {
     }
 }
 
-if (isset($_POST['updatesettings'])) {
+if (isset($_POST['updatesettings'])) 
+{
     $status = misc\etc\sanitize($_POST['statusinput']);
     $hwid = misc\etc\sanitize($_POST['hwidinput']);
     $forceHwid = misc\etc\sanitize($_POST['forceHwid']);
@@ -90,7 +98,6 @@ if (isset($_POST['updatesettings'])) {
     $sellappweek = misc\etc\sanitize($_POST['sellappweekproduct']);
     $sellappmonth = misc\etc\sanitize($_POST['sellappmonthproduct']);
     $sellapplife = misc\etc\sanitize($_POST['sellapplifetimeproduct']);
-    $killOtherSessions = misc\etc\sanitize($_POST['killOtherSessions']);
     $customerPanelIcon = misc\etc\sanitize($_POST['customerPanelIcon']);
     $loggedInMsg = misc\etc\sanitize($_POST['loggedInMsg']);
     $pausedApp = misc\etc\sanitize($_POST['pausedApp']);
@@ -98,14 +105,17 @@ if (isset($_POST['updatesettings'])) {
     $pwLeaked = misc\etc\sanitize($_POST['pwLeaked']);
     $chatHitDelay = misc\etc\sanitize($_POST['chatHitDelay']);
 
-    if (!is_null($customDomain) && ($_SESSION['role'] == "seller" || $_SESSION['role'] == "Manager")) {
-        if (strpos($customDomain, "http") === 0) {
+    if (!is_null($customDomain) && ($_SESSION['role'] == "seller" || $_SESSION['role'] == "Manager")) 
+    {
+        if (strpos($customDomain, "http") === 0) 
+        {
             dashboard\primary\error("Do not include protocol. Your custom domain should be entered as panel.example.com not https://panel.example.com or http://panel.example.com");
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
         $query = misc\mysql\query("SELECT `name`, `owner` FROM `apps` WHERE `customDomain` = ? AND `secret` != ?", [$customDomain, $_SESSION['app']]);
-        if ($query->num_rows > 0) {
+        if ($query->num_rows > 0) 
+        {
             $row = mysqli_fetch_array($query->result);
             $name = $row["name"];
             $owner = $row["owner"];
@@ -113,37 +123,44 @@ if (isset($_POST['updatesettings'])) {
             echo "<meta http-equiv='Refresh' Content='2;'>";
             return;
         }
-    } else if (!empty($customDomain)) {
+    } 
+    else if (!empty($customDomain)) 
+    {
         dashboard\primary\error("You must have seller plan to utilize customer panel");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     }
 
-    if($_SESSION['role'] == "tester" && !is_null($webhook)) {
+    if($_SESSION['role'] == "tester" && !is_null($webhook)) 
+    {
         dashboard\primary\error("You must upgrade to developer or seller to use Discord webhook!");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     }
 
-    if((!is_null($webhook) && !str_contains($webhook, "discord")) || (!is_null($webhook) && str_contains($webhook, "localhost")) || (!is_null($webhook) && str_contains($webhook, "127.0.0.1"))) {
+    if((!is_null($webhook) && !str_contains($webhook, "discord")) || (!is_null($webhook) && str_contains($webhook, "localhost")) || (!is_null($webhook) && str_contains($webhook, "127.0.0.1"))) 
+    {
         dashboard\primary\error("Webhook URL is supposed to be a Discord webhook!");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     }
 
-    if($_SESSION['role'] == "tester" && $vpn) {
+    if($_SESSION['role'] == "tester" && $vpn) 
+    {
         dashboard\primary\error("You must upgrade to developer or seller to use VPN block!");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     }
 
-    if (!empty($shoppywebhooksecret) && !empty($sellixwebhooksecret)) {
+    if (!empty($shoppywebhooksecret) && !empty($sellixwebhooksecret)) 
+    {
         dashboard\primary\error("You cannot utilize Sellix and Shoppy simultaneously due to conflicting JavaScript code");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     }
 
-    if ($sessionduration > 604800) {
+    if ($sessionduration > 604800) 
+    {
         dashboard\primary\error("Session duration can be at most 7 days/1 week");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
@@ -153,7 +170,6 @@ if (isset($_POST['updatesettings'])) {
         "UPDATE `apps` SET 
 		`cooldown` = ?,
 		`customDomain` = NULLIF(?, ''),
-		`killOtherSessions` = ?,
 		`session` = ?,
 		`cooldownUnit` = ?,
 		`sessionUnit` = ?,
@@ -212,7 +228,6 @@ if (isset($_POST['updatesettings'])) {
         [
             $cooldownduration,
             $customDomain,
-            $killOtherSessions,
             $sessionduration,
             $cooldownexpiry,
             $sessionexpiry,
@@ -271,27 +286,37 @@ if (isset($_POST['updatesettings'])) {
         ]
     );
 
-    if ($query->affected_rows > 0) {
+    if ($query->affected_rows > 0) 
+    {
         misc\cache\purge('KeyAuthApp:' . $_SESSION["name"] . ':' . $_SESSION['ownerid']);
         dashboard\primary\success("Successfully set settings!");
-    } else {
+    } 
+    else 
+    {
         dashboard\primary\error("Failed to set settings!");
     }
 }
 
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-
         <form method="post">
-                <button data-bs-toggle="modal" type="button" data-bs-target="#reset-hash"
-                        class="dt-button buttons-print btn btn-danger mr-1"><i
-                                class="fas fa-redo-alt fa-sm text-white-50"></i>
-                        Reset program hash</button>
                 <button data-bs-toggle="modal" type="button" data-bs-target="#add-hash"
                         class="dt-button buttons-print btn btn-primary mr-1"><i
-                                class="fas fa-plus-circle fa-sm text-white-50"></i>
-                        Add hash</button>
+                        class="fas fa-plus-circle fa-sm text-white-50"></i>
+                        Add hash</button><br><br>
+                <button data-bs-toggle="modal" type="button" data-bs-target="#reset-hash"
+                        class="dt-button buttons-print btn btn-danger mr-1"><i
+                        class="fas fa-redo-alt fa-sm text-white-50"></i>
+                        Reset program hash</button>
         </form>
         <br>
 
@@ -347,7 +372,6 @@ if (isset($_POST['updatesettings'])) {
                                 <!--begin::Modal header-->
                                 <div class="modal-header">
                                         <h2 class="modal-title">Reset Hash</h2>
-
                                         <!--begin::Close-->
                                         <div class="btn btn-sm btn-icon btn-active-color-primary"
                                                 data-bs-dismiss="modal">
@@ -385,7 +409,8 @@ if (isset($_POST['updatesettings'])) {
     if ($_SESSION['app']) {
         $query = misc\mysql\query("SELECT * FROM `apps` WHERE `secret` = ?", [$_SESSION['app']]);
         if ($query->num_rows > 0) {
-            while ($row = mysqli_fetch_array($query->result)) {
+            while ($row = mysqli_fetch_array($query->result)) 
+            {
                 $enabled = $row['enabled'];
                 $hwidcheck = $row['hwidcheck'];
                 $forceHwid = $row['forceHwid'];
@@ -429,7 +454,6 @@ if (isset($_POST['updatesettings'])) {
                 $noactivesubs = $row['noactivesubs'];
                 $hwidblacked = $row['hwidblacked'];
                 $pausedsub = $row['pausedsub'];
-                $keyexpired = $row['keyexpired'];
                 $vpnblocked = $row['vpnblocked'];
                 $keybanned = $row['keybanned'];
                 $userbanned = $row['userbanned'];
@@ -437,7 +461,6 @@ if (isset($_POST['updatesettings'])) {
                 $hashcheckfail  = $row['hashcheckfail'];
                 $minUsernameLength  = $row['minUsernameLength'];
                 $blockLeakedPasswords  = $row['blockLeakedPasswords'];
-                $killOtherSessions  = $row['killOtherSessions'];
                 $customerPanelIcon  = $row['customerPanelIcon'];
                 $loggedInMsg  = $row['loggedInMsg'];
                 $pausedApp  = $row['pausedApp'];
@@ -755,25 +778,6 @@ if (isset($_POST['updatesettings'])) {
                                                 <input name="sessionduration" type="number" class="form-control"
                                                         value="<?php echo $session / $sessionUnit; ?>"
                                                         placeholder="Multiplied by selected expiry unit" required>
-                                        </div>
-                                </div>
-                                <br>
-                                <div class="form-group row">
-                                        <label for="example-text-input" class="col-2 col-form-label">Kill other user
-                                                sessions <i class="fas fa-question-circle fa-lg text-white-50"
-                                                        data-bs-toggle="tooltip" data-bs-placement="top"
-                                                        title="If user has other sessions, kill them when user logs in."></i></label>
-                                        <div class="col-10">
-                                                <select class="form-control" name="killOtherSessions">
-                                                        <option value="0"
-                                                                <?= $killOtherSessions == 0 ? ' selected="selected"' : ''; ?>>
-                                                                Disabled
-                                                        </option>
-                                                        <option value="1"
-                                                                <?= $killOtherSessions == 1 ? ' selected="selected"' : ''; ?>>
-                                                                Enabled
-                                                        </option>
-                                                </select>
                                         </div>
                                 </div>
                                 <br>

@@ -10,6 +10,14 @@ if (!isset($_SESSION['app'])) {
     die("Application not selected.");
 }
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
         <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>

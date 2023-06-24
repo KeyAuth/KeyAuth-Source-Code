@@ -57,7 +57,7 @@ if (isset($_POST['editkey'])) {
     $key = misc\etc\sanitize($_POST['editkey']);
     $query = misc\mysql\query("SELECT * FROM `keys` WHERE `key` = ? AND `app` = ?",[$key, $_SESSION['app']]);
     if ($query->num_rows < 1) {
-        error("Key not Found!");
+        dashboard\primary\error("Key not Found!");
         echo "<meta http-equiv='Refresh' Content='2'>";
         return;
     }
@@ -152,6 +152,11 @@ if (isset($_POST['importkeys'])) {
 
 		$levels = array();
 		foreach($data as $key => $row) {
+            if (empty($row->token)) {
+				dashboard\primary\error("Invalid Format!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+			}
 			$license = misc\etc\sanitize($row->token);
 			$level = misc\etc\sanitize($row->rank) + 1;
 			$usedby = misc\etc\sanitize($row->used_by);
@@ -180,22 +185,28 @@ if (isset($_POST['importkeys'])) {
 			$array = explode(',', $line);
 			$first = $array[0];
 			if (!isset($first) || $first == '') {
-				dashboard\primary\error("Invalid Format, please watch tutorial video!");
+				dashboard\primary\error("Invalid Format!");
 				echo "<meta http-equiv='Refresh' Content='2;'>";
 				return;
 			}
 			$second = $array[1];
 			if (!isset($second) || $second == '') {
-				dashboard\primary\error("Invalid Format, please watch tutorial video!");
+				dashboard\primary\error("Invalid Format!");
 				echo "<meta http-equiv='Refresh' Content='2;'>";
 				return;
 			}
 			$third = $array[2];
 			if (!isset($third) || $third == '') {
-				dashboard\primary\error("Invalid Format, please watch tutorial video!");
+				dashboard\primary\error("Invalid Format!");
 				echo "<meta http-equiv='Refresh' Content='2;'>";
 				return;
 			}
+            $forth = $array[3]; // there shouldn't be a forth, it wouldn't be following the format
+            if(isset($forth)) {
+                dashboard\primary\error("Invalid Format!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+            }
 			$expiry = $third * 86400;
             misc\mysql\query("INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES (?, ?,'Not Used', ?, ?, ?, ?)",[$first, $expiry, $second, $_SESSION['username'], time(), $_SESSION['app']]);
         }
@@ -293,9 +304,15 @@ if (isset($_POST['genkeys'])) {
             break;
     }
 }
-
-// error_reporting(1);                          
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
@@ -311,9 +328,9 @@ if (isset($_POST['genkeys'])) {
                 class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import keys</button>
         <button data-bs-toggle="modal" type="button" data-bs-target="#comp-keys"
             class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Add
-            Time</button><br><br>
+            Time</button>
         <button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i
-                class="fas fa-download fa-sm text-white-50"></i> Download All keys</button>
+                class="fas fa-download fa-sm text-white-50"></i> Download All keys</button><br><br>
         <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allkeys"
             class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All keys</button>
@@ -447,7 +464,7 @@ if (isset($_POST['genkeys'])) {
                         </div>
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">License Note:</label>
-                            <input type="text" class="form-control" name="note"
+                            <input type="text" maxlength="69" class="form-control" name="note"
                                 placeholder="Optional, e.g. this license was for Joe"
                                 value="<?php if (!is_null($note)) {
                                                                                                                                                     echo $note;
@@ -524,6 +541,10 @@ if (isset($_POST['genkeys'])) {
                             <input class="form-control" name="authgg"
                                 placeholder="Paste in JSON from developers.auth.gg">
                         </div>
+                        <br>
+                        <div class="alert alert-primary" role="alert">
+	                    	Watch this tutorial for auth.gg import <a href="https://youtu.be/BkW0vu5e5UI?t=218" target="_blank">https://youtu.be/BkW0vu5e5UI?t=218</a>
+	                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -573,7 +594,7 @@ if (isset($_POST['genkeys'])) {
                                     class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip"
                                     data-placement="top"
                                     title="If the key is used, this will do nothing. Used keys are turned into users so if you want to add time to a user, go to users tab and click extend user(s)"></i></label>
-                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time" required>
+                            <input class="form-control" name="time" type="number" placeholder="Multiplied by selected unit of time" required>
                         </div>
                 </div>
                 <div class="modal-footer">

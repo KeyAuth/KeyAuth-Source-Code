@@ -38,6 +38,8 @@ if (!is_null($banned) || $_SESSION['logindate'] < $lastreset || $query->num_rows
 $role = $row['role'];
 $permissions = $row['permissions'];
 $admin = $row['admin'];
+$staff = $row['staff'];
+$formBanned = $row['formBanned'];
 $twofactor = $row['twofactor'];
 $_SESSION['role'] = $role;
 

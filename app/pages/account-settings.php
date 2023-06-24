@@ -1,20 +1,25 @@
 <?php
-if ($_SESSION['username'] == "demodeveloper" || $_SESSION['username'] == "demoseller") {
+if ($_SESSION['username'] == "demodeveloper" || $_SESSION['username'] == "demoseller") 
+{
     die("OwnerID: " . $row['ownerid'] . "<br>that's the only thing you need on this page.");
 }
+
 $twofactor = $row['twofactor'];
+
 require_once '../auth/GoogleAuthenticator.php';
 $gauth = new GoogleAuthenticator();
-if ($row["googleAuthCode"] == NULL) {
+if ($row["googleAuthCode"] == NULL) 
+{
     $code_2factor = $gauth->createSecret();
     misc\mysql\query("UPDATE `accounts` SET `googleAuthCode` = ? WHERE `username` = ?", [$code_2factor, $_SESSION['username']]);
-} else {
+} 
+else 
+{
     $code_2factor = $row["googleAuthCode"];
 }
+
 $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2factor, 'KeyAuth');
 ?>
-
-
 
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
@@ -26,24 +31,31 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
 
     $query = misc\mysql\query("SELECT * FROM `accounts` WHERE `username` = ?", [$_SESSION['username']]);
 
-    if ($query->num_rows > 0) {
-        while ($row = mysqli_fetch_array($query->result)) {
+    if ($query->num_rows > 0) 
+    {
+        while ($row = mysqli_fetch_array($query->result)) 
+        {
             $acclogs = $row['acclogs'];
             $expiry = $row["expires"];
             $emailVerify = $row["emailVerify"];
         }
     }
 
-    if (isset($_POST['updatesettings'])) {
+    if (isset($_POST['updatesettings'])) 
+    {
         $pfp = misc\etc\sanitize($_POST['pfp']);
         $acclogs = misc\etc\sanitize($_POST['acclogs']);
         $emailVerify = misc\etc\sanitize($_POST['emailVerify']);
         misc\mysql\query("UPDATE `accounts` SET `acclogs` = ? WHERE `username` = ?", [$acclogs, $_SESSION['username']]);
-        if ($acclogs == 0) {
+
+        if ($acclogs == 0) 
+        {
             misc\mysql\query("DELETE FROM `acclogs` WHERE `username` = ?", [$_SESSION['username']]); // delete all account logs
         }
+
         misc\mysql\query("UPDATE `accounts` SET `emailVerify` = ? WHERE `username` = ?", [$emailVerify, $_SESSION['username']]);
-        if (isset($_POST['pfp']) && trim($_POST['pfp']) != '') {
+        if (isset($_POST['pfp']) && trim($_POST['pfp']) != '') 
+        {
             if (!filter_var($pfp, FILTER_VALIDATE_URL)) {
                 dashboard\primary\error("Invalid Url For Profile Image!");
                 echo "<meta http-equiv='Refresh' Content='2;'>";
@@ -61,9 +73,10 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
         dashboard\primary\success("Updated Account Settings!");
     }
 
-    if (isset($_POST['submit_code'])) {
-
-        if (empty($_POST['scan_code'])) {
+    if (isset($_POST['submit_code'])) 
+    {
+        if (empty($_POST['scan_code'])) 
+        {
             dashboard\primary\error("You forgot to enter 2FA code!");
         }
 
@@ -71,31 +84,39 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
 
         $query = misc\mysql\query("SELECT `googleAuthCode` from `accounts` WHERE `username` = ?", [$_SESSION['username']]);
 
-        while ($row = mysqli_fetch_array($query->result)) {
+        while ($row = mysqli_fetch_array($query->result)) 
+        {
             $secret_code = $row['googleAuthCode'];
         }
 
         $checkResult = $gauth->verifyCode($secret_code, $code, 2);
 
-        if ($checkResult) {
+        if ($checkResult) 
+        {
             $query = misc\mysql\query("UPDATE `accounts` SET `twofactor` = '1' WHERE `username` = ?", [$_SESSION['username']]);
-            if ($query->affected_rows > 0) {
+            if ($query->affected_rows > 0) 
+            {
                 echo "<meta http-equiv='Refresh' Content='2;'>";
                 dashboard\primary\success("Two-factor security has been successfully activated on your account!");
                 dashboard\primary\wh_log($logwebhook, "{$username} has enabled 2FA", $webhookun);
-            } else {
+            } 
+            else 
+            {
                 echo "<meta http-equiv='Refresh' Content='2;'>";
                 dashboard\primary\wh_log($logwebhook, "{$username} has disabled 2FA", $webhookun);
                 dashboard\primary\success("Two-factor security has been successfully disabled on your account!");
             }
-        } else {
-            dashboard\primary\error("Invalid 2FA code!");
+        } 
+        else 
+        {
+            dashboard\primary\error("Invalid 2FA code! Make sure your device time settings are synced.");
         }
     }
 
-    if (isset($_POST['submit_code_disable'])) {
-
-        if (empty($_POST['scan_code'])) {
+    if (isset($_POST['submit_code_disable'])) 
+    {
+        if (empty($_POST['scan_code'])) 
+        {
             dashboard\primary\error("You forgot to enter 2FA code!");
         }
 
@@ -103,219 +124,190 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
 
         $query = misc\mysql\query("SELECT `googleAuthCode` from `accounts` WHERE `username` = ?", [$_SESSION['username']]);
 
-        while ($row = mysqli_fetch_array($query->result)) {
+        while ($row = mysqli_fetch_array($query->result)) 
+        {
             $secret_code = $row['googleAuthCode'];
         }
 
         $checkResult = $gauth->verifyCode($secret_code, $code, 2);
 
-        if ($checkResult) {
+        if ($checkResult) 
+        {
             $query = misc\mysql\query("UPDATE `accounts` SET `twofactor` = '0', `googleAuthCode` = NULL WHERE `username` = ?", [$_SESSION['username']]);
 
-            if ($query->affected_rows > 0) {
+            if ($query->affected_rows > 0) 
+            {
                 dashboard\primary\success("Successfully disabled 2FA!");
-            } else {
+            } 
+            else 
+            {
                 dashboard\primary\error("Failed to disable 2FA!");
             }
-        } else {
-            dashboard\primary\error("Invalid 2FA code!");
+        } 
+        else 
+        {
+            dashboard\primary\error("Invalid 2FA code! Make sure your device time settings are synced.");
         }
     }
 
-    if (isset($_POST['deleteWebauthn'])) {
+    if (isset($_POST['deleteWebauthn'])) 
+    {
         $name = misc\etc\sanitize($_POST['deleteWebauthn']);
 
         $query = misc\mysql\query("DELETE FROM `securityKeys` WHERE `name` = ? AND `username` = ?", [$name, $_SESSION['username']]);
 
-        if ($query->affected_rows > 0) {
+        if ($query->affected_rows > 0) 
+        {
             $query = misc\mysql\query("SELECT 1 FROM `securityKeys` WHERE `username` = ?", [$_SESSION['username']]);
-            if ($query->num_rows == 0) {
+            if ($query->num_rows == 0) 
+            {
                 misc\mysql\query("UPDATE `accounts` SET `securityKey` = 0 WHERE `username` = ?", [$_SESSION['username']]);
             }
             dashboard\primary\success("Successfully deleted security key");
-        } else {
+        } 
+        else 
+        {
             dashboard\primary\error("Failed to delete security key!");
         }
     }
-
     ?>
 
     <div class="row">
-
         <div class="col-12">
-
             <div class="card">
-
                 <div class="card-body">
                     <form method="POST">
-
                         <div class="form-group row">
-
                             <label for="example-text-input" class="col-2 col-form-label">Username</label>
-
                             <div class="col-10">
-
                                 <label class="form-control"><?php echo $_SESSION['username']; ?></label>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-text-input" class="col-2 col-form-label">OwnerID</label>
-
                             <div class="col-10">
-
                                 <label class="form-control"><?php echo $_SESSION['ownerid'] ?? "Manager or Reseller accounts don't have OwnerIDs as they can't create apps"; ?></label>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-text-input" class="col-2 col-form-label">Subscription Expires</label>
-
                             <div class="col-10">
-
                                 <label class="form-control">
                                     <script>
                                         document.write(convertTimestamp(<?php echo $expiry; ?>));
                                     </script>
                                 </label>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-tel-input" class="col-2 col-form-label">Account logs</label>
-
                             <div class="col-10">
-
                                 <select class="form-control" name="acclogs">
                                     <option value="1" <?= $acclogs == 1 ? ' selected="selected"' : ''; ?>>Enabled
                                     </option>
                                     <option value="0" <?= $acclogs == 0 ? ' selected="selected"' : ''; ?>>Disabled
                                     </option>
                                 </select>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-tel-input" class="col-2 col-form-label">New Login Location Verification</label>
-
                             <div class="col-10">
-
                                 <select class="form-control" name="emailVerify">
                                     <option value="1" <?= $emailVerify == 1 ? ' selected="selected"' : ''; ?>>Enabled
                                     </option>
                                     <option value="0" <?= $emailVerify == 0 ? ' selected="selected"' : ''; ?>>Disabled
                                     </option>
                                 </select>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-tel-input" class="col-2 col-form-label">Password</label>
-
                             <div class="col-10">
-
                                 <div class="form-control">Change password here
                                     <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/forgot/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/forgot/</a>'; ?>
                                 </div>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-password-input" class="col-2 col-form-label">Profile Image</label>
-
                             <div class="col-10">
-
-                                <input class="form-control" name="pfp" type="url" placeholder="Enter link to image for profile picture">
-
+                                <input class="form-control" name="pfp" type="url" maxlength="200" placeholder="Enter link to image for profile picture">
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-password-input" class="col-2 col-form-label">Email</label>
-
                             <div class="col-10">
-
                                 <div class="form-control">Change email here
                                     <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeEmail/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeEmail/</a>'; ?>
                                 </div>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-password-input" class="col-2 col-form-label">Username</label>
-
                             <div class="col-10">
-
                                 <div class="form-control">Change username here
                                     <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeUsername/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeUsername/</a>'; ?>
                                 </div>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <div class="form-group row">
-
                             <label for="example-password-input" class="col-2 col-form-label">Account Deletion</label>
-
                             <div class="col-10">
-
                                 <div class="form-control">Delete account here
                                     <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/deleteAccount/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/deleteAccount/</a>'; ?>
                                 </div>
-
                             </div>
-
                         </div>
+
                         <br>
 
                         <button name="updatesettings" class="btn btn-success"> <i class="fa fa-check"></i> Save</button>
-                        <a type="button" class="btn btn-info" target="popup" onclick="window.open('https://<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>/api/discord/','popup','width=500,height=800'); return false;">
+                        <a type="button" class="btn btn-info" target="popup" onclick="window.open('https://discord.com/api/oauth2/authorize?client_id=1109906024695083008&redirect_uri=https%3A%2F%2F<?php echo ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']); ?>%2Fapi%2Fdiscord%2F&response_type=code&scope=identify%20guilds.join','popup','width=600,height=600'); return false;">
                             <i class="fab fa-discord"></i> Link Discord</a>
-                        <?php if (!$twofactor) {
+                        <?php if (!$twofactor) 
+                        {
                             echo '                <a class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#twofa"><i class="fa fa-lock"></i>Enable 2FA</a>';
-                        } else {
+                        } 
+                        else 
+                        {
                             echo '                <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#disabletwofa"><i class="fa fa-lock"></i>Disable 2FA</a>';
-                        } ?>
+                        } 
+                        ?>
                         <a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#webauthn"><i class="fab fa-usb"></i>FIDO2 WebAuthn (Security Keys)</a>
-
                     </form>
 
 
                     <?php
-                    if (!$twofactor) {
+                    if (!$twofactor) 
+                    {
                     ?>
                         <!--begin::Modal - 2fa App-->
                         <div class="modal fade" id="twofa" tabindex="-1" aria-hidden="true">
@@ -326,7 +318,6 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                                     <!--begin::Modal header-->
                                     <div class="modal-header">
                                         <h2 class="modal-title">2 Factor Authentication</h2>
-
                                         <!--begin::Close-->
                                         <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
                                             <span class="svg-icon svg-icon-1">
@@ -435,8 +426,6 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                     </div>
                     <!--end::Modal - disable 2fa App-->
 
-
-
                     <!--begin::Modal - disable 2fa App-->
                     <div class="modal fade" id="webauthn" tabindex="-1" aria-hidden="true">
                         <!--begin::Modal dialog-->
@@ -467,8 +456,10 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                                                     <!--begin::Label-->
                                                     <?php
                                                     $query = misc\mysql\query("SELECT * FROM `securityKeys` WHERE `username` = ?", [$_SESSION['username']]);
-                                                    if ($query->num_rows > 0) {
-                                                        while ($row = mysqli_fetch_array($query->result)) {
+                                                    if ($query->num_rows > 0) 
+                                                    {
+                                                        while ($row = mysqli_fetch_array($query->result)) 
+                                                        {
                                                             echo $row["name"] . "  <button style=\"border: none;padding:0;background:0;color:#FF0000;padding-left:5px;\" value=\"" . $row["name"] . "\"name=\"deleteWebauthn\" onclick=\"return confirm('Are you sure you want to delete security key? This can not be undone.')\">Delete</button><br>";
                                                         }
                                                         echo "<br>";
@@ -479,7 +470,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                                                     </label>
                                                     <!--end::Label-->
                                                     <!--begin::Input-->
-                                                    <input type="text" name="webauthn_name" id="webauthn_name" maxlength="99" placeholder="Pick a name for security key" class="form-control mb-4" required>
+                                                    <input type="text" name="webauthn_name" id="webauthn_name" maxlength="99" placeholder="Pick a name for security key" class="form-control mb-4">
                                                     <!--end::Input-->
                                                 </div>
                                                 <!--end::Input group-->
@@ -497,27 +488,13 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
                         <!--end::Modal dialog-->
                     </div>
                     <!--end::Modal - disable 2fa App-->
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
     <!-- Show / hide columns dynamically -->
-
-
-
     <!-- Column rendering -->
-
-
-
     <!-- Row grouping -->
-
-
-
     <!-- Multiple table control element -->
 </div>
 <!--end::Container-->

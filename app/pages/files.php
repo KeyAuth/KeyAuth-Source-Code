@@ -137,11 +137,11 @@ if (isset($_POST['savefile'])) {
     $filesize = strlen($file);
 
     if ($filesize > 10000000 && $role == "tester") {
-        dashboard\primary\error("Users with tester plan may only upload files up to 10MB. Paid plans may upload up to 50MB.");
+        dashboard\primary\error("Users with tester plan may only upload files up to 10MB. Paid plans may upload up to 75MB.");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     } else if ($filesize > 50000000 && ($role == "developer" || $role == "Manager")) {
-        dashboard\primary\error("File size limit is 50 MB.");
+        dashboard\primary\error("File size limit is 50 MB. Upgrade your account to gain a total of 75mb.");
         echo "<meta http-equiv='Refresh' Content='2;'>";
         return;
     } else if ($filesize > 75000000) {
@@ -171,12 +171,20 @@ if (isset($_POST['savefile'])) {
     }
 }
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
     <form method="POST">
         <button data-bs-toggle="modal" type="button" data-bs-target="#create-files" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
-            Create Files</button>
+            Create Files</button><br><br>
         <button type="button" class="dt-button buttons-print btn btn-danger mr-1" data-bs-toggle="modal" type="button" data-bs-target="#deleteallfiles"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All
             Files</button>
     </form>

@@ -11,7 +11,11 @@ if (isset($_SESSION['username'])) {
 	exit();
 }
 set_exception_handler(function ($exception) {
+	error_log("\n--------------------------------------------------------------\n");
 	error_log($exception);
+    	error_log("\nRequest data:");
+    	error_log(print_r($_POST, true));
+    	error_log("\n--------------------------------------------------------------");
 	http_response_code(500);
 	\dashboard\primary\error($exception->getMessage());
 });
@@ -27,17 +31,17 @@ set_exception_handler(function ($exception) {
 	<!-- Canonical SEO -->
 	<link rel="canonical" href="https://keyauth.cc" />
 
-	<meta content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors" name="description" />
+	<meta content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors" name="description" />
 	<meta content="KeyAuth" name="author" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="keywords" content="KeyAuth, Cloud Authentication, Key Authentication,Authentication, API authentication,Security, Encryption authentication, Authenticated encryption, Cybersecurity, Developer, SaaS, Software Licensing, Licensing" />
-	<meta property="og:description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors" />
+	<meta property="og:description" content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors" />
 	<meta property="og:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png" />
 	<meta property="og:site_name" content="KeyAuth | Secure your software from piracy." />
 
 	<!-- Schema.org markup for Google+ -->
 	<meta itemprop="name" content="KeyAuth - Open Source Auth">
-	<meta itemprop="description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors">
+	<meta itemprop="description" content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
 
 	<meta itemprop="image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
@@ -46,7 +50,7 @@ set_exception_handler(function ($exception) {
 	<meta name="twitter:site" content="@keyauth">
 	<meta name="twitter:title" content="Keyauth - Register">
 
-	<meta name="twitter:description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors">
+	<meta name="twitter:description" content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
 	<meta name="twitter:creator" content="@keyauth">
 	<meta name="twitter:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
@@ -181,7 +185,7 @@ set_exception_handler(function ($exception) {
 							<!--end::Hint-->
 							<br>
 							<!--begin::Hint-->
-							<div class="text-muted">Don't share your account with
+							<div class="text-muted">Do <u style="color:red;">NOT share your account</u> with
 								anyone.<br>This is against ToS.
 								<br>
 								With developer plan or higher, you can create accounts
@@ -190,10 +194,12 @@ set_exception_handler(function ($exception) {
 							<!--end::Hint-->
 							<br>
 							<!--begin::Hint-->
-							<div class="text-muted">We recommend that you use <a href="https://bitwarden.com" target="_blank">https://bitwarden.com</a>
-								<br>
-								It's a free password manager which is secure<br> and
-								will make it easier for you to use different passwords.
+							<div class="text-muted">Do <u style="color:red;">NOT use a fake email</u>. You need a real email for account recovery/password reset.
+							</div>
+							<!--end::Hint-->
+							<br>
+							<!--begin::Hint-->
+							<div class="text-muted">We recommend that you use a password manager such as <a href="https://bitwarden.com" target="_blank">https://bitwarden.com</a>
 							</div>
 							<!--end::Hint-->
 						</div>
@@ -306,19 +312,15 @@ set_exception_handler(function ($exception) {
 		$ip = api\shared\primary\getIp();
 		misc\mysql\query("INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`) VALUES (?, SHA1(LOWER(?)), ?, ?, 'tester', ?)", [$username, $email, $pass_encrypted, $ownerid, $ip]);
 		dashboard\primary\wh_log($logwebhook, "{$username} has registered successfully", $webhookun);
-		$htmlContent = " 
-					<html> 
-					<head> 
-						<title>Welcome to KeyAuth</title> 
-					</head> 
-					<body> 
-						<h1>Welcome!</h1> 
+		$htmlContent = "<html>
+					<body>
+						<h1>Welcome!</h1>
 						<p>Please join our Discord server for updates and account help <a href=\"https://discord.gg/keyauth\">https://discord.gg/keyauth</a></p>
 						<p>KeyAuth code can be seen here <a href=\"https://github.com/KeyAuth/\">https://github.com/KeyAuth/</a></p>
 						<p>KeyAuth API documentation can be seen here <a href=\"https://keyauth.readme.io/\">https://keyauth.readme.io/</a></p>
 						<p>Please leave a review on TrustPilot if you enjoy KeyAuth <a href=\"https://trustpilot.com/review/keyauth.com\">https://trustpilot.com/review/keyauth.com</a></p>
 						<p style=\"margin-top: 20px;\">Thanks,<br><b>KeyAuth.</b></p>
-					</body> 
+					</body>
 					</html>";
 		misc\email\send($username, $email, $htmlContent, "Welcome to KeyAuth");
 		$_SESSION['logindate'] = time();

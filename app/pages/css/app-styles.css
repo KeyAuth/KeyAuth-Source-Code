@@ -1,0 +1,36 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #151521;
+  }
+  
+  .card-stack {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .card {
+    width: 400px;
+    height: 200px;
+    background-color: #1e1e2d;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  
+  .card:hover {
+    transform: scale(1.05);
+    border-color: #1b8adb;
+  }
+  
+  .modal-content {
+    border: 2px solid #2674ad;
+  }

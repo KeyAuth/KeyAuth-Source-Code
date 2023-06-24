@@ -6,7 +6,7 @@ use misc\etc;
 use misc\cache;
 use misc\mysql;
 
-function add($baseLink, $userAgent, $authed, $secret = null)
+function add($webhookName, $baseLink, $userAgent, $authed, $secret = null)
 {
 	$baseLink = etc\sanitize($baseLink);
 	$userAgent = etc\sanitize($userAgent);
@@ -18,7 +18,7 @@ function add($baseLink, $userAgent, $authed, $secret = null)
 	if(str_contains($baseLink, "localhost") || str_contains($baseLink, "127.0.0.1"))
 		return 'no_local';
 
-	$webid = etc\generateRandomString();
+    	$webid = etc\sanitize($webhookName) ?? etc\generateRandomString();
 	if (is_null($userAgent))
 		$userAgent = "KeyAuth";
 	$query = mysql\query("INSERT INTO `webhooks` (`webid`, `baselink`, `useragent`, `app`, `authed`) VALUES (?, ?, ?, ?, ?)",[$webid, $baseLink, $userAgent, $secret ?? $_SESSION['app'], $authed]);

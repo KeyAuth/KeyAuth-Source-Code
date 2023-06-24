@@ -4,34 +4,41 @@ namespace misc\etc;
 
 function sanitize($input)
 {
-    if (empty($input) & !is_numeric($input)) { // in the event the input can't be sanitized
+    $input = strip_tags(trim($input));
+    if (empty($input) & !is_numeric($input)) 
+    { // in the event the input can't be sanitized
         return NULL;
     }
-    return strip_tags(trim($input)); // return string with script tags stripped to prevent XSS attack, and trimmed to remove whitespace
+    return $input;
 }
 
-function random_string_lower($length = 10, $keyspace = "abcdefghijklmnopqrstuvwxyz"): string {
+function random_string_lower($length = 10, $keyspace = "0123456789abcdefghijklmnopqrstuvwxyz"): string 
+{
     $out = '';
-    for ($i = 0; $i < $length; $i++){
+    for ($i = 0; $i < $length; $i++)
+    {
         $rand_index = random_int(0, strlen($keyspace) -1);
         $out .= $keyspace[$rand_index];
     }
     return $out;
 }
 
-function random_string_upper($length = 10, $keyspace = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"): string {
+function random_string_upper($length = 10, $keyspace = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"): string 
+{
     $out = '';
-    for ($i = 0; $i < $length; $i++){
+    for ($i = 0; $i < $length; $i++)
+    {
         $rand_index = random_int(0, strlen($keyspace) -1);
         $out .= $keyspace[$rand_index];
     }
     return $out;
 }
 
-function random_string_gen($length = 10, $keyspace = '0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ'): string // replaces upper-case X characters in key mask
+function random_string_gen($length = 10, $keyspace = '0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ'): string // generates both lower and capital letters based on checkbox results
 { // https://github.com/FinGu/c_auth/blob/cfbd7036e69561e538e26dc47f7690dbc0d8ba53/functions/general/functions.php#L55
     $out = '';
-    for ($i = 0; $i < $length; $i++) {
+    for ($i = 0; $i < $length; $i++) 
+    {
         $rand_index = random_int(0, strlen($keyspace) - 1);
         $out .= $keyspace[$rand_index];
     }
@@ -58,7 +65,8 @@ function generateRandomString($length = 10)
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $charactersLength = strlen($characters);
     $randomString = '';
-    for ($i = 0; $i < $length; $i++) {
+    for ($i = 0; $i < $length; $i++) 
+    {
         $randomString .= $characters[rand(0, $charactersLength - 1)];
     }
     return $randomString;
@@ -68,7 +76,8 @@ function generateRandomNum($length = 6)
     $characters = '0123456789';
     $charactersLength = strlen($characters);
     $randomString = '';
-    for ($i = 0; $i < $length; $i++) {
+    for ($i = 0; $i < $length; $i++) 
+    {
         $randomString .= $characters[rand(0, $charactersLength - 1)];
     }
     return $randomString;
@@ -82,23 +91,27 @@ function isBreached($pw) // query HaveIBeenPwned's API (huge dataset, FBI and ma
 }
 function isPhonyEmail($email) // check if valid email format, if known temporary email, if email server online, and if mailbox found on email server
 {
-	if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+	if(!filter_var($email, FILTER_VALIDATE_EMAIL)) 
+    {
 		return true;
 	}
 	
     $resp = file_get_contents("https://api.mailcheck.ai/email/" . $email);
     $json = json_decode($resp);
 	
-	if($json->disposable) {
+	if($json->disposable) 
+    {
 		return true;
 	}
 	
-	if (strpos($email, ".ru") !== false) {
+	if (strpos($email, ".ru") !== false) 
+    {
 		return false; 
 		// russian email services either have a lot of downtime or heavy rate limits, because every other time I make SMTP connection with an .ru email it fails
 	}
 	
-	if (strpos($email, "proton") !== false) {
+	if (strpos($email, "proton") !== false) 
+    {
 		return false; 
 		// protonmail is also giving us issues
 	}
@@ -107,13 +120,15 @@ function isPhonyEmail($email) // check if valid email format, if known temporary
 	$connection = @fsockopen("gmail-smtp-in.l.google.com", 25);
 	
 	// check if port 25 is open (many hosts have it closed inherently)
-	if (is_resource($connection)) {
+	if (is_resource($connection)) 
+    {
 		global $mail;
 		require_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/VerifyEmail.class.php'; 
 		
 		return (!$mail->check($email));
 	}
-	else {
+	else 
+    {
 	    return false;
 	}
 }

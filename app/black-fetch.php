@@ -2,7 +2,11 @@
 include '../includes/misc/autoload.phtml';
 
 set_exception_handler(function ($exception) {
+	error_log("\n--------------------------------------------------------------\n");
 	error_log($exception);
+    	error_log("\nRequest data:");
+    	error_log(print_r($_POST, true));
+    	error_log("\n--------------------------------------------------------------");
 	http_response_code(500);
 	die("Error: " . $exception->getMessage());
 });
@@ -31,19 +35,6 @@ if (isset($_POST['draw'])) {
 	$columnSortOrder = misc\etc\sanitize($_POST['order'][0]['dir']); // asc or desc
 	$searchValue = misc\etc\sanitize($_POST['search']['value']); // Search value
 
-	## Total number of records without filtering
-	$sel = misc\mysql\query("select count(1) as allcount from `bans` where app = ?", [$_SESSION['app']]);
-	$records = mysqli_fetch_assoc($sel->result);
-	$totalRecords = $records['allcount'];
-
-	$totalRecordwithFilter = $totalRecords;
-	if (!is_null($searchValue)) { // don't double query if no search value was provided
-		## Total number of record with filtering
-		$sel = misc\mysql\query("select count(1) as allcount from `bans` WHERE 1  and (`ip` like ? or `hwid` like ? or `type` like ? ) and app = ?", ["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app']]);
-		$records = mysqli_fetch_assoc($sel->result);
-		$totalRecordwithFilter = $records['allcount'];
-	}
-
 	// whitelist certain column names and sort orders to prevent SQL injection
 	if (!in_array($columnName, array("type"))) {
 		die("Column name is not whitelisted.");
@@ -68,8 +59,6 @@ if (isset($_POST['draw'])) {
 	## Response
 	$response = array(
 		"draw" => intval($draw),
-		"iTotalRecords" => $totalRecords,
-		"iTotalDisplayRecords" => $totalRecordwithFilter,
 		"aaData" => $data
 	);
 

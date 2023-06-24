@@ -1,28 +1,41 @@
 <?php
 header("Access-Control-Allow-Origin: *"); // allow browser applications to request API
+header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);
 
 set_exception_handler(function ($exception) {
+	error_log("\n--------------------------------------------------------------\n");
 	error_log($exception);
+    error_log("\nRequest data:");
+    error_log(print_r($_POST, true));
+    error_log("\n--------------------------------------------------------------");
 	http_response_code(500);
 	die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
 });
+
+if(empty(($_POST['ownerid'] ?? $_GET['ownerid']))) {
+    die(json_encode(array("success" => false, "message" => "No OwnerID specified. Select app & copy code snippet from https://keyauth.cc/app/")));
+}
+
+if(empty(($_POST['name'] ?? $_GET['name']))) {
+    die(json_encode(array("success" => false, "message" => "No app name specified. Select app & copy code snippet from https://keyauth.cc/app/")));
+}
+
+if(strlen(($_POST['ownerid'] ?? $_GET['ownerid'])) != 10) {
+    die(json_encode(array("success" => false, "message" => "OwnerID should be 10 characters long. Select app & copy code snippet from https://keyauth.cc/app/")));
+}
 
 include '../../includes/misc/autoload.phtml';
 include '../../includes/api/shared/autoload.phtml';
 include '../../includes/api/1.0/autoload.phtml';
 
-if (\misc\cache\rateLimit("KeyAuthAppLimit:" . $_POST['ownerid'] ?? $_GET['ownerid'] ?? $_SERVER['HTTP_CDN_HOST'], 1, 60, 200)) {
+if (misc\cache\rateLimit("KeyAuthAppLimit:" . ($_POST['ownerid'] ?? $_GET['ownerid']), 1, 60, 200)) {
     die(json_encode(array("success" => false, "message" => "This application has sent too many requests. Try again in a minute.")));
 }
 
-if (isset($_SERVER['HTTP_CDN_HOST'])) { // custom domains https://www.youtube.com/watch?v=a2SROFJ0eYc
-    $row = misc\cache\fetch('KeyAuthApp:' . misc\etc\sanitize($_SERVER['HTTP_CDN_HOST']), "SELECT * FROM `apps` WHERE `customDomainAPI` = ?", [$_SERVER['HTTP_CDN_HOST']], 0);
-} else {
-    $ownerid = misc\etc\sanitize($_POST['ownerid'] ?? $_GET['ownerid']); // ownerid of account that owns application
-    $name = misc\etc\sanitize($_POST['name'] ?? $_GET['name']); // application name
-    $row = misc\cache\fetch('KeyAuthApp:' . $name . ':' . $ownerid, "SELECT * FROM `apps` WHERE `ownerid` = ? AND `name` = ?", [$ownerid, $name], 0);
-}
+$ownerid = misc\etc\sanitize($_POST['ownerid'] ?? $_GET['ownerid']); // ownerid of account that owns application
+$name = misc\etc\sanitize($_POST['name'] ?? $_GET['name']); // application name
+$row = misc\cache\fetch('KeyAuthApp:' . $name . ':' . $ownerid, "SELECT * FROM `apps` WHERE `ownerid` = ? AND `name` = ?", [$ownerid, $name], 0);
 
 if ($row == "not_found") {
     die("KeyAuth_Invalid");
@@ -41,7 +54,6 @@ $appdisabled = $row['appdisabled'];
 $hashcheck = $row['hashcheck'];
 $serverhash = $row['hash'];
 $sessionexpiry = $row['session'];
-$killOtherSessions = $row['killOtherSessions'];
 $forceEncryption = $row['forceEncryption'];
 $forceHwid = $row['forceHwid'];
 
@@ -60,7 +72,6 @@ $hwidmismatch = $row['hwidmismatch'];
 $noactivesubs = $row['noactivesubs'];
 $hwidblacked = $row['hwidblacked'];
 $pausedsub = $row['pausedsub'];
-$keyexpired = $row['keyexpired'];
 $vpnblocked = $row['vpnblocked'];
 $keybanned = $row['keybanned'];
 $userbanned = $row['userbanned'];
@@ -140,7 +151,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $ver = misc\etc\sanitize($_POST['ver'] ?? $_GET['ver']);
-        if (is_numeric($ver)) {
+        if (!empty($ver)) {
             if ($ver != $currentver) {
                 // auto-update system
                 $response = json_encode(array(
@@ -178,13 +189,27 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $enckey = !is_null($_POST['enckey'] ?? $_GET['enckey']) ? misc\etc\sanitize($_POST['enckey'] ?? $_GET['enckey']) . "-" . $secret : NULL;
-        $sessionid = misc\etc\generateRandomString();
+        $newSession = false;
+        $duplicateSession = misc\cache\select("KeyAuthSessionDupe:$secret:$ip");
+        if($duplicateSession) {
+            $sessionid = $duplicateSession;
 
-        $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
+            $updateSession = misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 0, "enckey" => $enckey));
+            if(!$updateSession) {
+                $sessionid = misc\etc\generateRandomString();
+                $newSession = true;
+            }
+        }
+        else {
+            $sessionid = misc\etc\generateRandomString();
+            $newSession = true;
+        }
 
-        $numUsers = $row['numUsers'];
-        $numOnlineUsers = $row['numOnlineUsers'];
-        $numKeys = $row['numKeys'];
+        // $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
+
+        $numUsers = "N/A Temporarily Disabled";
+        $numOnlineUsers = "N/A Temporarily Disabled";
+        $numKeys = "N/A Temporarily Disabled";
 
         $resp = json_encode(array(
             "success" => true,
@@ -207,9 +232,12 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         fastcgi_finish_request();
 
-        // session init
-        $time = time() + $sessionexpiry;
-        misc\mysql\query("INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES (?, ?, ?, ?, NULLIF(?, ''), ?)", [$sessionid, $secret, $time, time(), $enckey, $ip]);
+        if($newSession) {
+            misc\cache\insert("KeyAuthState:$secret:$sessionid", serialize(array("credential" => NULL, "enckey" => $enckey, "validated" => 0)), $sessionexpiry);
+            $time = time() + $sessionexpiry;
+            misc\mysql\query("INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES (?, ?, ?, ?, NULLIF(?, ''), ?)", [$sessionid, $secret, $time, time(), $enckey, $ip]);
+            misc\cache\insert("KeyAuthSessionDupe:$secret:$ip", $sessionid, $sessionexpiry);
+        }
 
     case 'register':
         // retrieve session info
@@ -220,8 +248,32 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // Read in username
         $username = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
 
+        if(strlen($username) > 70) {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "Username must be shorter than 70 characters"
+            ));
+
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : NULL;
+            header("signature: {$sig}");
+
+            die($response);
+        }
+
         // Read in license key
         $checkkey = misc\etc\sanitize($_POST['key'] ?? $_GET['key']);
+
+        if(strlen($checkkey) > 70) {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "Key must be shorter than 70 characters"
+            ));
+
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : NULL;
+            header("signature: {$sig}");
+
+            die($response);
+        }
 
         // Read in password
         $password = misc\etc\sanitize($_POST['pass'] ?? $_GET['pass']);
@@ -309,12 +361,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
         fastcgi_finish_request();
 
         if ($registerSuccess) {
-            if ($killOtherSessions) {
-                misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $username, $secret]);
-                misc\cache\purgePattern('KeyAuthState:' . $secret);
-            }
             misc\mysql\query("UPDATE `sessions` SET `credential` = ?,`validated` = 1 WHERE `id` = ?", [$username, $sessionid]);
-            misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+            misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $username));
 
             $ip = api\shared\primary\getIp();
         }
@@ -528,12 +576,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                if ($killOtherSessions) {
-                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $username, $secret]);
-                    misc\cache\purgePattern('KeyAuthState:' . $secret);
-                }
                 misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$username, $sessionid]);
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $username));
 
                 $ip = api\shared\primary\getIp();
                 $response = json_encode(array(
@@ -554,6 +598,18 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $session = api\shared\primary\getSession($sessionid, $secret);
         $enckey = $session["enckey"];
         $checkkey = misc\etc\sanitize($_POST['key'] ?? $_GET['key']);
+
+        if(strlen($checkkey) > 70) {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "Key must be shorter than 70 characters"
+            ));
+
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : NULL;
+            header("signature: {$sig}");
+
+            die($response);
+        }
 
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
 
@@ -630,12 +686,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                if ($killOtherSessions) {
-                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $checkkey, $secret]);
-                    misc\cache\purgePattern('KeyAuthState:' . $secret);
-                }
                 misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$checkkey, $sessionid]);
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $checkkey));
 
                 $ip = api\shared\primary\getIp();
                 $response = json_encode(array(
@@ -711,12 +763,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 ));
                 break;
             default:
-                if ($killOtherSessions) {
-                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $checkkey, $secret]);
-                    misc\cache\purgePattern('KeyAuthState:' . $secret);
-                }
                 misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$checkkey, $sessionid]);
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $checkkey));
                 $response = json_encode(array(
                     "success" => true,
                     "message" => "$loggedInMsg",
@@ -768,17 +816,13 @@ switch ($_POST['type'] ?? $_GET['type']) {
             $emailSecret = hash($algos[array_rand($algos)], misc\etc\generateRandomString());
 
             misc\mysql\query("INSERT INTO `resetUsers` (`secret`, `email`, `username`, `app`, `time`) VALUES (?, SHA1(?), ?, ?, ?)", [$emailSecret, $email, $un, $secret, time()]);
-            $htmlContent = " 
-                    <html> 
-                    <head> 
-                        <title>KeyAuth - You Requested A Password Reset</title> 
-                    </head> 
-                    <body> 
-                        <h1>You requested a password reset through the app {$name}</h1> 
+            $htmlContent = "<html>
+                    <body>
+                        <h1>You requested a password reset through the app {$name}</h1>
                         <p>Please go to <a href=\"https://keyauth.cc/resetUser/?secret={$emailSecret}\">https://keyauth.cc/resetUser/?secret={$emailSecret}</a></p>
 						<p>Also, in case you forgot, your username is: <b>{$un}</b></p>
                         <p style=\"margin-top: 20px;\">Thanks,<br><b>KeyAuth.</b></p>
-                    </body> 
+                    </body>
                     </html>";
             misc\email\send($un, $email, $htmlContent, "KeyAuth - Password Reset for {$name}");
             $response = json_encode(array(
@@ -851,6 +895,16 @@ switch ($_POST['type'] ?? $_GET['type']) {
             $response = json_encode(array(
                 "success" => true,
                 "message" => "No variable data provided"
+            ));
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            header("signature: {$sig}");
+            die($response);
+        }
+
+        if(strlen($data) > 500) {
+            $response = json_encode(array(
+                "success" => true,
+                "message" => "Variable data must be 500 characters or less"
             ));
             $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
             header("signature: {$sig}");
@@ -1115,6 +1169,29 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $message = misc\etc\sanitize($_POST['message'] ?? $_GET['message']);
+
+        if (is_null($message)) {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "Message can't be blank"
+            ));
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            header("signature: {$sig}");
+
+            die($response);
+        }
+
+        if(strlen($message) > 2000) {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "Message too long!"
+            ));
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            header("signature: {$sig}");
+
+            die($response);
+        }
+
         misc\mysql\query("INSERT INTO `chatmsgs` (`author`, `message`, `timestamp`, `channel`,`app`) VALUES (?, ?, ?, ?, ?)", [$credential, $message, time(), $channel, $secret]);
         misc\mysql\query("DELETE FROM `chatmsgs` WHERE `app` = ? AND `channel` = ? AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = ? AND `app` = ? ORDER BY `id` DESC LIMIT 50) foo );", [$secret, $channel, $channel, $secret]);
         misc\cache\purge('KeyAuthChatMsgs:' . $secret . ':' . $channel);
@@ -1379,6 +1456,18 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         $reason = misc\etc\sanitize($_POST['reason'] ?? $_GET['reason']) ?? "User banned from triggering ban function in the client";
 
+        if(strlen($reason) > 99) {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "Reason must be 99 characters or less"
+            ));
+
+            $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+            header("signature: {$sig}");
+
+            die($response);
+        }
+
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
         if (!empty($hwid)) {
             misc\blacklist\add($hwid, "Hardware ID", $secret);
@@ -1486,6 +1575,37 @@ switch ($_POST['type'] ?? $_GET['type']) {
         header("signature: {$sig}");
 
         die($response);
+
+        case 'logout':
+        
+            $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
+            $session = api\shared\primary\getSession($sessionid, $secret);
+            $enckey = $session["enckey"];
+            $killsession = misc\mysql\query("DELETE FROM `sessions` WHERE `id` = ?", [$sessionid]);
+    
+            if ($killsession->affected_rows > 0) {
+    
+                $response = json_encode(array(
+                    "success" => true,
+                    "message" => "Successfully logged out."
+                ));
+    
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+        
+                die($response);
+            }
+            else {
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Failed to logout."
+                ));
+    
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+        
+                die($response);
+            }
     default:
         die(json_encode(array(
             "success" => false,

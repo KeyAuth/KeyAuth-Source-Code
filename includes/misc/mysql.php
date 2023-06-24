@@ -5,15 +5,6 @@ namespace misc\mysql;
 function query($query, $args = [], $types = null)
 {
 	error_reporting(0);
-	if ($_SERVER['HTTP_USER_AGENT'] == "PostmanRuntime/7.31.3") {
-		echo "ok";
-		var_dump($query);
-		var_dump($args);
-		ini_set('display_errors', 1);
-		ini_set('display_startup_errors', 1);
-		error_reporting(E_ALL);
-	}
-
 
 	static $connection = null;
 

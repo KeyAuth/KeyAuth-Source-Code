@@ -279,6 +279,10 @@ function add($username, $sub, $expiry, $secret = null, $password = null)
 		return 'already_exist';
 	}
 
+        if (strtolower($username) === "all" || strtoupper($username) === "ALL"){
+                return 'username_not_allowed';
+       }
+
 	if (!empty($password))
 		$password = password_hash(etc\sanitize($password), PASSWORD_BCRYPT);
 
@@ -299,6 +303,7 @@ function add($username, $sub, $expiry, $secret = null, $password = null)
 		if ($_SESSION['role'] == "seller" || !is_null($secret)) {
 			cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
 			cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
+			cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
 		}
 		return 'success';
 	} else {

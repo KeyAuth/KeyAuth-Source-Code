@@ -261,6 +261,14 @@ if ($_SESSION['role'] == "Reseller") {
 
 		$_SESSION["secret"] = $secret;
 	?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
     <div class="card mb-xl-8">
         <!--begin::Header-->
         <div class="card-header border-0 pt-5">
@@ -587,7 +595,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                                     </label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
-                                    <input type="text" required placeholder="Application Name"
+                                    <input type="text" required maxlength="40" placeholder="Application Name"
                                         class="form-control form-control-lg form-control-solid" name="appname" />
                                     <!--end::Input-->
                                 </div>
@@ -646,7 +654,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                                     </label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
-                                    <input type="text" required placeholder="New Application Name"
+                                    <input type="text" required maxlength="40" placeholder="New Application Name"
                                         class="form-control form-control-lg form-control-solid" name="appname" />
                                     <!--end::Input-->
                                 </div>
@@ -693,7 +701,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                 </div>
                 <div class="modal-body">
                     <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to pause app & all users? This can not be undone.</p>
+                        <p> Are you sure you want to pause app & all users? All users will be unable to access the program until it is unpaused.</p>
                     </label>
                 </div>
                 <div class="modal-footer">

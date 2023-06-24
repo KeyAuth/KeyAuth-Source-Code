@@ -1,4 +1,8 @@
 						<?php
+
+						$set_lang = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+						$lang_code = substr($set_lang, 0, 2);
+
 						$page = isset($_GET['page']) ? $_GET['page'] : "manage-apps";
 						?>
 
@@ -203,7 +207,7 @@
 						                    <span class="menu-icon">
 						                        <i data-feather="book-open"></i>
 						                    </span>
-						                    <span class="menu-title">Audit Log</span>
+						                    <span class="menu-title">Audit Logs</span>
 						                </a>
 						            </div>
 						            <?php
@@ -217,6 +221,18 @@
 						                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">Account</span>
 						                </div>
 						            </div>
+
+									<div class="menu-item">
+						                <a class="menu-link <?php if ($page == 'forms') {
+																echo 'active';
+															} ?>" href="?page=forms">
+						                    <span class="menu-icon">
+						                        <i data-feather="folder-plus"></i>
+						                    </span>
+						                    <span class="menu-title">Forms</span>
+						                </a>
+						            </div>
+
 							    <div class="menu-item">
 						                <a class="menu-link <?php if ($page == 'support') {
 																echo 'active';
@@ -237,7 +253,7 @@
 						                    <span class="menu-icon">
 						                        <i data-feather="sliders"></i>
 						                    </span>
-						                    <span class="menu-title">Manage</span>
+						                    <span class="menu-title">Manage Accounts</span>
 						                </a>
 						            </div>
 						            <?php
@@ -314,6 +330,31 @@
 						                    <span class="menu-title">Logs</span>
 						                </a>
 						            </div>
+						            <?php
+									}
+									?>
+
+									<?php
+									if ($staff) {
+									?>
+						            <div class="menu-item">
+						                <div class="menu-content pb-2">
+						                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">Staff</span>
+						                </div>
+						            </div>
+
+
+						            <div class="menu-item">
+						                <a class="menu-link <?php if ($page == 'staff-panel') {
+																	echo 'active';
+																} ?>" href="?page=staff-panel">
+						                    <span class="menu-icon">
+						                        <i data-feather="lock"></i>
+						                    </span>
+						                    <span class="menu-title">Panel</span>
+						                </a>
+						            </div>
+
 						            <?php
 									}
 									?>

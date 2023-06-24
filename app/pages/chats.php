@@ -82,7 +82,7 @@ if (isset($_POST['editchan'])) {
         return;
     }
 ?>
-
+   
     <div id="edit-user" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true" o ydo>
 
         <div class="modal-dialog">
@@ -183,15 +183,23 @@ if (isset($_POST['deletechan'])) {
     }
 }
 ?>
+ <!-- Include the jQuery library -->
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function() {
+$('div.modal-content').css('border', '2px solid #1b8adb');
+});
+</script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
     <form method="POST">
         <button data-bs-toggle="modal" type="button" data-bs-target="#create-channel" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
             Create Channel</button>
-        <button data-bs-toggle="modal" type="button" data-bs-target="#clear-channel" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Clear channel</button>
         <button data-bs-toggle="modal" type="button" data-bs-target="#unmute-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-undo fa-sm text-white-50"></i> Unmute
-            User</button>
+            User</button><br><br>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#clear-channel" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Clear channel</button>
     </form>
 
 

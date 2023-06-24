@@ -95,6 +95,11 @@ if (isset($_POST['importusers'])) {
         $data = json_decode($json);
 
         foreach ($data as $key => $row) {
+            if (empty($row->username)) {
+				dashboard\primary\error("Invalid Format, please watch tutorial video!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
+			}
             $email = misc\etc\sanitize($row->email);
             if (strpos($email, '@') !== false) { // ensure the email field is an actual email address
                 $email = sha1(strtolower($email));
@@ -151,6 +156,12 @@ if (isset($_POST['importusers'])) {
                 dashboard\primary\error("Invalid Format!");
                 echo "<meta http-equiv='Refresh' Content='2;'>";
                 return;
+            }
+            $forth = $array[3]; // there shouldn't be a forth, it wouldn't be following the format
+            if(isset($forth)) {
+                dashboard\primary\error("Invalid Format!");
+				echo "<meta http-equiv='Refresh' Content='2;'>";
+				return;
             }
             $expiry = ($third * 86400) + time();
             misc\mysql\query("INSERT INTO `users` (`username`, `hwid`, `app`,`owner`, `createdate`) VALUES (?, ?, ?, ?, ?)", [$first, $second, $_SESSION['app'], $_SESSION['username'], time()]);
@@ -213,6 +224,9 @@ if (isset($_POST['adduser'])) {
             break;
         case 'date_past':
             dashboard\primary\error("Subscription expiry must be set in the future!");
+            break;
+        case 'username_not_allowed':
+            dashboard\primary\error("This username is not allowed.");
             break;
         case 'failure':
             dashboard\primary\error("Failed to create user!");
@@ -397,6 +411,14 @@ if (isset($_POST['unpauseuser'])) {
     }
 }
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
@@ -408,11 +430,11 @@ if (isset($_POST['unpauseuser'])) {
             Create User</button>
         <button data-bs-toggle="modal" type="button" id="modal" data-bs-target="#set-user-var" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
             Set Variable</button>
-        <button data-bs-toggle="modal" type="button" data-bs-target="#import-users" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import users</button><br><br>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#import-users" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import users</button>
         <button data-bs-toggle="modal" type="button" data-bs-target="#extend-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Extend
             User(s)</button>
         <button data-bs-toggle="modal" type="button" data-bs-target="#subtract-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Subtract
-            User(s)</button>
+            User(s)</button><br><br>
         <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allusers" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All Users</button>
         <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allexpired" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
@@ -650,8 +672,10 @@ if (isset($_POST['unpauseuser'])) {
                             <input class="form-control" name="authgg" placeholder="Paste in JSON from developers.auth.gg">
 
                         </div>
-
-
+                        <br>
+                        <div class="alert alert-primary" role="alert">
+	                    	Watch this tutorial for auth.gg import <a href="https://youtu.be/BkW0vu5e5UI?t=218" target="_blank">https://youtu.be/BkW0vu5e5UI?t=218</a>
+	                    </div>
 
                 </div>
 
@@ -741,7 +765,7 @@ if (isset($_POST['unpauseuser'])) {
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">Time To
                                 Add:</label>
-                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time" required>
+                            <input class="form-control" type="number" name="time" placeholder="Multiplied by selected unit of time (must be number)" required>
                         </div>
                         <br>
                         <input class="form-check-input" style="color:white;border-color:white;" name="activeOnly" type="checkbox" id="flexCheckChecked">
@@ -891,7 +915,7 @@ if (isset($_POST['unpauseuser'])) {
                             <label for="recipient-name" class="control-label">Ban
                                 reason:</label>
 
-                            <input type="text" class="form-control" name="reason" placeholder="Reason for ban" required>
+                            <input type="text" class="form-control" name="reason" placeholder="Reason for ban" required maxlength="99">
 
                             <input type="hidden" class="banuser" name="un">
 
@@ -1090,7 +1114,7 @@ if (isset($_POST['unpauseuser'])) {
         $un = misc\etc\sanitize(urldecode($_POST['edituser']));
         $query = misc\mysql\query("SELECT * FROM `users` WHERE `username` = ? AND `app` = ?", [$un, $_SESSION['app']]);
         if ($query->num_rows == 0) {
-            error("User not Found!");
+            dashboard\primary\error("User not Found!");
             echo "<meta http-equiv='Refresh' Content='2'>";
             return;
         }

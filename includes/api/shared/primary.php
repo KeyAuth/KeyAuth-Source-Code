@@ -20,7 +20,7 @@ function vpnCheck($ipaddr)
 		global $logwebhook;
 		$json_data = json_encode([
 			// Message
-			"content" => "<@1090738119348867072> IP checking is rate limited",
+			"content" => "<@1108006357057151037> IP checking is rate limited",
 			// Username
 			"username" => "KeyAuth Logs",
 		], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -52,7 +52,7 @@ function getSession($sessionid, $secret)
     if ($row == "not_found") {
         die(json_encode(array(
             "success" => false,
-            "message" => "Invalid SessionID. Your program either failed to initialize, or never attempted to."
+            "message" => "Session not found. If you get this frequently, ask the developer to use the latest example code"
         )));
     }
     return array(

@@ -117,16 +117,13 @@ function register($un, $key, $pw, $email, $hwid, $secret)
 #region login region
 function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
 {
-    // Find username
     $row = cache\fetch('KeyAuthUser:' . $secret . ':' . $un, "SELECT * FROM `users` WHERE `username` = ? AND `app` = ?", [$un, $secret], 0);
-    // if not found
+
     if ($row == "not_found") {
         return 'un_not_found';
     }
 
-    // get all rows from username query
     $pass = $row['password'];
-    //$expires = $row['expires'];
     $serverHwid = $row['hwid'];
     $banned = $row['banned'];
     $createdate = $row['createdate'];
@@ -134,14 +131,6 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
         return 'user_banned';
     }
     $ip = primary\getIp();
-
-    $row = cache\fetch('KeyAuthBlacklist:' . $secret . ':' . $ip . ':' . $hwid, "SELECT 1 FROM `bans` WHERE (`hwid` = ? OR `ip` = ?) AND `app` = ?", [$hwid, $ip, $secret], 0);
-    if ($row != "not_found") {
-        $query = mysql\query("UPDATE `users` SET `banned` = 'User is blacklisted' WHERE `username` = ? AND `app` = ?",[$un, $secret]);
-
-        cache\purge('KeyAuthUser:' . $secret . ':' . $un);
-        return 'hwid_blacked';
-    }
 
     if (!is_null($token)) {
         $validToken = md5(substr($pass, -5));
@@ -182,14 +171,20 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
         }
         return 'no_active_subs';
     }
-    
-	
-	$rowsFinal = array();  
+
+	$rowsFinal = array(); 
 	foreach ($rows as $row) {
 		$timeleft = $row["expiry"] - time();
-		$row += ["timeleft" => $timeleft];
+
+        $levelquery = mysql\query("SELECT `level` FROM `subscriptions` WHERE `name` = ? AND `app` = ?", [$row["subscription"], $secret]);
+        $level = mysqli_fetch_array($levelquery->result);
+
+
+		$row += ["timeleft" => $timeleft, "level" => $level["level"]];
 		$rowsFinal[] = $row;
 	}
+
+    $ip = primary\getIp();
 
     $query = mysql\query("UPDATE `users` SET `ip` = NULLIF(?, ''),`lastlogin` = " . time() . " WHERE `username` = ? AND `app` = ?",[$ip, $un, $secret]);
 

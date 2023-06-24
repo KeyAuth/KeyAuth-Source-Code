@@ -16,7 +16,7 @@ if (isset($_POST['genwebhook'])) {
         dashboard\primary\error("You must upgrade to developer or seller to use webhooks!");
     } else {
         $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
-        $resp = misc\webhook\add($_POST['baselink'], $_POST['useragent'], $authed);
+        $resp = misc\webhook\add($_POST['webhookname'], $_POST['baselink'], $_POST['useragent'], $authed);
         switch ($resp) {
             case 'invalid_url':
                 dashboard\primary\error("URL isn't a valid URL");
@@ -29,6 +29,9 @@ if (isset($_POST['genwebhook'])) {
                 break;
             case 'success':
                 dashboard\primary\success("Successfully added webhook!");
+                break;
+            case 'empty_webhookname':
+                dashboard\primary\error("Webhook name can not be empty!");
                 break;
             default:
                 dashboard\primary\error("Unhandled Error! Contact us if you need help");
@@ -102,7 +105,7 @@ if (isset($_POST['editwebhook'])) {
                                                 <form method="post"> 
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Webhook Endpoint:</label>
-                                                        <input type="url" class="form-control" name="baselink" value="' . $baselink . '" required>
+                                                        <input type="url" class="form-control" name="baselink" maxlength="200" value="' . $baselink . '" required>
 														<input type="hidden" name="webhook" value="' . $webhook . '">
                                                     </div>
 													<div class="form-group">
@@ -126,7 +129,7 @@ if (isset($_POST['savewebhook'])) {
     $baselink = misc\etc\sanitize($_POST['baselink']);
     $useragent = misc\etc\sanitize($_POST['useragent']);
 
-    if (!filter_var($baseLink, FILTER_VALIDATE_URL)) {
+    if (!filter_var($baselink, FILTER_VALIDATE_URL)) {
         dashboard\primary\error("URL isn't a valid URL");
         echo "<meta http-equiv='Refresh' Content='2'>";
         return;
@@ -144,6 +147,14 @@ if (isset($_POST['savewebhook'])) {
     misc\cache\purge('KeyAuthWebhook:' . $_SESSION['app'] . ':' . $webhook);
 }
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <div class="alert alert-warning" role="alert">
@@ -151,7 +162,7 @@ if (isset($_POST['savewebhook'])) {
 	</div>
     <button data-bs-toggle="modal" type="button" data-bs-target="#create-webhook"
         class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
-        Create Webhook</button>
+        Create Webhook</button><br><br>
     <button data-bs-toggle="modal" type="button" data-bs-target="#delete-allwebhooks"
             class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All Webhooks</button>
@@ -181,12 +192,20 @@ if (isset($_POST['savewebhook'])) {
                 <div class="modal-body">
                     <form method="post">
                         <div class="form-group">
+                            <label for="recipient-name" class="control-label">Webhook Name: <i
+                                    class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="The webhook name makes it easier to know what the created webhooks are for."></i></label>
+                            <input type="text" maxlength="10" class="form-control" name="webhookname"
+                                   placeholder="(Optional) Custom ID for webhook">
+                        </div>
+                        <div class="form-group">
                             <label for="recipient-name" class="control-label">Webhook Endpoint: <i
                                     class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Webhooks can be used to send GET request with query paramaters from the KeyAuth server so you don't expose the link in your loader. The webhook function returns a string which is the response from the link. There is zero reason to send requests to links which need to be kept private in your loader without the webhok function. You run the risk of the link getting leaked."></i></label>
                             <input type="url" class="form-control" name="baselink"
-                                placeholder="The Link You Want KeyAuth to Send Request to" required>
+                                placeholder="The Link You Want KeyAuth to Send Request to" maxlength="200" required>
                         </div>
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">User-Agent: <i

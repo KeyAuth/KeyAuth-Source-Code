@@ -2,7 +2,11 @@
 include '../includes/misc/autoload.phtml';
 
 set_exception_handler(function ($exception) {
+	error_log("\n--------------------------------------------------------------\n");
 	error_log($exception);
+    	error_log("\nRequest data:");
+    	error_log(print_r($_POST, true));
+    	error_log("\n--------------------------------------------------------------");
 	http_response_code(500);
 	die("Error: " . $exception->getMessage());
 });
@@ -26,19 +30,6 @@ if (isset($_POST['draw'])) {
 	$columnName = misc\etc\sanitize($_POST['columns'][$columnIndex]['data']); // Column name
 	$columnSortOrder = misc\etc\sanitize($_POST['order'][0]['dir']); // asc or desc
 	$searchValue = misc\etc\sanitize($_POST['search']['value']); // Search value
-
-	## Total number of records without filtering
-	$sel = misc\mysql\query("select count(1) as allcount from `keys` where app = ? and genby = ?", [$_SESSION['app'], $_SESSION['username']]);
-	$records = mysqli_fetch_assoc($sel->result);
-	$totalRecords = $records['allcount'];
-
-	$totalRecordwithFilter = $totalRecords;
-	if (!is_null($searchValue)) { // don't double query if no search value was provided
-		## Total number of record with filtering
-		$sel = misc\mysql\query("select count(1) as allcount from `keys` WHERE 1  and (`key` like ? or `note` like ? or `usedby` like ? ) and app = ? and genby = ?", ["%" . $searchValue . "%", "%" . $searchValue . "%", "%" . $searchValue . "%", $_SESSION['app'], $_SESSION['username']]);
-		$records = mysqli_fetch_assoc($sel->result);
-		$totalRecordwithFilter = $records['allcount'];
-	}
 
 	// whitelist certain column names and sort orders to prevent SQL injection
 	if (!in_array($columnName, array("key", "gendate", "expires", "note", "usedon", "usedby", "status"))) {
@@ -69,8 +60,6 @@ if (isset($_POST['draw'])) {
 	## Response
 	$response = array(
 		"draw" => intval($draw),
-		"iTotalRecords" => $totalRecords,
-		"iTotalDisplayRecords" => $totalRecordwithFilter,
 		"aaData" => $data
 	);
 

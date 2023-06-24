@@ -73,6 +73,14 @@ if (isset($_POST['addwhite'])) {
     }
 }
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <div class="alert alert-warning" role="alert">
@@ -82,10 +90,10 @@ if (isset($_POST['addwhite'])) {
 
         <button data-bs-toggle="modal" type="button" data-bs-target="#create-blacklist" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
             Create Blacklist</button>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#create-whitelist" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
+            Create Whitelist</button><br><br>
         <button data-bs-toggle="modal" type="button" data-bs-target="#delete-blacklists" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>
             Delete All Blacklists</button>
-        <button data-bs-toggle="modal" type="button" data-bs-target="#create-whitelist" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
-            Create Whitelist</button>
     </form>
     <br>
 

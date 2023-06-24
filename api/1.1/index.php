@@ -1,24 +1,37 @@
 <?php
 header("Access-Control-Allow-Origin: *"); // allow browser applications to request API
+header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);
 
 set_exception_handler(function ($exception) {
+	error_log("\n--------------------------------------------------------------\n");
 	error_log($exception);
+    error_log("\nRequest data:");
+    error_log(print_r($_POST, true));
+    error_log("\n--------------------------------------------------------------");
 	http_response_code(500);
 	die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
 });
+
+if(empty(($_POST['ownerid'] ?? $_GET['ownerid']))) {
+    die(json_encode(array("success" => false, "message" => "No OwnerID specified. Select app & copy code snippet from https://keyauth.cc/app/")));
+}
+
+if(empty(($_POST['name'] ?? $_GET['name']))) {
+    die(json_encode(array("success" => false, "message" => "No app name specified. Select app & copy code snippet from https://keyauth.cc/app/")));
+}
+
+if(strlen(($_POST['ownerid'] ?? $_GET['ownerid'])) != 10) {
+    die(json_encode(array("success" => false, "message" => "OwnerID should be 10 characters long. Select app & copy code snippet from https://keyauth.cc/app/")));
+}
 
 include '../../includes/misc/autoload.phtml';
 include '../../includes/api/shared/autoload.phtml';
 include '../../includes/api/1.0/autoload.phtml';
 
-if (isset($_SERVER['HTTP_CDN_HOST'])) { // custom domains https://www.youtube.com/watch?v=a2SROFJ0eYc
-    $row = misc\cache\fetch('KeyAuthApp:' . misc\etc\sanitize($_SERVER['HTTP_CDN_HOST']), "SELECT * FROM `apps` WHERE `customDomainAPI` = ?", [$_SERVER['HTTP_CDN_HOST']], 0);
-} else {
-    $ownerid = misc\etc\sanitize($_POST['ownerid'] ?? $_GET['ownerid']); // ownerid of account that owns application
-    $name = misc\etc\sanitize($_POST['name'] ?? $_GET['name']); // application name
-    $row = misc\cache\fetch('KeyAuthApp:' . $name . ':' . $ownerid, "SELECT * FROM `apps` WHERE `ownerid` = ? AND `name` = ?", [$ownerid, $name], 0);
-}
+$ownerid = misc\etc\sanitize($_POST['ownerid'] ?? $_GET['ownerid']); // ownerid of account that owns application
+$name = misc\etc\sanitize($_POST['name'] ?? $_GET['name']); // application name
+$row = misc\cache\fetch('KeyAuthApp:' . $name . ':' . $ownerid, "SELECT * FROM `apps` WHERE `ownerid` = ? AND `name` = ?", [$ownerid, $name], 0);
 
 if ($row == "not_found") {
     die("KeyAuth_Invalid");
@@ -37,7 +50,6 @@ $appdisabled = $row['appdisabled'];
 $hashcheck = $row['hashcheck'];
 $serverhash = $row['hash'];
 $sessionexpiry = $row['session'];
-$killOtherSessions = $row['killOtherSessions'];
 $forceHwid = $row['forceHwid'];
 
 $banned = $row['banned'];
@@ -55,7 +67,6 @@ $hwidmismatch = $row['hwidmismatch'];
 $noactivesubs = $row['noactivesubs'];
 $hwidblacked = $row['hwidblacked'];
 $pausedsub = $row['pausedsub'];
-$keyexpired = $row['keyexpired'];
 $vpnblocked = $row['vpnblocked'];
 $keybanned = $row['keybanned'];
 $userbanned = $row['userbanned'];
@@ -107,7 +118,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $ver = misc\etc\sanitize($_POST['ver'] ?? $_GET['ver']);
-        if (is_numeric($ver)) {
+        if (!empty($ver)) {
             if ($ver != $currentver) {
                 // auto-update system
                 die(json_encode(array(
@@ -134,20 +145,28 @@ switch ($_POST['type'] ?? $_GET['type']) {
             }
         }
 
-        $enckey = NULL;
+        $newSession = false;
+        $duplicateSession = misc\cache\select("KeyAuthSessionDupe:$secret:$ip");
+        if($duplicateSession) {
+            $sessionid = $duplicateSession;
+            $updateSession = misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 0));
+            if(!$updateSession) {
+                $sessionid = misc\etc\generateRandomString();
+                $newSession = true;
+            }
+        }
+        else {
+            $sessionid = misc\etc\generateRandomString();
+            $newSession = true;
+        }
+        
+        // $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
 
-        $sessionid = misc\etc\generateRandomString();
-        // session init
-        $time = time() + $sessionexpiry;
-        misc\mysql\query("INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `enckey`, `ip`) VALUES (?, ?, ?, ?, NULLIF(?, ''), ?)", [$sessionid, $secret, $time, time(), $enckey, $ip]);
+        $numUsers = "N/A Temporarily Disabled";
+        $numOnlineUsers = "N/A Temporarily Disabled";
+        $numKeys = "N/A Temporarily Disabled";
 
-        $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
-
-        $numUsers = $row['numUsers'];
-        $numOnlineUsers = $row['numOnlineUsers'];
-        $numKeys = $row['numKeys'];
-
-        die(json_encode(array(
+        echo json_encode(array(
             "success" => true,
             "message" => "Initialized",
             "sessionid" => $sessionid,
@@ -158,7 +177,16 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "version" => "$currentver",
                 "customerPanelLink" => "https://keyauth.cc/panel/$owner/$name/"
             )
-        )));
+        ));
+
+        fastcgi_finish_request();
+
+        if($newSession) {
+            misc\cache\insert("KeyAuthState:$secret:$sessionid", serialize(array("credential" => NULL, "enckey" => NULL, "validated" => 0)), $sessionexpiry);
+            $time = time() + $sessionexpiry;
+            misc\mysql\query("INSERT INTO `sessions` (`id`, `app`, `expiry`, `created_at`, `ip`) VALUES (?, ?, ?, ?, ?)", [$sessionid, $secret, $time, time(), $ip]);
+            misc\cache\insert("KeyAuthSessionDupe:$secret:$ip", $sessionid, $sessionexpiry);
+        }
 
     case 'register':
         // retrieve session info
@@ -168,8 +196,22 @@ switch ($_POST['type'] ?? $_GET['type']) {
         // Read in username
         $username = misc\etc\sanitize($_POST['username'] ?? $_GET['username']);
 
+        if(strlen($username) > 70) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Username must be shorter than 70 characters"
+            )));
+        }
+
         // Read in license key
         $checkkey = misc\etc\sanitize($_POST['key'] ?? $_GET['key']);
+
+        if(strlen($checkkey) > 70) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Key must be shorter than 70 characters"
+            )));
+        }
 
         // Read in password
         $password = misc\etc\sanitize($_POST['pass'] ?? $_GET['pass']);
@@ -229,12 +271,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     "message" => "$nosublevel"
                 )));
             default:
-                if ($killOtherSessions) {
-                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $username, $secret]);
-                    misc\cache\purgePattern('KeyAuthState:' . $secret);
-                }
                 misc\mysql\query("UPDATE `sessions` SET `credential` = ?,`validated` = 1 WHERE `id` = ?", [$username, $sessionid]);
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $username));
 
                 $ip = api\shared\primary\getIp();
                 die(json_encode(array(
@@ -410,12 +448,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     "message" => "$noactivesubs"
                 )));
             default:
-                if ($killOtherSessions) {
-                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $username, $secret]);
-                    misc\cache\purgePattern('KeyAuthState:' . $secret);
-                }
                 misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$username, $sessionid]);
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $username));
 
                 $ip = api\shared\primary\getIp();
                 die(json_encode(array(
@@ -430,6 +464,13 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
         $session = api\shared\primary\getSession($sessionid, $secret);
         $checkkey = misc\etc\sanitize($_POST['key'] ?? $_GET['key']);
+
+        if(strlen($checkkey) > 70) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Key must be shorter than 70 characters"
+            )));
+        }
 
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
 
@@ -488,12 +529,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     "message" => "$noactivesubs"
                 )));
             default:
-                if ($killOtherSessions) {
-                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $checkkey, $secret]);
-                    misc\cache\purgePattern('KeyAuthState:' . $secret);
-                }
                 misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$checkkey, $sessionid]);
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $checkkey));
 
                 $ip = api\shared\primary\getIp();
                 die(json_encode(array(
@@ -553,12 +590,8 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     "message" => "$nosublevel"
                 )));
             default:
-                if ($killOtherSessions) {
-                    misc\mysql\query("DELETE FROM `sessions` WHERE `id` != ? AND `credential` = ? AND `app` = ?", [$sessionid, $checkkey, $secret]);
-                    misc\cache\purgePattern('KeyAuthState:' . $secret);
-                }
                 misc\mysql\query("UPDATE `sessions` SET `validated` = 1,`credential` = ? WHERE `id` = ?", [$checkkey, $sessionid]);
-                misc\cache\purge('KeyAuthState:' . $secret . ':' . $sessionid);
+                misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $checkkey));
 
                 $ip = api\shared\primary\getIp();
                 die(json_encode(array(
@@ -609,6 +642,13 @@ switch ($_POST['type'] ?? $_GET['type']) {
             die(json_encode(array(
                 "success" => true,
                 "message" => "No variable data provided"
+            )));
+        }
+
+        if(strlen($data) > 500) {
+            die(json_encode(array(
+                "success" => true,
+                "message" => "Variable data must be 500 characters or less"
             )));
         }
 
@@ -790,6 +830,21 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $message = misc\etc\sanitize($_POST['message'] ?? $_GET['message']);
+
+        if (is_null($message)) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Message can't be blank"
+            )));
+        }
+
+        if(strlen($message) > 2000) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Message too long!"
+            )));
+        }
+
         misc\mysql\query("INSERT INTO `chatmsgs` (`author`, `message`, `timestamp`, `channel`,`app`) VALUES (?, ?, ?, ?, ?)", [$credential, $message, time(), $channel, $secret]);
         misc\mysql\query("DELETE FROM `chatmsgs` WHERE `app` = ? AND `channel` = ? AND `id` NOT IN ( SELECT `id` FROM ( SELECT `id` FROM `chatmsgs` WHERE `channel` = ? AND `app` = ? ORDER BY `id` DESC LIMIT 50) foo );", [$secret, $channel, $channel, $secret]);
         misc\cache\purge('KeyAuthChatMsgs:' . $secret . ':' . $channel);
@@ -1006,6 +1061,13 @@ switch ($_POST['type'] ?? $_GET['type']) {
         }
 
         $reason = misc\etc\sanitize($_POST['reason'] ?? $_GET['reason']) ?? "User banned from triggering ban function in the client";
+
+        if(strlen($reason) > 99) {
+            die(json_encode(array(
+                "success" => false,
+                "message" => "Reason must be 99 characters or less"
+            )));
+        }
 
         $hwid = misc\etc\sanitize($_POST['hwid'] ?? $_GET['hwid']);
         if (!empty($hwid)) {

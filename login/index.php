@@ -15,7 +15,11 @@ if (isset($_SESSION['username'])) {
 }
 
 set_exception_handler(function ($exception) {
+	error_log("\n--------------------------------------------------------------\n");
 	error_log($exception);
+    error_log("\nRequest data:");
+    error_log(print_r($_POST, true));
+    error_log("\n--------------------------------------------------------------");
 	http_response_code(500);
 	\dashboard\primary\error($exception->getMessage());
 });
@@ -30,17 +34,17 @@ set_exception_handler(function ($exception) {
     <!-- Canonical SEO -->
     <link rel="canonical" href="https://keyauth.cc" />
 
-    <meta content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors" name="description" />
+    <meta content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors" name="description" />
     <meta content="KeyAuth" name="author" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="keywords" content="KeyAuth, Cloud Authentication, Key Authentication,Authentication, API authentication,Security, Encryption authentication, Authenticated encryption, Cybersecurity, Developer, SaaS, Software Licensing, Licensing" />
-    <meta property=”og:description” content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors" />
+    <meta property=”og:description” content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors" />
     <meta property="og:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png" />
     <meta property=”og:site_name” content="KeyAuth | Secure your software from piracy." />
 
     <!-- Schema.org markup for Google+ -->
     <meta itemprop="name" content="KeyAuth - Open Source Auth">
-    <meta itemprop="description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors">
+    <meta itemprop="description" content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
 
     <meta itemprop="image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
@@ -49,7 +53,7 @@ set_exception_handler(function ($exception) {
     <meta name="twitter:site" content="@keyauth">
     <meta name="twitter:title" content="Keyauth - Login">
 
-    <meta name="twitter:description" content="Secure your software against piracy, an issue causing $422 million in losses anually - Fair pricing & Features not seen in competitors">
+    <meta name="twitter:description" content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
     <meta name="twitter:creator" content="@keyauth">
     <meta name="twitter:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
@@ -285,7 +289,7 @@ set_exception_handler(function ($exception) {
 			$httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 			
 			if($httpcode == 429) {
-				dashboard\primary\wh_log($logwebhook, "<@1090738119348867072> IP checking is rate limited", $webhookun);
+				dashboard\primary\wh_log($logwebhook, "<@1108006357057151037> IP checking is rate limited", $webhookun);
                 dashboard\primary\error("Login location is rate-limited! Please try again in a minute or so.");
                 return;
             }
@@ -317,7 +321,7 @@ set_exception_handler(function ($exception) {
 								$checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
 		
 								if (!$checkResult) {
-									dashboard\primary\error("2FA code Invalid!");
+									dashboard\primary\error("Invalid 2FA code! Make sure your device time settings are synced.");
 									return;
 								}
 								
@@ -343,7 +347,7 @@ set_exception_handler(function ($exception) {
             $checkResult = $gauth->verifyCode($google_Code, $twofactor, 2);
 
             if (!$checkResult) {
-                dashboard\primary\error("2FA code Invalid!");
+                dashboard\primary\error("Invalid 2FA code! Make sure your device time settings are synced.");
                 return;
             }
 		}

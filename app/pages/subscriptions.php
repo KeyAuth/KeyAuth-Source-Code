@@ -110,10 +110,18 @@ if (isset($_POST['savesub'])) {
     if ($_SESSION['role'] == "seller") {
         misc\cache\purge('KeyAuthSubscriptions:' . $_SESSION['app']);
     }
-    dashboard\primary\success("Successfully Updated Settings!");
+    dashboard\primary\success("Successfully Updated Subscription!");
     echo "<meta http-equiv='Refresh' Content='2'>";
 }
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
 
@@ -166,7 +174,7 @@ if (isset($_POST['savesub'])) {
                                     data-bs-placement="top"
                                     title="When the keys you create are redeemed, KeyAuth will assign the subscriptions with the same level as the key to the user being created. So basically, you can have several user ranks aka subscriptions."></i></label>
 
-                            <input type="text" class="form-control" placeholder="License Key Level" name="level"
+                            <input type="number" class="form-control" placeholder="License key level (number only)" name="level"
                                 required>
 
                         </div>

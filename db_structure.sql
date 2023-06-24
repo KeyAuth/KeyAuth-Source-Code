@@ -13,8 +13,8 @@ CREATE TABLE `acclogs` (
   `username` varchar(65) DEFAULT NULL,
   `date` varchar(10) NOT NULL,
   `ip` varchar(45) NOT NULL,
-  `useragent` varchar(399) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `useragent` varchar(400) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `accounts` (
   `username` varchar(65) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -45,7 +45,10 @@ CREATE TABLE `accounts` (
   `permissions` bit(64) NOT NULL DEFAULT b'11111111111',
   `afCode` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `affiliatedBy` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `securityKey` int NOT NULL DEFAULT '0'
+  `securityKey` int NOT NULL DEFAULT '0',
+  `staff` int DEFAULT '0',
+  `staffDiscordID` varchar(65) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT '',
+  `formBanned` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE TABLE `afLogs` (
@@ -55,7 +58,7 @@ CREATE TABLE `afLogs` (
   `username` varchar(65) DEFAULT NULL,
   `date` int DEFAULT NULL,
   `action` varchar(40) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `apps` (
   `id` int NOT NULL,
@@ -76,22 +79,21 @@ CREATE TABLE `apps` (
   `auditLogWebhook` varchar(130) DEFAULT NULL,
   `resellerstore` varchar(69) DEFAULT NULL,
   `appdisabled` varchar(100) NOT NULL DEFAULT 'This application is disabled',
-  `usernametaken` varchar(100) NOT NULL DEFAULT 'Username Already Exists.',
-  `keynotfound` varchar(100) NOT NULL DEFAULT 'Key Not Found.',
-  `keyused` varchar(100) NOT NULL DEFAULT 'Key Already Used.',
+  `usernametaken` varchar(100) NOT NULL DEFAULT 'Username already taken, choose a different one',
+  `keynotfound` varchar(100) NOT NULL DEFAULT 'Invalid license key',
+  `keyused` varchar(100) NOT NULL DEFAULT 'License key has already been used',
   `nosublevel` varchar(100) DEFAULT 'There is no subscription created for your key level. Contact application developer.',
-  `usernamenotfound` varchar(100) NOT NULL DEFAULT 'Username not found.',
+  `usernamenotfound` varchar(100) NOT NULL DEFAULT 'Invalid username',
   `passmismatch` varchar(100) NOT NULL DEFAULT 'Password does not match.',
-  `hwidmismatch` varchar(100) NOT NULL DEFAULT 'HWID Doesn''t match. Ask for key reset.',
-  `noactivesubs` varchar(100) NOT NULL DEFAULT 'No active subscriptions found.',
+  `hwidmismatch` varchar(100) NOT NULL DEFAULT 'HWID doesn''t match. Ask for a HWID reset',
+  `noactivesubs` varchar(100) NOT NULL DEFAULT 'No active subscription(s) found',
   `hwidblacked` varchar(100) NOT NULL DEFAULT 'You''ve been blacklisted from our application',
-  `pausedsub` varchar(100) NOT NULL DEFAULT 'Your Key is paused and cannot be used at the moment.',
-  `vpnblocked` varchar(100) NOT NULL DEFAULT 'VPNs are disallowed on this application',
+  `pausedsub` varchar(100) NOT NULL DEFAULT 'Your subscription is paused and can''t be used right now',
+  `vpnblocked` varchar(100) NOT NULL DEFAULT 'VPNs are blocked on this application',
   `keybanned` varchar(100) NOT NULL DEFAULT 'Your license is banned',
   `userbanned` varchar(100) NOT NULL DEFAULT 'The user is banned',
   `sessionunauthed` varchar(100) NOT NULL DEFAULT 'Session is not validated',
   `hashcheckfail` varchar(100) NOT NULL DEFAULT 'This program hash does not match, make sure you''re using latest version',
-  `keyexpired` varchar(100) NOT NULL DEFAULT 'Key has expired.',
   `loggedInMsg` varchar(99) NOT NULL DEFAULT 'Logged in!',
   `pausedApp` varchar(99) NOT NULL DEFAULT 'Application is currently paused, please wait for the developer to say otherwise.',
   `unTooShort` varchar(99) NOT NULL DEFAULT 'Username too short, try longer one.',
@@ -131,10 +133,10 @@ CREATE TABLE `apps` (
   `blockLeakedPasswords` int NOT NULL DEFAULT '0',
   `forceEncryption` int NOT NULL DEFAULT '0',
   `customDomainAPI` varchar(253) DEFAULT NULL,
-  `customerPanelIcon` varchar(99) NOT NULL DEFAULT 'https://cdn.keyauth.cc/front/assets/img/favicon.png',
+  `customerPanelIcon` varchar(200) NOT NULL DEFAULT 'https://cdn.keyauth.cc/front/assets/img/favicon.png',
   `forceHwid` int DEFAULT '1',
   `minHwid` int DEFAULT '20'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `auditLog` (
   `id` int NOT NULL,
@@ -142,7 +144,7 @@ CREATE TABLE `auditLog` (
   `event` varchar(999) NOT NULL,
   `time` int NOT NULL,
   `app` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `bans` (
   `id` int NOT NULL,
@@ -150,14 +152,14 @@ CREATE TABLE `bans` (
   `ip` varchar(49) DEFAULT NULL,
   `type` varchar(5) DEFAULT NULL,
   `app` varchar(64) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `buttons` (
   `id` int NOT NULL,
   `text` varchar(99) NOT NULL,
   `value` varchar(99) NOT NULL,
   `app` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `chatmsgs` (
   `id` int NOT NULL,
@@ -166,21 +168,21 @@ CREATE TABLE `chatmsgs` (
   `timestamp` int NOT NULL,
   `channel` varchar(50) NOT NULL,
   `app` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `chatmutes` (
   `id` int NOT NULL,
   `user` varchar(70) NOT NULL,
   `time` int NOT NULL,
   `app` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `chats` (
   `id` int NOT NULL,
   `name` varchar(50) NOT NULL,
   `delay` int NOT NULL,
   `app` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `emailverify` (
   `id` int NOT NULL,
@@ -192,7 +194,7 @@ CREATE TABLE `emailverify` (
   `newEmail` varchar(40) DEFAULT NULL,
   `newUsername` varchar(99) DEFAULT NULL,
   `oldUsername` varchar(99) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `files` (
   `pk` int NOT NULL,
@@ -203,7 +205,7 @@ CREATE TABLE `files` (
   `uploaddate` varchar(49) NOT NULL,
   `app` varchar(64) NOT NULL,
   `authed` int NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `keys` (
   `id` int NOT NULL,
@@ -218,7 +220,7 @@ CREATE TABLE `keys` (
   `usedby` varchar(70) DEFAULT NULL,
   `app` varchar(64) NOT NULL,
   `banned` varchar(99) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `logs` (
   `id` int NOT NULL,
@@ -227,21 +229,21 @@ CREATE TABLE `logs` (
   `credential` varchar(70) DEFAULT NULL,
   `pcuser` varchar(32) DEFAULT NULL,
   `logapp` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `orders` (
   `id` int NOT NULL,
   `orderID` varchar(36) NOT NULL,
   `username` varchar(65) NOT NULL,
   `date` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `resets` (
   `id` int NOT NULL,
   `secret` char(32) NOT NULL,
   `email` varchar(40) NOT NULL,
   `time` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `resetUsers` (
   `id` int NOT NULL,
@@ -250,7 +252,7 @@ CREATE TABLE `resetUsers` (
   `username` varchar(70) NOT NULL,
   `app` varchar(64) NOT NULL,
   `time` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `securityKeys` (
   `id` int NOT NULL,
@@ -258,7 +260,7 @@ CREATE TABLE `securityKeys` (
   `name` varchar(99) DEFAULT NULL,
   `credentialId` varchar(999) DEFAULT NULL,
   `credentialPublicKey` varchar(999) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `sellerLogs` (
   `id` int NOT NULL,
@@ -266,7 +268,7 @@ CREATE TABLE `sellerLogs` (
   `path` varchar(999) NOT NULL,
   `date` int NOT NULL,
   `app` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `sessions` (
   `id` varchar(10) NOT NULL,
@@ -278,7 +280,7 @@ CREATE TABLE `sessions` (
   `validated` int NOT NULL DEFAULT '0',
   `ip` varchar(45) DEFAULT NULL,
   `pk` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `subs` (
   `id` int NOT NULL,
@@ -288,14 +290,14 @@ CREATE TABLE `subs` (
   `app` varchar(64) NOT NULL,
   `key` varchar(70) DEFAULT NULL,
   `paused` int NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `subscriptions` (
   `id` int NOT NULL,
   `name` varchar(49) NOT NULL,
   `level` varchar(49) NOT NULL,
   `app` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `support` (
   `id` int NOT NULL,
@@ -304,7 +306,7 @@ CREATE TABLE `support` (
   `message` varchar(200) DEFAULT NULL,
   `staff` int NOT NULL DEFAULT '0',
   `ownerid` varchar(65) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `users` (
   `id` int NOT NULL,
@@ -319,7 +321,7 @@ CREATE TABLE `users` (
   `banned` varchar(99) DEFAULT NULL,
   `ip` varchar(49) DEFAULT NULL,
   `cooldown` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `uservars` (
   `id` int NOT NULL,
@@ -328,15 +330,15 @@ CREATE TABLE `uservars` (
   `user` varchar(70) NOT NULL,
   `app` varchar(64) NOT NULL,
   `readOnly` int NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `vars` (
   `id` int NOT NULL,
   `varid` varchar(49) NOT NULL,
-  `msg` varchar(20000) NOT NULL,
+  `msg` varchar(1000) NOT NULL,
   `app` varchar(64) NOT NULL,
   `authed` int NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `webhooks` (
   `id` int NOT NULL,
@@ -345,17 +347,18 @@ CREATE TABLE `webhooks` (
   `useragent` varchar(49) NOT NULL DEFAULT 'KeyAuth',
   `app` varchar(64) NOT NULL,
   `authed` int NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `whitelist` (
   `id` int NOT NULL,
   `ip` varchar(49) NOT NULL,
   `app` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 
 ALTER TABLE `acclogs`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_username` (`username`);
 
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`username`),
@@ -374,7 +377,8 @@ ALTER TABLE `apps`
   ADD KEY `idx_apps_customdomain` (`customDomain`);
 
 ALTER TABLE `auditLog`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_app` (`app`);
 
 ALTER TABLE `bans`
   ADD PRIMARY KEY (`id`),
@@ -386,7 +390,9 @@ ALTER TABLE `buttons`
   ADD UNIQUE KEY `value` (`value`,`app`);
 
 ALTER TABLE `chatmsgs`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_channel_app` (`channel`,`app`),
+  ADD KEY `idx_app` (`app`);
 
 ALTER TABLE `chatmutes`
   ADD PRIMARY KEY (`id`);
@@ -442,7 +448,8 @@ ALTER TABLE `subscriptions`
   ADD KEY `app_level_idx` (`app`,`level`);
 
 ALTER TABLE `support`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_ownerid_time` (`ownerid`,`time`);
 
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),

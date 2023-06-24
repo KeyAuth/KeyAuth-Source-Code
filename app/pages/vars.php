@@ -110,7 +110,7 @@ if (isset($_POST['editvar'])) {
                                                 <form method="post"> 
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Variable Data:</label>
-                                                        <textarea class="form-control" name="msg" required rows="3">'.$data.'</textarea>
+                                                        <textarea maxlength="1000" class="form-control" name="msg" required rows="3">'.$data.'</textarea>
 														<input type="hidden" name="variable" value="' . $variable . '">
                                                     </div>
                                                     <br>
@@ -148,11 +148,18 @@ if (isset($_POST['savevar'])) {
     }
 }
 ?>
+    <!-- Include the jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    $('div.modal-content').css('border', '2px solid #1b8adb');
+    });
+    </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-
     <form method="post">
-        <button data-bs-toggle="modal" type="button" data-bs-target="#create-variable" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Variable</button>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#create-variable" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Variable</button><br><br>
         <button name="delvars" data-bs-toggle="modal" type="button" data-bs-target="#deleteallvars" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Variables</button>
     </form>
     <br>
@@ -177,11 +184,11 @@ if (isset($_POST['savevar'])) {
                     <form method="post">
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">Variable Name:</label>
-                            <input type="text" class="form-control" name="varname" placeholder="Name To Refrence Variable By" required>
+                            <input type="text" class="form-control" name="varname" placeholder="Name To Reference Variable By" required maxlength="49">
                         </div>
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">Variable Data: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Get string from KeyAuth server, where it's more secure"></i></label>
-                                <textarea class="form-control" name="vardata" placeholder="Value of Variable" required rows="3"></textarea>
+                                <textarea maxlength="1000" class="form-control" name="vardata" placeholder="Value of Variable" required rows="3"></textarea>
                         </div>
                         <br>
                         <div class="form-check">
