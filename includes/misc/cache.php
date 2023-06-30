@@ -108,9 +108,10 @@ function fetch($redisKey, $sqlQuery, $args = [], $multiRowed, $expiry = null, $t
 }
 function purge($redisKey) // delete key from Redis cache (typically called when MySQL row(s) updated or deleted)
 {
-	$redisKey = urlencode(strtolower($redisKey)); // redis is case-insensitive, and key must be encoded for HTTP request used in production
+	$redisKey = strtolower($redisKey); // redis is case-insensitive, and key must be encoded for HTTP request used in production
 	global $redisServers;
 	if(!empty($redisServers)) {
+		$redisKey = urlencode($redisKey);
 		// for production setup, to purge redis keys from all servers
 		foreach ($redisServers as $server) {
 			$url = $server . "&type=purge&key={$redisKey}";
@@ -136,9 +137,10 @@ function purgePattern($redisKey) // purge all data starting with, ending with, o
 	if($redisKey == "*" || empty($redisKey)) {
 		die("Invalid redis key purge value. Must specify some text.");
 	}
-	$redisKey = urlencode(strtolower($redisKey)); // redis is case-insensitive, and key must be encoded for HTTP request used in production
+	$redisKey = strtolower($redisKey); // redis is case-insensitive, and key must be encoded for HTTP request used in production
 	global $redisServers;
 	if(!empty($redisServers)) {
+		$redisKey = urlencode($redisKey);
 		// for production setup, to purge redis keys from all servers
 		foreach ($redisServers as $server) {
 			$url = $server . "&type=purgePattern&key={$redisKey}";
