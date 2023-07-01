@@ -361,11 +361,10 @@ switch ($_POST['type'] ?? $_GET['type']) {
         fastcgi_finish_request();
 
         if ($registerSuccess) {
-            misc\mysql\query("UPDATE `sessions` SET `credential` = ?,`validated` = 1 WHERE `id` = ?", [$username, $sessionid]);
             misc\cache\update('KeyAuthState:'.$secret.':'.$sessionid.'', array("validated" => 1, "credential" => $username));
-
-            $ip = api\shared\primary\getIp();
+            misc\mysql\query("UPDATE `sessions` SET `credential` = ?,`validated` = 1 WHERE `id` = ?", [$username, $sessionid]);
         }
+        die();
     case 'upgrade':
         // retrieve session info
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
