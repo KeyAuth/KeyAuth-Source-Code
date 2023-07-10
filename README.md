@@ -3,7 +3,7 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 <br>
 *You're not allowed to sell KeyAuth. source made avaliable only for you to use*
 
-View #suggestions and #bugs channel in Discord server if you want to suggest new feature or submit bug https://discord.gg/keyauth
+To submit a suggestion or a bug, please go to https://keyauth.cc/app/?page=forms and submit a form!
 
 [![CodeFactor](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code/badge)](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code)
 [![Discord](https://img.shields.io/discord/1108008865049628702?label=Discord&cacheSeconds=3600)](https://discord.com/invite/keyauth)
@@ -13,7 +13,7 @@ View #suggestions and #bugs channel in Discord server if you want to suggest new
 
 ## Bugs ##
 
-If the default example not added to your software isn't functioning how it should, please join the Discord server https://discord.gg/keyauth and submit the issue in the `#bugs` channel.
+If the default example that isn't added to your software isn't functioning how it should, please go to https://keyauth.cc/app/?page=forms and submit a bug report in the `Report a Bug` modal.
 
 However, we do **NOT** provide support for adding KeyAuth to your project. If you can't figure this out you should use Google or YouTube to learn more about the programming language you want to sell a program in.
 
