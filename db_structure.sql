@@ -47,8 +47,10 @@ CREATE TABLE `accounts` (
   `affiliatedBy` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `securityKey` int NOT NULL DEFAULT '0',
   `staff` int DEFAULT '0',
-  `staffDiscordID` varchar(65) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT '',
-  `formBanned` int DEFAULT '0'
+  `staffDiscordID` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `formBanned` int DEFAULT '0',
+  `connection` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `stafftype` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE TABLE `afLogs` (
@@ -295,7 +297,7 @@ CREATE TABLE `subs` (
 CREATE TABLE `subscriptions` (
   `id` int NOT NULL,
   `name` varchar(49) NOT NULL,
-  `level` varchar(49) NOT NULL,
+  `level` varchar(12) NOT NULL,
   `app` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -387,7 +389,8 @@ ALTER TABLE `bans`
 
 ALTER TABLE `buttons`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `value` (`value`,`app`);
+  ADD UNIQUE KEY `value` (`value`,`app`),
+  ADD KEY `app_index` (`app`);
 
 ALTER TABLE `chatmsgs`
   ADD PRIMARY KEY (`id`),
@@ -395,11 +398,13 @@ ALTER TABLE `chatmsgs`
   ADD KEY `idx_app` (`app`);
 
 ALTER TABLE `chatmutes`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `app_index` (`app`);
 
 ALTER TABLE `chats`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `one name per app` (`name`,`app`);
+  ADD UNIQUE KEY `one name per app` (`name`,`app`),
+  ADD KEY `app_index` (`app`);
 
 ALTER TABLE `emailverify`
   ADD PRIMARY KEY (`id`);
@@ -427,10 +432,12 @@ ALTER TABLE `resetUsers`
   ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `securityKeys`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `username_index` (`username`);
 
 ALTER TABLE `sellerLogs`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `app_index` (`app`);
 
 ALTER TABLE `sessions`
   ADD PRIMARY KEY (`pk`),
@@ -469,7 +476,7 @@ ALTER TABLE `vars`
 
 ALTER TABLE `webhooks`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `baselink` (`baselink`);
+  ADD KEY `webid_app_idx` (`webid`,`app`);
 
 ALTER TABLE `whitelist`
   ADD PRIMARY KEY (`id`);
