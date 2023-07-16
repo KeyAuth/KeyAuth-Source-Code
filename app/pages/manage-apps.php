@@ -405,8 +405,8 @@ $ownerid = "<?php echo $ownerid; ?>"; // your KeyAuth account's ownerid, located
 private static String appname = "<?php echo $appname; ?>"; // Application name
 private static String version = "<?php echo $version; ?>"; // Application version</code>
                     <br>
-                    Repository: <a href="https://github.com/SprayDown/KeyAuth-JAVA-api"
-                        target="_blank">https://github.com/SprayDown/KeyAuth-JAVA-api</a>
+                    Repository: <a href="https://github.com/KeyAuth-Archive/KeyAuth-JAVA-api"
+                        target="_blank">https://github.com/KeyAuth-Archive/KeyAuth-JAVA-api</a>
                     <!--end::Table-->
                 </div>
                 <div class="tab-pane fade" id="kt_table_widget_5_tab_7">
