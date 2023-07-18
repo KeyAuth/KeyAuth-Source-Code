@@ -1,4 +1,4 @@
-# KeyAuth-Source-Code
+# KeyAuth Source Code -> Please star :star2:
 KeyAuth is an open source authentication system with cloud-hosted subscriptions available aswell https://keyauth.cc
 <br>
 *You're not allowed to sell KeyAuth. source made avaliable only for you to use*
@@ -6,7 +6,6 @@ KeyAuth is an open source authentication system with cloud-hosted subscriptions 
 To submit a suggestion or a bug, please go to https://keyauth.cc/app/?page=forms and submit a form!
 
 [![CodeFactor](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code/badge)](https://www.codefactor.io/repository/github/keyauth/keyauth-source-code)
-[![Discord](https://img.shields.io/discord/1125387048979795988?label=Discord&cacheSeconds=3600)](https://discord.com/invite/keyauth)
 [![Telegram Chat](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fkeyauth)](https://t.me/KeyAuth)
 [![Twitter](https://img.shields.io/twitter/follow/KeyAuth?cacheSeconds=3600)](https://twitter.com/KeyAuth)
 
