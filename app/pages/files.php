@@ -81,7 +81,7 @@ if (isset($_POST['editfile'])) {
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Edit File</h4>
+                                                <h4 class="modal-title">Edit File</h4>
                                                 <!--begin::Close-->
                                                 <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
                                                     <span class="svg-icon svg-icon-1">
@@ -99,21 +99,21 @@ if (isset($_POST['editfile'])) {
                                                         <label for="recipient-name" class="control-label">File URL: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="We recommend sending the file in a Discord DM where it won\'t get deleted. Then copy link and put here. Make sure the link has the file extension at the end, .exe or whatever. If it doesn\'t, the download will not work."></i></label>
                                                         <input type="url" class="form-control" name="url" placeholder="Link to file" required>
                                                     </div>
-													<div class="form-check">
-													<input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
-													<label class="form-check-label" for="flexCheckChecked">
-														Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
-													</label>
-													</div>
+                                                    <div class="form-check">
+                                                    <input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
+                                                    <label class="form-check-label" for="flexCheckChecked">
+                                                        Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
+                                                    </label>
+                                                    </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                                 <button class="btn btn-danger waves-effect waves-light" value="' . $file . '" name="savefile">Save</button>
-												</form>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
-									</div>';
+                                    </div>';
 }
 
 if (isset($_POST['savefile'])) {
@@ -182,18 +182,21 @@ if (isset($_POST['savefile'])) {
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
+    <div class="alert alert-warning" role="alert">
+        You must use a <b><u>direct URL</u></b> or the file will not work. Read here <a href="https://docs.keyauth.cc/website/dashboard/files" target="_blank">https://docs.keyauth.cc/website/dashboard/files</a>
+    </div>
     <form method="POST">
-        <button data-bs-toggle="modal" type="button" data-bs-target="#create-files" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
-            Create Files</button><br><br>
+        <button data-bs-toggle="modal" type="button" data-bs-target="#create-file" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
+            Create File</button><br><br>
         <button type="button" class="dt-button buttons-print btn btn-danger mr-1" data-bs-toggle="modal" type="button" data-bs-target="#deleteallfiles"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All
             Files</button>
     </form>
     <br>
-    <div id="create-files" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div id="create-file" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
-                    <h4 class="modal-title">Add Files</h4>
+                    <h4 class="modal-title">Add File</h4>
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
                         <span class="svg-icon svg-icon-1">
@@ -260,32 +263,32 @@ if (isset($_POST['savefile'])) {
                         echo "  <td>" . (($row["authed"] ? 1 : 0) ? 'True' : 'False') . "</td>";
 
                         echo '<form method="POST">
-			<td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions 
-			<!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
-			<span class="svg-icon svg-icon-5 m-0">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-					<path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
-				</svg>
-			</span>
-			<!--end::Svg Icon--></a>
-			<!--begin::Menu-->
-			<div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4">
-				<!--begin::Menu item-->
-				<div class="menu-item px-3">
-					<button class="btn menu-link px-3" style="font-size:0.95rem;" name="editfile" value="' . $row["id"] . '">Edit</button>
-				</div>
-				<!--end::Menu item-->
-				<!--begin::Menu item-->
-				<div class="menu-item px-3">
-					<button class="btn menu-link px-3" style="font-size:0.95rem;" name="deletefile" value="' . $row["id"] . '">Delete</button>
-				</div>
-				<!--end::Menu item-->
-				<!--begin::Menu item-->
-				<div class="menu-item px-3">
-					<a class="btn menu-link px-3" style="font-size:0.95rem;" href="' . $row['url'] . '">Download</a>
-				</div>
-				<!--end::Menu item-->
-			</div></td></tr></form>';
+            <td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions 
+            <!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
+            <span class="svg-icon svg-icon-5 m-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
+                </svg>
+            </span>
+            <!--end::Svg Icon--></a>
+            <!--begin::Menu-->
+            <div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4">
+                <!--begin::Menu item-->
+                <div class="menu-item px-3">
+                    <button class="btn menu-link px-3" style="font-size:0.95rem;" name="editfile" value="' . $row["id"] . '">Edit</button>
+                </div>
+                <!--end::Menu item-->
+                <!--begin::Menu item-->
+                <div class="menu-item px-3">
+                    <button class="btn menu-link px-3" style="font-size:0.95rem;" name="deletefile" value="' . $row["id"] . '">Delete</button>
+                </div>
+                <!--end::Menu item-->
+                <!--begin::Menu item-->
+                <div class="menu-item px-3">
+                    <a class="btn menu-link px-3" style="font-size:0.95rem;" href="' . $row['url'] . '">Download</a>
+                </div>
+                <!--end::Menu item-->
+            </div></td></tr></form>';
                     }
                 }
             }

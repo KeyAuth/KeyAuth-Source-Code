@@ -76,7 +76,7 @@ function register($un, $key, $pw, $email, $hwid, $secret)
         // update key to used
         mysql\query("UPDATE `keys` SET `status` = 'Used',`usedon` = ?,`usedby` = ? WHERE `key` = ? AND `app` = ?",[time(), $un, $key, $secret]);
 
-		cache\purge('KeyAuthKeys:' . $secret);
+        cache\purge('KeyAuthKeys:' . $secret);
         while ($row = mysqli_fetch_array($query->result)) {
             // add each subscription that user's key applies to
             $subname = $row['name'];
@@ -89,19 +89,19 @@ function register($un, $key, $pw, $email, $hwid, $secret)
         $query = mysql\query("SELECT `subscription`, `key`, `expiry` FROM `subs` WHERE `user` = ? AND `app` = ? AND `expiry` > " . time() . "",[$un, $secret]);
         $rows = array();
         if($query->num_rows > 0) {
-			while ($r = mysqli_fetch_assoc($query->result)) {
-				$timeleft = $expiry - time();
-				$r += ["timeleft" => $timeleft];
-				$rows[] = $r;
-			}
-		}
-		else {
-			$timeleft = $expiry - time();
-			$rows = array("subscription" => "$subname", "key" => "$key", "expiry" => "$expiry", "timeleft" => "$timeleft");
-		}
-		
+            while ($r = mysqli_fetch_assoc($query->result)) {
+                $timeleft = $expiry - time();
+                $r += ["timeleft" => $timeleft];
+                $rows[] = $r;
+            }
+        }
+        else {
+            $timeleft = $expiry - time();
+            $rows = array("subscription" => "$subname", "key" => "$key", "expiry" => "$expiry", "timeleft" => "$timeleft");
+        }
+        
         cache\purge('KeyAuthUser:' . $secret . ':' . $un);
-		cache\purge('KeyAuthSubs:' . $secret . ':' . $un);
+        cache\purge('KeyAuthSubs:' . $secret . ':' . $un);
         // success
         return array(
             "username" => "$un",
@@ -172,17 +172,17 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
         return 'no_active_subs';
     }
 
-	$rowsFinal = array(); 
-	foreach ($rows as $row) {
-		$timeleft = $row["expiry"] - time();
+    $rowsFinal = array(); 
+    foreach ($rows as $row) {
+        $timeleft = $row["expiry"] - time();
 
         $levelquery = mysql\query("SELECT `level` FROM `subscriptions` WHERE `name` = ? AND `app` = ?", [$row["subscription"], $secret]);
         $level = mysqli_fetch_array($levelquery->result);
 
 
-		$row += ["timeleft" => $timeleft, "level" => $level["level"]];
-		$rowsFinal[] = $row;
-	}
+        $row += ["timeleft" => $timeleft, "level" => $level["level"]];
+        $rowsFinal[] = $row;
+    }
 
     $ip = primary\getIp();
 

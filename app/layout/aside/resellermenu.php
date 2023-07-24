@@ -28,8 +28,8 @@ $page = isset($_GET['page']) ? $_GET['page'] : "index";
             </div>
             <div class="menu-item">
                 <a class="menu-link <?php if ($page == 'reseller-licenses') {
-										echo 'active';
-									} ?>" href="?page=reseller-licenses">
+                                        echo 'active';
+                                    } ?>" href="?page=reseller-licenses">
                     <span class="menu-icon">
                         <i data-feather="key"></i>
                     </span>
@@ -38,8 +38,8 @@ $page = isset($_GET['page']) ? $_GET['page'] : "index";
             </div>
             <div class="menu-item">
                 <a class="menu-link <?php if ($page == 'reseller-users') {
-										echo 'active';
-									} ?>" href="?page=reseller-users">
+                                        echo 'active';
+                                    } ?>" href="?page=reseller-users">
                     <span class="menu-icon">
                         <i data-feather="users"></i>
                     </span>
@@ -48,8 +48,8 @@ $page = isset($_GET['page']) ? $_GET['page'] : "index";
             </div>
             <div class="menu-item">
                 <a class="menu-link <?php if ($page == 'reseller-balance') {
-										echo 'active';
-									} ?>" href="?page=reseller-balance">
+                                        echo 'active';
+                                    } ?>" href="?page=reseller-balance">
                     <span class="menu-icon">
                         <i data-feather="credit-card"></i>
                     </span>

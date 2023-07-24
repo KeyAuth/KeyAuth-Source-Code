@@ -84,8 +84,8 @@ if (isset($_POST['addwhite'])) {
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <div class="alert alert-warning" role="alert">
-		You can't sort by "Blacklist Data" column, however you can search something and it will display all rows containing that text
-	</div>
+        You can't sort by "Blacklist Data" column, however you can search something and it will display all rows containing that text
+    </div>
     <form method="post">
 
         <button data-bs-toggle="modal" type="button" data-bs-target="#create-blacklist" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>

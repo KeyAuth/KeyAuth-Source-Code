@@ -4,13 +4,13 @@ header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);
 
 set_exception_handler(function ($exception) {
-	error_log("\n--------------------------------------------------------------\n");
-	error_log($exception);
+    error_log("\n--------------------------------------------------------------\n");
+    error_log($exception);
     error_log("\nRequest data:");
     error_log(print_r($_POST, true));
     error_log("\n--------------------------------------------------------------");
-	http_response_code(500);
-	die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
+    http_response_code(500);
+    die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
 });
 
 if(empty(($_POST['ownerid'] ?? $_GET['ownerid']))) {
@@ -162,9 +162,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
         
         // $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
 
-        $numUsers = "N/A Temporarily Disabled";
-        $numOnlineUsers = "N/A Temporarily Disabled";
-        $numKeys = "N/A Temporarily Disabled";
+        $numUsers = "N/A - Use fetchStats() function in latest example";
+        $numOnlineUsers = "N/A - Use fetchStats() function in latest example";
+        $numKeys = "N/A - Use fetchStats() function in latest example";
 
         echo json_encode(array(
             "success" => true,
@@ -870,6 +870,10 @@ switch ($_POST['type'] ?? $_GET['type']) {
             die();
         }
 
+        if(strlen($msg) > 275) {
+            die("Log data too long");
+        }
+
         $pcuser = misc\etc\sanitize($_POST['pcuser'] ?? $_GET['pcuser']);
 
         if (is_null($webhook)) {
@@ -894,13 +898,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $ip = api\shared\primary\getIp();
 
         $json_data = json_encode([
-            // Username
-            "username" => "KeyAuth",
-
-            // Avatar URL.
-            // Uncoment to replace image set in webhook
-            "avatar_url" => "https://cdn.keyauth.cc/front/assets/img/favicon.png",
-
             // Embeds Array
             "embeds" => [
                 [

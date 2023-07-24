@@ -1,4 +1,4 @@
 <?php
-        header("Location: https://discord.com/invite/keyauth");
+        header("Location: https://t.me/keyauth");
         exit();
 ?>

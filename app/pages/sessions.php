@@ -1,13 +1,13 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
-	die();
+    die();
 }
 if($role == "Manager" && !($permissions & 16)) {
-	die('You weren\'t granted permissions to view this page.');
+    die('You weren\'t granted permissions to view this page.');
 }
 if(!isset($_SESSION['app'])) {
-	die("Application not selected.");
+    die("Application not selected.");
 }
 if (isset($_POST['killall'])) {
     $resp = misc\session\killAll();

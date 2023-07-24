@@ -1,13 +1,13 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
-	die();
+    die();
 }
 if($role == "Manager" && !($permissions & 256)) {
-	die('You weren\'t granted permissions to view this page.');
+    die('You weren\'t granted permissions to view this page.');
 }
 if(!isset($_SESSION['app'])) {
-	die("Application not selected.");
+    die("Application not selected.");
 }
 if (isset($_POST['dellogs'])) {
     $resp = misc\logging\deleteAll();
@@ -35,6 +35,9 @@ if (isset($_POST['dellogs'])) {
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
+    <div class="alert alert-primary" role="alert">
+            The maximum log message length is 275 characters. Logs are automatically deleted after 1 month. If you set Discord webhook at <a href="https://keyauth.cc/app/?page=app-settings">https://keyauth.cc/app/?page=app-settings</a>, logs will go to Discord and not display on our site.
+    </div>
     <form method="post">
         <button type="button" data-bs-toggle="modal" type="button" data-bs-target="#del-logs"
             class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i>

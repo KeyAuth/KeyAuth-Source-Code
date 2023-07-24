@@ -91,44 +91,77 @@ function isBreached($pw) // query HaveIBeenPwned's API (huge dataset, FBI and ma
 }
 function isPhonyEmail($email) // check if valid email format, if known temporary email, if email server online, and if mailbox found on email server
 {
-	if(!filter_var($email, FILTER_VALIDATE_EMAIL)) 
+    if(!filter_var($email, FILTER_VALIDATE_EMAIL)) 
     {
-		return true;
-	}
-	
+        return true;
+    }
+    
     $resp = file_get_contents("https://api.mailcheck.ai/email/" . $email);
     $json = json_decode($resp);
-	
-	if($json->disposable) 
+    
+    if($json->disposable) 
     {
-		return true;
-	}
-	
-	if (strpos($email, ".ru") !== false) 
+        return true;
+    }
+    
+    if (strpos($email, ".ru") !== false) 
     {
-		return false; 
-		// russian email services either have a lot of downtime or heavy rate limits, because every other time I make SMTP connection with an .ru email it fails
-	}
-	
-	if (strpos($email, "proton") !== false) 
+        return false; 
+        // russian email services either have a lot of downtime or heavy rate limits, because every other time I make SMTP connection with an .ru email it fails
+    }
+    
+    if (strpos($email, "proton") !== false) 
     {
-		return false; 
-		// protonmail is also giving us issues
-	}
-	
-	ini_set("default_socket_timeout", 1);
-	$connection = @fsockopen("gmail-smtp-in.l.google.com", 25);
-	
-	// check if port 25 is open (many hosts have it closed inherently)
-	if (is_resource($connection)) 
+        return false; 
+        // protonmail is also giving us issues
+    }
+    
+    ini_set("default_socket_timeout", 1);
+    $connection = @fsockopen("gmail-smtp-in.l.google.com", 25);
+    
+    // check if port 25 is open (many hosts have it closed inherently)
+    if (is_resource($connection)) 
     {
-		global $mail;
-		require_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/VerifyEmail.class.php'; 
-		
-		return (!$mail->check($email));
-	}
-	else 
+        global $mail;
+        require_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/VerifyEmail.class.php'; 
+        
+        return (!$mail->check($email));
+    }
+    else 
     {
-	    return false;
-	}
+        return false;
+    }
+}
+
+function timeconversion($expires) {
+    $value = "";
+    $unit = "";
+
+    if ($expires >= 31536000) {
+        $value = floor($expires / 31536000);
+        $unit = 'Year(s)';
+    }
+    elseif ($expires >= 2419200) {
+        $value = floor($expires / 2592000);
+        $unit = 'Month(s)';
+    }
+    elseif ($expires >= 604800) {
+        $value = floor($expires / 604800);
+        $unit = 'Weeks(s)';
+    }
+    elseif ($expires >= 86400) {
+        $value = floor($expires / 86400);
+        $unit = 'Day(s)';
+    } elseif ($expires >= 3600) {
+        $value = floor($expires / 3600);
+        $unit = 'Hour(s)';
+    } elseif ($expires >= 60) {
+        $value = floor($expires / 60);
+        $unit = 'Minute(s)';
+    } else {
+        $value = $expires;
+        $unit = 'Second(s)';
+    }
+
+    return "$value $unit";
 }

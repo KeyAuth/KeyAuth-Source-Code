@@ -194,39 +194,39 @@ class VerifyEmail {
 
         $mxs = $this->getMXrecords(self::parse_email($email)); 
         $timeout = ceil($this->max_connection_timeout / count($mxs));
-		$i = 0;
+        $i = 0;
         foreach ($mxs as $host) {
-			$i++;
-			if($i == 1) { // only check first MX record
-				/** 
-				* suppress error output from stream socket client... 
-				* Thanks Michael. 
-				*/ 
-				$this->stream = @stream_socket_client("tcp://" . $host . ":" . $this->port, $errno, $errstr, $timeout); 
-				if ($this->stream === FALSE) { 
-					if ($errno == 0) { 
-						$this->set_error("Problem initializing the socket"); 
-						$this->edebug($this->ErrorInfo); 
-						if ($this->exceptions) { 
-							throw new verifyEmailException($this->ErrorInfo); 
-						} 
-						return FALSE; 
-					} else { 
-						$this->edebug($host . ":" . $errstr); 
-					} 
-				} else { 
-					stream_set_timeout($this->stream, $this->stream_timeout); 
-					stream_set_blocking($this->stream, 1); 
-	
-					if ($this->_streamCode($this->_streamResponse()) == '220') { 
-						$this->edebug("Connection success {$host}"); 
-						break; 
-					} else { 
-						fclose($this->stream); 
-						$this->stream = FALSE; 
-					} 
-				}
-			}
+            $i++;
+            if($i == 1) { // only check first MX record
+                /** 
+                * suppress error output from stream socket client... 
+                * Thanks Michael. 
+                */ 
+                $this->stream = @stream_socket_client("tcp://" . $host . ":" . $this->port, $errno, $errstr, $timeout); 
+                if ($this->stream === FALSE) { 
+                    if ($errno == 0) { 
+                        $this->set_error("Problem initializing the socket"); 
+                        $this->edebug($this->ErrorInfo); 
+                        if ($this->exceptions) { 
+                            throw new verifyEmailException($this->ErrorInfo); 
+                        } 
+                        return FALSE; 
+                    } else { 
+                        $this->edebug($host . ":" . $errstr); 
+                    } 
+                } else { 
+                    stream_set_timeout($this->stream, $this->stream_timeout); 
+                    stream_set_blocking($this->stream, 1); 
+    
+                    if ($this->_streamCode($this->_streamResponse()) == '220') { 
+                        $this->edebug("Connection success {$host}"); 
+                        break; 
+                    } else { 
+                        fclose($this->stream); 
+                        $this->stream = FALSE; 
+                    } 
+                }
+            }
         } 
 
         if ($this->stream === FALSE) { 
@@ -243,19 +243,19 @@ class VerifyEmail {
         $this->_streamQuery("MAIL FROM: <{$this->from}>"); 
         $this->_streamResponse(); 
         $this->_streamQuery("RCPT TO: <{$email}>"); 
-		$resp = $this->_streamResponse();
+        $resp = $this->_streamResponse();
         $code = $this->_streamCode($resp); 
-		if (strpos($resp, "Client host rejected") !== false) {
-			$this->edebug("The email server doesn't like us :(");
-			return TRUE;
-			// server is blocking our server. AWS is far less likely to have these issues, so allow it
-		}
-		if (strpos($resp, "Protocol error") !== false) {
-			$this->edebug("Allowing exception for protonmail");
-			return TRUE;
-			// protonmail returning this
-		}
-		
+        if (strpos($resp, "Client host rejected") !== false) {
+            $this->edebug("The email server doesn't like us :(");
+            return TRUE;
+            // server is blocking our server. AWS is far less likely to have these issues, so allow it
+        }
+        if (strpos($resp, "Protocol error") !== false) {
+            $this->edebug("Allowing exception for protonmail");
+            return TRUE;
+            // protonmail returning this
+        }
+        
         //$this->_streamResponse(); 
         $this->_streamQuery("RSET"); 
         //$this->_streamResponse();
@@ -269,11 +269,11 @@ class VerifyEmail {
              * 250 Requested mail action okay, completed 
              * email address was accepted 
              */
-				return TRUE;
+                return TRUE;
             case '450': 
-				return FALSE;
+                return FALSE;
             case '451': 
-				return FALSE;
+                return FALSE;
             case '452': 
                 /** 
                  * http://www.ietf.org/rfc/rfc0821.txt 

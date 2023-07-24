@@ -15,13 +15,23 @@ $page = isset($_GET['page']) ? $_GET['page'] : "manage-apps";
                 <span class="menu-title">Documentation</span>
             </a>
         </div>
+        <div class="menu-item me-lg-1">
+            <a class="menu-link py-3" target="_blank" href="https://github.com/KeyAuth">
+                <span class="menu-title">GitHub Examples</span>
+            </a>
+        </div>
+        <div class="menu-item me-lg-1">
+            <a class="menu-link py-3" target="_blank" href="https://youtube.com/KeyAuth">
+                <span class="menu-title">YouTube Tutorials</span>
+            </a>
+        </div>
         <?php if ($_SESSION['timeleft']) { ?>
         <a class="menu-link py-3" href="?page=account-settings">
             <span class="badge badge-warning">Your account subscription expires, in less than a month, check account
                 details for exact date.</span>
         </a>
         <?php
-		} ?>
+        } ?>
 
 
 

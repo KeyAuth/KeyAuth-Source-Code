@@ -76,7 +76,7 @@ class GoogleAuthenticator
      */
     public function getQRCodeGoogleUrl($name, $secret, $title = null) {
         $urlencoded = urlencode('otpauth://totp/'.$name.'?secret='.$secret.'');
-	if(isset($title)) {
+    if(isset($title)) {
                 $urlencoded .= urlencode('&issuer='.urlencode($title));
         }
         return 'https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl='.$urlencoded.'';

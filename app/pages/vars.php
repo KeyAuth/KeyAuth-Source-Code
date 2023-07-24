@@ -1,13 +1,13 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
-	die();
+    die();
 }
 if($role == "Manager" && !($permissions & 128)) {
-	die('You weren\'t granted permissions to view this page.');
+    die('You weren\'t granted permissions to view this page.');
 }
 if(!isset($_SESSION['app'])) {
-	die("Application not selected.");
+    die("Application not selected.");
 }
 
 if (isset($_POST['genvar'])) {
@@ -94,7 +94,7 @@ if (isset($_POST['editvar'])) {
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Edit Variable</h4>
+                                                <h4 class="modal-title">Edit Variable</h4>
                                                 <!--begin::Close-->
                                                 <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
                                                     <span class="svg-icon svg-icon-1">
@@ -111,24 +111,24 @@ if (isset($_POST['editvar'])) {
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Variable Data:</label>
                                                         <textarea maxlength="1000" class="form-control" name="msg" required rows="3">'.$data.'</textarea>
-														<input type="hidden" name="variable" value="' . $variable . '">
+                                                        <input type="hidden" name="variable" value="' . $variable . '">
                                                     </div>
                                                     <br>
-													<div class="form-check">
-													<input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
-													<label class="form-check-label" for="flexCheckChecked">
-														Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
-													</label>
-													</div>
+                                                    <div class="form-check">
+                                                    <input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
+                                                    <label class="form-check-label" for="flexCheckChecked">
+                                                        Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
+                                                    </label>
+                                                    </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                                 <button class="btn btn-danger waves-effect waves-light" name="savevar">Save</button>
-												</form>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
-									</div>';
+                                    </div>';
 }
 
 if (isset($_POST['savevar'])) {
@@ -139,7 +139,7 @@ if (isset($_POST['savevar'])) {
             dashboard\primary\error("Failed to edit variable!");
             break;
         case 'success':
-			misc\cache\purge('KeyAuthVar:' . $_SESSION['app'] . ':' . $_POST['variable']);
+            misc\cache\purge('KeyAuthVar:' . $_SESSION['app'] . ':' . $_POST['variable']);
             dashboard\primary\success("Successfully edited variable!");
             break;
         default:
@@ -158,6 +158,9 @@ if (isset($_POST['savevar'])) {
     </script>
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
+    <div class="alert alert-warning" role="alert">
+        You must use the <b>var()</b> function for these. <b><u>Do NOT</u></b> use the <b>getvar()</b> function, that's for user variables which are completely different.
+    </div>
     <form method="post">
         <button data-bs-toggle="modal" type="button" data-bs-target="#create-variable" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Variable</button><br><br>
         <button name="delvars" data-bs-toggle="modal" type="button" data-bs-target="#deleteallvars" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Variables</button>
@@ -167,7 +170,7 @@ if (isset($_POST['savevar'])) {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
-                    <h4 class="modal-title">Add Variables</h4>
+                    <h4 class="modal-title">Add Variable</h4>
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
                         <span class="svg-icon svg-icon-1">
@@ -182,6 +185,9 @@ if (isset($_POST['savevar'])) {
 
                 <div class="modal-body">
                     <form method="post">
+                        <div class="alert alert-primary" role="alert">
+                            If your variable is longer than a few hundred characters, you should use download() function <a href="https://keyauth.cc/app/?page=files">https://keyauth.cc/app/?page=files</a>
+                        </div>
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">Variable Name:</label>
                             <input type="text" class="form-control" name="varname" placeholder="Name To Reference Variable By" required maxlength="49">

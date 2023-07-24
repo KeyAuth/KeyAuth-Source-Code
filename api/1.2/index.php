@@ -4,13 +4,13 @@ header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);
 
 set_exception_handler(function ($exception) {
-	error_log("\n--------------------------------------------------------------\n");
-	error_log($exception);
+    error_log("\n--------------------------------------------------------------\n");
+    error_log($exception);
     error_log("\nRequest data:");
     error_log(print_r($_POST, true));
     error_log("\n--------------------------------------------------------------");
-	http_response_code(500);
-	die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
+    http_response_code(500);
+    die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
 });
 
 if(empty(($_POST['ownerid'] ?? $_GET['ownerid']))) {
@@ -95,6 +95,18 @@ if ($banned) {
 
 switch ($_POST['type'] ?? $_GET['type']) {
     case 'init':
+        if(strlen($_POST['enckey']) > 35) {
+            $response = json_encode(array(
+                "success" => false,
+                "message" => "The paramater \"enckey\" is too long. Must be 35 characters or less."
+            ));
+
+            $sig = hash_hmac('sha256', $response, $secret);
+            header("signature: {$sig}");
+
+            die($response);
+        }
+
         if ($forceEncryption) {
             if (!isset($_POST['enckey']) && !isset($_GET['enckey'])) {
                 $response = json_encode(array(
@@ -207,9 +219,9 @@ switch ($_POST['type'] ?? $_GET['type']) {
 
         // $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
 
-        $numUsers = "N/A Temporarily Disabled";
-        $numOnlineUsers = "N/A Temporarily Disabled";
-        $numKeys = "N/A Temporarily Disabled";
+        $numUsers = "N/A - Use fetchStats() function in latest example";
+        $numOnlineUsers = "N/A - Use fetchStats() function in latest example";
+        $numKeys = "N/A - Use fetchStats() function in latest example";
 
         $resp = json_encode(array(
             "success" => true,
@@ -222,6 +234,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                 "version" => "$currentver",
                 "customerPanelLink" => "https://keyauth.cc/panel/$owner/$name/"
             ),
+            "newSession" => $newSession,
             "nonce" => misc\etc\generateRandomString(32)
         ));
 
@@ -798,10 +811,18 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $emailHashed = $row['email'];
 
         if (sha1($email) != $emailHashed) {
-            $response = json_encode(array(
-                "success" => false,
-                "message" => "Email address do not match!"
-            ));
+            if(is_null($emailHashed)) {
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Email address not provided during register, ask developer to edit your account and change email."
+                ));
+            }
+            else {
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Email address doesn't match!"
+                ));
+            }
         } else {
             $algos = array(
                 'ripemd128',
@@ -819,7 +840,7 @@ switch ($_POST['type'] ?? $_GET['type']) {
                     <body>
                         <h1>You requested a password reset through the app {$name}</h1>
                         <p>Please go to <a href=\"https://keyauth.cc/resetUser/?secret={$emailSecret}\">https://keyauth.cc/resetUser/?secret={$emailSecret}</a></p>
-						<p>Also, in case you forgot, your username is: <b>{$un}</b></p>
+                        <p>Also, in case you forgot, your username is: <b>{$un}</b></p>
                         <p style=\"margin-top: 20px;\">Thanks,<br><b>KeyAuth.</b></p>
                     </body>
                     </html>";
@@ -860,6 +881,34 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
         header("signature: {$sig}");
 
+        die($response);
+    case 'fetchStats':
+        $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
+        $session = api\shared\primary\getSession($sessionid, $secret);
+        $enckey = $session["enckey"];
+    
+        $row = misc\cache\fetch('KeyAuthAppStats:' . $secret, "SELECT (SELECT COUNT(1) FROM `users` WHERE `app` = ?) AS 'numUsers', (SELECT COUNT(1) FROM `sessions` WHERE `app` = ? AND `validated` = 1 AND `expiry` > ?) AS 'numOnlineUsers', (SELECT COUNT(1) FROM `keys` WHERE `app` = ?) AS 'numKeys' FROM dual", [$secret, $secret, time(), $secret], 0, 3600);
+
+        $numUsers = $row['numUsers'];
+        $numOnlineUsers = $row['numOnlineUsers'];
+        $numKeys = $row['numKeys'];
+
+        $response = json_encode(array(
+            "success" => true,
+            "message" => "Successfully fetched stats",
+            "appinfo" => array(
+                "numUsers" => "$numUsers",
+                "numOnlineUsers" => "$numOnlineUsers",
+                "numKeys" => "$numKeys",
+                "version" => "$currentver",
+                "customerPanelLink" => "https://keyauth.cc/panel/$owner/$name/"
+            ),
+            "nonce" => misc\etc\generateRandomString(32)
+        ));
+    
+        $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+        header("signature: {$sig}");
+    
         die($response);
     case 'setvar':
         $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
@@ -1219,7 +1268,11 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $msg = misc\etc\sanitize($_POST['message'] ?? $_GET['message']);
 
         if(is_null($msg)) {
-            die();
+            die("No log data specified");
+        }
+
+        if(strlen($msg) > 275) {
+            die("Log data too long");
         }
 
         $pcuser = misc\etc\sanitize($_POST['pcuser'] ?? $_GET['pcuser']);
@@ -1246,13 +1299,6 @@ switch ($_POST['type'] ?? $_GET['type']) {
         $ip = api\shared\primary\getIp();
 
         $json_data = json_encode([
-            // Username
-            "username" => "KeyAuth",
-
-            // Avatar URL.
-            // Uncoment to replace image set in webhook
-            "avatar_url" => "https://cdn.keyauth.cc/front/assets/img/favicon.png",
-
             // Embeds Array
             "embeds" => [
                 [
@@ -1574,37 +1620,20 @@ switch ($_POST['type'] ?? $_GET['type']) {
         header("signature: {$sig}");
 
         die($response);
+    case 'logout':
+        $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
+        $session = api\shared\primary\getSession($sessionid, $secret);
+        $enckey = $session["enckey"];
+        misc\session\killSingular($sessionid, $secret);
+        $response = json_encode(array(
+            "success" => true,
+            "message" => "Successfully logged out.",
+            "nonce" => misc\etc\generateRandomString(32)
+        ));
+        $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+        header("signature: {$sig}");
 
-        case 'logout':
-        
-            $sessionid = misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']);
-            $session = api\shared\primary\getSession($sessionid, $secret);
-            $enckey = $session["enckey"];
-            $killsession = misc\mysql\query("DELETE FROM `sessions` WHERE `id` = ?", [$sessionid]);
-    
-            if ($killsession->affected_rows > 0) {
-    
-                $response = json_encode(array(
-                    "success" => true,
-                    "message" => "Successfully logged out."
-                ));
-    
-                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
-                header("signature: {$sig}");
-        
-                die($response);
-            }
-            else {
-                $response = json_encode(array(
-                    "success" => false,
-                    "message" => "Failed to logout."
-                ));
-    
-                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
-                header("signature: {$sig}");
-        
-                die($response);
-            }
+        die($response);
     default:
         die(json_encode(array(
             "success" => false,

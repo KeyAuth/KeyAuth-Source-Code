@@ -8,8 +8,8 @@ use misc\mysql;
 
 function addButton($text, $value, $secret = null)
 {
-	
-	$text = etc\sanitize($text);
+    
+    $text = etc\sanitize($text);
     $value = etc\sanitize($value);
     $query = mysql\query("INSERT INTO `buttons` (`text`, `value`, `app`) VALUES (?, ?, ?)",[$text, $value, $secret ?? $_SESSION['app']]);
 
@@ -25,8 +25,8 @@ function addButton($text, $value, $secret = null)
 
 function deleteButton($value, $secret = null)
 {
-	
-	$value = etc\sanitize($value);
+    
+    $value = etc\sanitize($value);
     $query = mysql\query("DELETE FROM `buttons` WHERE `value` = ? AND `app` = ?",[$value, $secret ?? $_SESSION['app']]);
 
     if ($query->affected_rows > 0) {

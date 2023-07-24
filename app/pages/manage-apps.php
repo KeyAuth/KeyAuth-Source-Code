@@ -1,266 +1,278 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
-	header("location: ./?page=reseller-licenses");
-	die();
+    header("location: ./?page=reseller-licenses");
+    die();
 }
 ?>
 
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
-	<div class="alert alert-primary" role="alert">
-		Please join the new Discord server <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
-	</div>
+    <?php
+    if(in_array($_SESSION['username'], array("pyseniiiuu", "gabbyacaso", "CRiQHWID", "JIkje", "hVNC", "Sahl", "pyseniiuulol", "Nonamed", "mak"))) {
+    ?>
+    <div class="alert alert-danger" role="alert">
+        hello <b><?php echo $_SESSION['username']; ?></b>,<br><br>We've noticed you're using an old KeyAuth domain. Please use the latest <code>keyauth.win</code> domain.<br><br>This will be faster and more reliable. Please change the URL, then change your version and set download link in <a href="https://keyauth.cc/app/?page=app-settings" target="_blank">https://keyauth.cc/app/?page=app-settings</a> to ensure people get updated to the latest program.
+    </div>
+    <?php
+    }
+    ?>
+    <div class="alert alert-primary" role="alert">
+        Please join Telegram group <a href="https://t.me/keyauth" target="_blank">https://t.me/keyauth</a>
+    </div>
     <?php
 
-	if (isset($_POST['selectApp'])) {
-		$appName = misc\etc\sanitize($_POST['selectApp']);
+    if (isset($_POST['selectApp'])) {
+        $appName = misc\etc\sanitize($_POST['selectApp']);
         $query = misc\mysql\query("SELECT `secret`, `name`, `banned` FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $appName]);
-		
-		if ($query->num_rows < 1) {
-			dashboard\primary\error("Application not found!");
-		}
-		else {
-			$row = mysqli_fetch_array($query->result);
-			$banned = $row["banned"];
-			
-			if($banned) {
-				dashboard\primary\error("Application is banned!");
-			}
-			else {
-				$_SESSION["app"] = $row["secret"];
-				$_SESSION["name"] = $appName;
-				$_SESSION["selectedApp"] = $row["name"];
-				
-				echo '<meta http-equiv="refresh" content="0">'; // needed to refresh nav sidebar
-				dashboard\primary\success("Successfully Selected the App!");
-			}
-		}
-	}
+        
+        if ($query->num_rows < 1) {
+            dashboard\primary\error("Application not found!");
+        }
+        else {
+            $row = mysqli_fetch_array($query->result);
+            $banned = $row["banned"];
+            
+            if($banned) {
+                dashboard\primary\error("Application is banned!");
+            }
+            else {
+                $_SESSION["app"] = $row["secret"];
+                $_SESSION["name"] = $appName;
+                $_SESSION["selectedApp"] = $row["name"];
+                
+                echo '<meta http-equiv="refresh" content="0">'; // needed to refresh nav sidebar
+                dashboard\primary\success("Successfully Selected the App!");
+            }
+        }
+    }
 
-	if (isset($_POST['create_app'])) {
+    if (isset($_POST['create_app'])) {
 
-		$appname = misc\etc\sanitize($_POST['appname']);
-		if ($appname == "") {
-			dashboard\primary\error("Input a valid name");
+        $appname = misc\etc\sanitize($_POST['appname']);
+        if ($appname == "") {
+            dashboard\primary\error("Input a valid name");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
+            return;
+        }
 
         $query = misc\mysql\query("SELECT 1 FROM `apps` WHERE name = ? AND owner = ?", [$appname, $_SESSION['username']]);
-		if ($query->num_rows > 0) {
-			dashboard\primary\error("You already own application with this name!");
+        if ($query->num_rows > 0) {
+            dashboard\primary\error("You already own application with this name!");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
+            return;
+        }
 
-		$owner = $_SESSION['username'];
+        $owner = $_SESSION['username'];
 
-		if ($role == "tester") {
+        if ($role == "tester") {
             $num_rows = misc\mysql\query("SELECT * FROM `apps` WHERE `owner` = ? AND `ownerid` = ?", [$_SESSION['username'], $_SESSION['ownerid']])->num_rows;
 
-			if ($num_rows > 0) {
-				dashboard\primary\error("Tester plan only supports one application!");
+            if ($num_rows > 0) {
+                dashboard\primary\error("Tester plan only supports one application!");
                 echo '<meta http-equiv="refresh" content="2">';
-				return;
-			}
-		}
+                return;
+            }
+        }
 
-		if ($role == "Manager") {
-			dashboard\primary\error("Manager Accounts Are Not Allowed To Create Applications");
+        if ($role == "Manager") {
+            dashboard\primary\error("Manager Accounts Are Not Allowed To Create Applications");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
+            return;
+        }
 
-		$clientsecret = hash('sha256', misc\etc\generateRandomString());
-		$algos = array(
-			'ripemd128',
-			'md5',
-			'md4',
-			'tiger128,4',
-			'haval128,3',
-			'haval128,4',
-			'haval128,5'
-		);
-		$sellerkey = hash($algos[array_rand($algos)], misc\etc\generateRandomString());
+        $clientsecret = hash('sha256', misc\etc\generateRandomString());
+        $algos = array(
+            'ripemd128',
+            'md5',
+            'md4',
+            'tiger128,4',
+            'haval128,3',
+            'haval128,4',
+            'haval128,5'
+        );
+        $sellerkey = hash($algos[array_rand($algos)], misc\etc\generateRandomString());
         misc\mysql\query("INSERT INTO `subscriptions` (`name`, `level`, `app`) VALUES ('default', '1', ?)", [$clientsecret]);
         $query = misc\mysql\query("INSERT INTO `apps` (`owner`, `name`, `secret`, `ownerid`, `enabled`, `hwidcheck`, `sellerkey`) VALUES (?, ?, ?, ?, '1', '1', ?)", [$_SESSION['username'], $appname, $clientsecret, $_SESSION['ownerid'], $sellerkey]);
 
-		if ($query->affected_rows != 0) {
-			$_SESSION['secret'] = $clientsecret;
-			dashboard\primary\success("Successfully Created App!");
-			$_SESSION['app'] = $clientsecret;
-			$_SESSION["selectedapp"] = $appname;
-			$_SESSION['name'] = $appname;
-			$_SESSION['sellerkey'] = $sellerkey;
-		} else {
-			dashboard\primary\error("Failed to create application!");
-		}
-	}
+        if ($query->affected_rows != 0) {
+            $_SESSION['secret'] = $clientsecret;
+            dashboard\primary\success("Successfully Created App!");
+            $_SESSION['app'] = $clientsecret;
+            $_SESSION["selectedapp"] = $appname;
+            $_SESSION['name'] = $appname;
+            $_SESSION['sellerkey'] = $sellerkey;
+        } else {
+            dashboard\primary\error("Failed to create application!");
+        }
+    }
 
-	if (isset($_POST['rename_app'])) {
-		$appname = misc\etc\sanitize($_POST['appname']);
-		if ($appname == "") {
-			dashboard\primary\error("Input a valid name");
+    if (isset($_POST['rename_app'])) {
+        $appname = misc\etc\sanitize($_POST['appname']);
+        if ($appname == "") {
+            dashboard\primary\error("Input a valid name");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
-		if ($role == "Manager") {
-			dashboard\primary\error("Manager Accounts Aren't Allowed To Rename Applications");
+            return;
+        }
+        if ($role == "Manager") {
+            dashboard\primary\error("Manager Accounts Aren't Allowed To Rename Applications");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
-		$query = misc\mysql\query("SELECT 1 FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $appname]);
-		if ($query->num_rows > 0) {
-			dashboard\primary\error("You already have an application with this name!");
+            return;
+        }
+        $query = misc\mysql\query("SELECT 1 FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $appname]);
+        if ($query->num_rows > 0) {
+            dashboard\primary\error("You already have an application with this name!");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
+            return;
+        }
         misc\mysql\query("UPDATE `accounts` SET `app` = ? WHERE `app` = ? AND `owner` = ?", [$appname, $_SESSION['name'], $_SESSION['username']]);
         $query = misc\mysql\query("UPDATE `apps` SET `name` = ? WHERE `secret` = ? AND `owner` = ?", [$appname, $_SESSION['app'], $_SESSION['username']]);
 
-		if ($query->affected_rows != 0) {
+        if ($query->affected_rows != 0) {
             $oldName = $_SESSION['name'];
             $_SESSION['name'] = $appname;
-			dashboard\primary\success("Successfully Renamed App!");
-			misc\cache\purge('KeyAuthApp:' . $oldName . ':' . $_SESSION['ownerid']);
-			if ($_SESSION['role'] == "seller") {
+            dashboard\primary\success("Successfully Renamed App!");
+            misc\cache\purge('KeyAuthApp:' . $oldName . ':' . $_SESSION['ownerid']);
+            if ($_SESSION['role'] == "seller") {
                 $query = misc\mysql\query("SELECT `customDomain`, `sellerkey`, `customDomainAPI` FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $appname]);
-				$row = mysqli_fetch_array($query->result);
-				misc\cache\purge('KeyAuthAppPanel:' . $row['customDomain']);
+                $row = mysqli_fetch_array($query->result);
+                misc\cache\purge('KeyAuthAppPanel:' . $row['customDomain']);
                 misc\cache\purge('KeyAuthAppSeller:' . $row['sellerkey']);
-			}
-			$_SESSION["selectedapp"] = $appname;
-		} else {
-			dashboard\primary\error("Application Renamed Failed!");
-		}
-	}
+            }
+            $_SESSION["selectedapp"] = $appname;
+        } else {
+            dashboard\primary\error("Application Renamed Failed!");
+        }
+    }
 
-	if (isset($_POST['pauseapp'])) {
-		if ($role == "Manager") {
-			dashboard\primary\error("Manager accounts aren't allowed to pause applications");
+    if (isset($_POST['pauseapp'])) {
+        if ($role == "Manager") {
+            dashboard\primary\error("Manager accounts aren't allowed to pause applications");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
-		misc\cache\purgePattern('KeyAuthSubs:' . $_SESSION["app"]);
-		misc\app\pause();
-		dashboard\primary\success("Paused application and any active subscriptions!");
-	}
-	if (isset($_POST['unpauseapp'])) {
-		if ($role == "Manager") {
-			dashboard\primary\error("Manager accounts aren't allowed to unpause applications");
+            return;
+        }
+        misc\cache\purgePattern('KeyAuthSubs:' . $_SESSION["app"]);
+        misc\app\pause();
+        dashboard\primary\success("Paused application and any active subscriptions!");
+    }
+    if (isset($_POST['unpauseapp'])) {
+        if ($role == "Manager") {
+            dashboard\primary\error("Manager accounts aren't allowed to unpause applications");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
-		misc\cache\purgePattern('KeyAuthSubs:' . $_SESSION["app"]);
-		misc\app\unpause();
-		dashboard\primary\success("Unpaused application and any paused subscriptions!");
-	}
+            return;
+        }
+        misc\cache\purgePattern('KeyAuthSubs:' . $_SESSION["app"]);
+        misc\app\unpause();
+        dashboard\primary\success("Unpaused application and any paused subscriptions!");
+    }
 
-	if (isset($_POST['refreshapp'])) {
-		if ($role == "Manager") {
-			dashboard\primary\error("Manager Accounts Aren't Allowed To Refresh Applications");
+    if (isset($_POST['refreshapp'])) {
+        if ($role == "Manager") {
+            dashboard\primary\error("Manager Accounts Aren't Allowed To Refresh Applications");
             echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
+            return;
+        }
         $gen = misc\etc\generateRandomString();
-		$new_secret = hash('sha256', $gen);
+        $new_secret = hash('sha256', $gen);
         $query = misc\mysql\query("UPDATE `apps` SET `secret` = ? WHERE `secret` = ? AND `owner` = ?", [$new_secret, $_SESSION['app'], $_SESSION['username']]);
-		$_SESSION['secret'] = $new_secret;
-		if ($query->affected_rows != 0) {
-			misc\mysql\query("UPDATE `bans` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `buttons` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `chatmsgs` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `chatmutes` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `chats` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `files` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `keys` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `logs` SET `logapp` = ? WHERE `logapp` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `sessions` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `subs` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `subscriptions` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `users` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `uservars` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `vars` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			misc\mysql\query("UPDATE `webhooks` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
-			$_SESSION['app'] = $new_secret;
-			misc\cache\purge('KeyAuthApp:' . $_SESSION['name'] . ':' . $_SESSION['ownerid']);
-			if ($_SESSION['role'] == "seller" || $_SESSION['role'] == "developer") {
-				$query = misc\mysql\query("SELECT `sellerkey`,`customDomainAPI` FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $_SESSION['name']]);
-				$row = mysqli_fetch_array($query->result);
-				misc\cache\purge('KeyAuthAppSeller:' . $row['sellerkey']);
-				misc\cache\purge('KeyAuthApp:' . $row['customDomainAPI']);
-			}
-			dashboard\primary\success("Successfully Refreshed App!");
-		} else {
-			dashboard\primary\error("Application Refresh Failed!");
-		}
-	}
-
-	if (isset($_POST['deleteapp'])) {
-		if ($role == "Manager") {
-			dashboard\primary\error("Manager Accounts Aren't Allowed To Delete Applications");
-            echo '<meta http-equiv="refresh" content="2">';
-			return;
-		}
-		$app = $_SESSION['app'];
-        $query = misc\mysql\query("DELETE FROM `apps` WHERE `secret` = ?", [$app]);
-		if ($query->affected_rows != 0) {
-			misc\mysql\query("DELETE FROM `files` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `keys` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `logs` WHERE `logapp` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `bans` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `buttons` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `chatmsgs` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `chatmutes` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `chats` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `sessions` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `subs` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `subscriptions` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `users` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `uservars` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `vars` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `webhooks` WHERE `app` = ?", [$app]);
-			misc\mysql\query("DELETE FROM `accounts` WHERE `app` = ? AND `owner` = ?", [$_SESSION['name'], $_SESSION['username']]);
-
-			misc\cache\purge('KeyAuthApp:' . $_SESSION['name'] . ':' . $_SESSION['ownerid']);
+        $_SESSION['secret'] = $new_secret;
+        if ($query->affected_rows != 0) {
+            misc\mysql\query("UPDATE `bans` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `buttons` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `chatmsgs` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `chatmutes` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `chats` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `files` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `keys` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `logs` SET `logapp` = ? WHERE `logapp` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `sessions` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `subs` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `subscriptions` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `users` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `uservars` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `vars` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            misc\mysql\query("UPDATE `webhooks` SET `app` = ? WHERE `app` = ?", [$new_secret, $_SESSION['app']]);
+            $_SESSION['app'] = $new_secret;
+            misc\cache\purge('KeyAuthApp:' . $_SESSION['name'] . ':' . $_SESSION['ownerid']);
             if ($_SESSION['role'] == "seller" || $_SESSION['role'] == "developer") {
-				$query = misc\mysql\query("SELECT `sellerkey`,`customDomainAPI` FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $_SESSION['name']]);
-				$row = mysqli_fetch_array($query->result);
-				misc\cache\purge('KeyAuthAppSeller:' . $row['sellerkey']);
-				misc\cache\purge('KeyAuthApp:' . $row['customDomainAPI']);
-			}
+                $query = misc\mysql\query("SELECT `sellerkey`,`customDomainAPI` FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $_SESSION['name']]);
+                $row = mysqli_fetch_array($query->result);
+                misc\cache\purge('KeyAuthAppSeller:' . $row['sellerkey']);
+                misc\cache\purge('KeyAuthApp:' . $row['customDomainAPI']);
+            }
+            dashboard\primary\success("Successfully Refreshed App!");
+        } else {
+            dashboard\primary\error("Application Refresh Failed!");
+        }
+    }
 
-			$_SESSION['app'] = NULL;
-			dashboard\primary\success("Successfully deleted App!");
-			$query = misc\mysql\query("SELECT * FROM `apps` WHERE `owner` = ? AND `ownerid` = ?",[$_SESSION['username'], $_SESSION['ownerid']]); // select all apps where owner is current user
-			if ($query->num_rows == 1) // if the user only owns one app, select that app, otherwise select no app 
-			{
-				$row = mysqli_fetch_array($query->result);
-				$_SESSION['name'] = $row["name"];
-				$_SESSION["selectedApp"] = $row["name"];
-				$_SESSION['app'] = $row["secret"];
-			} else {
-				$_SESSION['name'] = NULL;
-				$_SESSION["selectedApp"] = NULL;
-			}
-		} else {
-			dashboard\primary\error("Application Deletion Failed!");
-		}
-	}
+    if (isset($_POST['deleteapp'])) {
+        if ($role == "Manager") {
+            dashboard\primary\error("Manager Accounts Aren't Allowed To Delete Applications");
+            echo '<meta http-equiv="refresh" content="2">';
+            return;
+        }
+        $app = $_SESSION['app'];
+        $query = misc\mysql\query("DELETE FROM `apps` WHERE `secret` = ?", [$app]);
+        if ($query->affected_rows != 0) {
+            misc\mysql\query("DELETE FROM `bans` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `buttons` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `chatmsgs` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `chatmutes` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `chats` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `files` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `keys` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `logs` WHERE `logapp` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `sessions` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `subs` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `subscriptions` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `users` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `uservars` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `vars` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `webhooks` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `auditLog` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `sellerLogs` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `whitelist` WHERE `app` = ?", [$app]);
+            misc\mysql\query("DELETE FROM `accounts` WHERE `app` = ? AND `owner` = ?", [$_SESSION['name'], $_SESSION['username']]);
 
-	if (isset($_SESSION["app"])) {
-		$appsecret = $_SESSION["app"];
+            misc\cache\purge('KeyAuthApp:' . $_SESSION['name'] . ':' . $_SESSION['ownerid']);
+            if ($_SESSION['role'] == "seller" || $_SESSION['role'] == "developer") {
+                $query = misc\mysql\query("SELECT `sellerkey`,`customDomainAPI` FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $_SESSION['name']]);
+                $row = mysqli_fetch_array($query->result);
+                misc\cache\purge('KeyAuthAppSeller:' . $row['sellerkey']);
+                misc\cache\purge('KeyAuthApp:' . $row['customDomainAPI']);
+            }
+
+            $_SESSION['app'] = NULL;
+            dashboard\primary\success("Successfully deleted App!");
+            $query = misc\mysql\query("SELECT * FROM `apps` WHERE `owner` = ? AND `ownerid` = ?",[$_SESSION['username'], $_SESSION['ownerid']]); // select all apps where owner is current user
+            if ($query->num_rows == 1) // if the user only owns one app, select that app, otherwise select no app 
+            {
+                $row = mysqli_fetch_array($query->result);
+                $_SESSION['name'] = $row["name"];
+                $_SESSION["selectedApp"] = $row["name"];
+                $_SESSION['app'] = $row["secret"];
+            } else {
+                $_SESSION['name'] = NULL;
+                $_SESSION["selectedApp"] = NULL;
+            }
+        } else {
+            dashboard\primary\error("Application Deletion Failed!");
+        }
+    }
+
+    if (isset($_SESSION["app"])) {
+        $appsecret = $_SESSION["app"];
         $query = misc\mysql\query("SELECT * FROM `apps` WHERE `secret` = ?", [$appsecret]);
 
-		$row = mysqli_fetch_array($query->result);
-		$appname = $row["name"];
-		$secret = $row["secret"];
-		$version = $row["ver"];
-		$ownerid = $row["ownerid"];
+        $row = mysqli_fetch_array($query->result);
+        $appname = $row["name"];
+        $secret = $row["secret"];
+        $version = $row["ver"];
+        $ownerid = $row["ownerid"];
         $paused = $row["paused"];
 
-		$_SESSION["secret"] = $secret;
-	?>
+        $_SESSION["secret"] = $secret;
+    ?>
     <!-- Include the jQuery library -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -319,11 +331,11 @@ if ($_SESSION['role'] == "Reseller") {
                         <a class="nav-link btn btn-sm btn-color-muted btn-active btn-active-secondary fw-bolder px-4"
                             data-bs-toggle="tab" href="#kt_table_widget_5_tab_10">Lua</a>
                     </li>
-					<li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link btn btn-sm btn-color-muted btn-active btn-active-secondary fw-bolder px-4"
                             data-bs-toggle="tab" href="#kt_table_widget_5_tab_11">Ruby</a>
                     </li>
-					<li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link btn btn-sm btn-color-muted btn-active btn-active-secondary fw-bolder px-4"
                             data-bs-toggle="tab" href="#kt_table_widget_5_tab_12">Perl</a>
                     </li>
@@ -405,8 +417,8 @@ $ownerid = "<?php echo $ownerid; ?>"; // your KeyAuth account's ownerid, located
 private static String appname = "<?php echo $appname; ?>"; // Application name
 private static String version = "<?php echo $version; ?>"; // Application version</code>
                     <br>
-                    Repository: <a href="https://github.com/KeyAuth-Archive/KeyAuth-JAVA-api"
-                        target="_blank">https://github.com/KeyAuth-Archive/KeyAuth-JAVA-api</a>
+                    Repository: <a href="https://github.com/SprayDown/KeyAuth-JAVA-api"
+                        target="_blank">https://github.com/SprayDown/KeyAuth-JAVA-api</a>
                     <!--end::Table-->
                 </div>
                 <div class="tab-pane fade" id="kt_table_widget_5_tab_7">
@@ -467,7 +479,7 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                         target="_blank">https://github.com/mazkdevf/KeyAuth-Ruby-Example</a>
                     <!--end::Table-->
                 </div>
-				<div class="tab-pane fade" id="kt_table_widget_5_tab_12">
+                <div class="tab-pane fade" id="kt_table_widget_5_tab_12">
                     <!--begin::Table container-->
                     <code style="display: block;white-space:pre-wrap;">KeyAuth::Api(
     "<?php echo $appname; ?>",
@@ -486,32 +498,32 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
         <!--end::Body-->
     </div>
     <?php
-	} 
-	if($_SESSION['role'] != "Manager") {
-	?>
+    } 
+    if($_SESSION['role'] != "Manager") {
+    ?>
     <a class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#create_app">Create App</a>
-	<?php
-	}
-	if(isset($_SESSION['app']) && $_SESSION['role'] != "Manager") {
-	?>
+    <?php
+    }
+    if(isset($_SESSION['app']) && $_SESSION['role'] != "Manager") {
+    ?>
     <a class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#rename_app">Rename App</a>
     <?php
-	if (!$paused) {
-	?>
+    if (!$paused) {
+    ?>
     <a class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#pause_app">Pause App & Users</a>
     <?php
-	} else {
-	?>
+    } else {
+    ?>
     <a class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#unpause_app">Unpause App & Users</a>
     <?php
-	}
-	?>
+    }
+    ?>
     <a class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#refresh_app">Refresh App Secret</a>
     <a class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#delete_app">Delete App</a>
-	<?php
-	}
-	if($_SESSION['role'] != "Manager") {
-	?>
+    <?php
+    }
+    if($_SESSION['role'] != "Manager") {
+    ?>
     <br></br>
     <div class="card">
         <div class="card-body">
@@ -520,22 +532,22 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
                     <th>Application</th>
                     <th>Action</th>
                     <?php
-					$rows = array();
+                    $rows = array();
                     $query = misc\mysql\query("SELECT * FROM `apps` WHERE `owner` = ? AND `ownerid` = ? ORDER BY `name` ASC",[$_SESSION['username'], $_SESSION['ownerid']]);
-					while ($r = mysqli_fetch_assoc($query->result)) {
-						$rows[] = $r;
-					}
+                    while ($r = mysqli_fetch_assoc($query->result)) {
+                        $rows[] = $r;
+                    }
 
-					foreach ($rows as $row) {
-						$appName = $row['name'];
-						$paused = $row['paused'];
-						
-						if (isset($_SESSION["selectedApp"])) {
+                    foreach ($rows as $row) {
+                        $appName = $row['name'];
+                        $paused = $row['paused'];
+                        
+                        if (isset($_SESSION["selectedApp"])) {
                             $appSelected = ($_SESSION["selectedApp"] == $appName);
                         } else {
                             $appSelected = 0;
                         }
-					?>
+                    ?>
                     <tr>
 
                         <td><?php echo $appName ?> <span style="display:<?= $paused == 1 ? 'inline' : 'none'; ?>;"
@@ -552,9 +564,9 @@ APPVersion = "<?php echo $version; ?>" --* Application Version</code>
             </div>
         </div>
     </div>
-	<?php
-	}
-	?>
+    <?php
+    }
+    ?>
 
 
     <!--begin::Modal - Create App-->

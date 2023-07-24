@@ -16,12 +16,12 @@ if (!isset($_SESSION['username'])) {
 
 set_exception_handler(function ($exception) {
     error_log("\n--------------------------------------------------------------\n");
-	error_log($exception);
+    error_log($exception);
     error_log("\nRequest data:");
     error_log(print_r($_POST, true));
     error_log("\n--------------------------------------------------------------");
-	http_response_code(500);
-	\dashboard\primary\error($exception->getMessage());
+    http_response_code(500);
+    \dashboard\primary\error($exception->getMessage());
 });
 
 $username = $_SESSION['username'];
@@ -70,7 +70,7 @@ if (!$_SESSION['app']) // no app selected yet
     <base href="">
     <title>Keyauth - Open Source Auth</title>
     <link rel="shortcut icon" href="https://cdn.keyauth.cc/v2/assets/media/logos/favicon.ico" />
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--begin::Page Vendor Stylesheets(used by this page)-->
     <link href="https://cdn.keyauth.cc/v2/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet"
         type="text/css" />
@@ -125,28 +125,28 @@ if (!$_SESSION['app']) // no app selected yet
 
 <?php include 'layout/_scrolltop.php' ?>
 
-		<!--end::Modals-->
-		<!--begin::Javascript-->
-		<!--begin::Global Javascript Bundle(used by all pages)-->
-		<script src="https://cdn.keyauth.cc/v2/assets/plugins/global/plugins.bundle.js"></script>
-		<script src="https://cdn.keyauth.cc/v2/assets/js/scripts.bundle.js"></script>
-		<!--end::Global Javascript Bundle-->
-		<!--begin::Page Vendors Javascript(used by this page)-->
-		<script src="https://cdn.keyauth.cc/v2/assets/plugins/custom/datatables/datatables.bundle.js"></script>
-		<script src="https://cdn.keyauth.cc/v2/assets/plugins/custom/datatables/datatables.js"></script>
-		<!--end::Page Vendors Javascript-->
-		<!--end::Javascript-->
-		<script src="https://cdn.keyauth.cc/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
-		<script src="https://cdn.keyauth.cc/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
-		
-		<script>
-			// @see https://docs.headwayapp.co/widget for more configuration options.
-			var HW_config = {
-				selector: ".noti", // CSS selector where to inject the badge
-				account: "yBgPqx"
-			}
-		</script>
-		<script async src="https://cdn.headwayapp.co/widget.js"></script>
-	</body>
-	<!--end::Body-->
+        <!--end::Modals-->
+        <!--begin::Javascript-->
+        <!--begin::Global Javascript Bundle(used by all pages)-->
+        <script src="https://cdn.keyauth.cc/v2/assets/plugins/global/plugins.bundle.js"></script>
+        <script src="https://cdn.keyauth.cc/v2/assets/js/scripts.bundle.js"></script>
+        <!--end::Global Javascript Bundle-->
+        <!--begin::Page Vendors Javascript(used by this page)-->
+        <script src="https://cdn.keyauth.cc/v2/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+        <script src="https://cdn.keyauth.cc/v2/assets/plugins/custom/datatables/datatables.js"></script>
+        <!--end::Page Vendors Javascript-->
+        <!--end::Javascript-->
+        <script src="https://cdn.keyauth.cc/dashboard/assets/libs/popper-js/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.keyauth.cc/dashboard/assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+        
+        <script>
+            // @see https://docs.headwayapp.co/widget for more configuration options.
+            var HW_config = {
+                selector: ".noti", // CSS selector where to inject the badge
+                account: "yBgPqx"
+            }
+        </script>
+        <script async src="https://cdn.headwayapp.co/widget.js"></script>
+    </body>
+    <!--end::Body-->
 </html>

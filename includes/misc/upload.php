@@ -16,7 +16,7 @@ function add($url, $authed, $secret = null)
   }
 
   if(str_contains($url, "localhost") || str_contains($url, "127.0.0.1") || str_contains($url, "file:/"))
-		return 'no_local';
+    return 'no_local';
 
   $file = file_get_contents($url);
   $filesize = strlen($file);

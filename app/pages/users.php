@@ -14,6 +14,7 @@ if (isset($_POST['saveuser'])) {
     $username = misc\etc\sanitize($_POST['username']);
     $hwid = misc\etc\sanitize($_POST['hwid']);
     $pass = misc\etc\sanitize($_POST['pass']);
+    $email = misc\etc\sanitize($_POST['email']);
     if (isset($hwid) && trim($hwid) != '') {
         $query = misc\mysql\query("SELECT `hwid` FROM `users` WHERE `username` = ? AND `app` = ?", [$un, $_SESSION['app']]);
         $row = mysqli_fetch_array($query->result);
@@ -58,6 +59,20 @@ if (isset($_POST['saveuser'])) {
                 break;
         }
     }
+    if (isset($email) && trim($email) != '') {
+        $resp = misc\user\changeEmail($un, $email, $_SESSION['app']);
+        switch ($resp) {
+            case 'failure':
+                dashboard\primary\error("Failed to change email!");
+                break;
+            case 'success':
+                dashboard\primary\success("Successfully changed email!");
+                break;
+            default:
+                dashboard\primary\error("Unhandled Error! Contact us if you need help");
+                break;
+        }
+    }
 }
 if (isset($_POST['deletevar'])) {
     $resp = misc\user\deleteVar(urldecode($_POST['deletevar']), $_POST['var']);
@@ -89,17 +104,17 @@ if (isset($_POST['deletesub'])) {
             break;
     }
 }
+if (isset($_POST['dlusers'])) {
+    echo "<meta http-equiv='Refresh' Content='0; url=license-download.php?type=users'>";
+    // get all rows, put in text file, download text file, delete text file.
+
+}
 if (isset($_POST['importusers'])) {
     if (!empty($_POST['authgg'])) {
         $json = $_POST['authgg'];
         $data = json_decode($json);
 
         foreach ($data as $key => $row) {
-            if (empty($row->username)) {
-				dashboard\primary\error("Invalid Format, please watch tutorial video!");
-				echo "<meta http-equiv='Refresh' Content='2;'>";
-				return;
-			}
             $email = misc\etc\sanitize($row->email);
             if (strpos($email, '@') !== false) { // ensure the email field is an actual email address
                 $email = sha1(strtolower($email));
@@ -134,39 +149,39 @@ if (isset($_POST['importusers'])) {
         }
     } else {
         $users = misc\etc\sanitize($_POST['users']);
-        $text = explode("|", $users);
-        str_replace('"', "", $text);
-        str_replace("'", "", $text);
-        foreach ($text as $line) {
-            $array = explode(',', $line);
-            $first = $array[0];
-            if (!isset($first) || $first == '') {
-                dashboard\primary\error("Invalid Format!");
-                echo "<meta http-equiv='Refresh' Content='2;'>";
-                return;
+        $json = json_decode($users);
+
+        foreach ($json->users as $user) {
+
+            $username = $user->username;
+            $email = $user->email;
+            $password = $user->password;
+            $hwid = $user->hwid;
+            $banned = $user->banned;
+            $ip = $user->ip;
+            $expiry = $user->expiry;
+
+            $users = misc\mysql\query("SELECT * FROM `users` WHERE `app` = ?", [$_SESSION["app"]]);
+
+            $userrows = mysqli_fetch_all($users->result, MYSQLI_ASSOC);
+
+            foreach ($userrows as $user) {
+                if ($user["username"] === $username) {
+                    dashboard\primary\error("User $username Already Exists");
+                    return;
+                } 
             }
-            $second = $array[1];
-            if (!isset($second) || $second == '') {
-                dashboard\primary\error("Invalid Format!");
-                echo "<meta http-equiv='Refresh' Content='2;'>";
-                return;
-            }
-            $third = $array[2];
-            if (!isset($third) || $third == '') {
-                dashboard\primary\error("Invalid Format!");
-                echo "<meta http-equiv='Refresh' Content='2;'>";
-                return;
-            }
-            $forth = $array[3]; // there shouldn't be a forth, it wouldn't be following the format
-            if(isset($forth)) {
-                dashboard\primary\error("Invalid Format!");
-				echo "<meta http-equiv='Refresh' Content='2;'>";
-				return;
-            }
-            $expiry = ($third * 86400) + time();
-            misc\mysql\query("INSERT INTO `users` (`username`, `hwid`, `app`,`owner`, `createdate`) VALUES (?, ?, ?, ?, ?)", [$first, $second, $_SESSION['app'], $_SESSION['username'], time()]);
-            misc\mysql\query("INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES (?, 'default', ?, ?)", [$first, $expiry, $_SESSION['app']]);
+            misc\mysql\query("INSERT INTO `users` (`username`, `email`, `password`, `hwid`, `app`,`owner`, `createdate`, `banned`, `ip`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$username, $email, $password, $hwid, $_SESSION['app'], $_SESSION['username'], time(), $banned, $ip]);
         }
+
+        foreach ($json->subscription as $sub) {
+
+            $username = $sub->user;
+            $expiry = $sub->expiry;
+
+            misc\mysql\query("INSERT INTO `subs` (`user`, `subscription`, `expiry`, `app`) VALUES (?, 'default', ?, ?)", [$username, $expiry, $_SESSION['app']]);
+        }
+
     }
     dashboard\primary\success("Successfully imported users!");
 }
@@ -389,9 +404,9 @@ if (isset($_POST['pauseuser'])) {
     }
     if ($updateQuery->affected_rows > 0) {
         misc\cache\purge('KeyAuthSubs:' . $_SESSION['app'] . ':' . $user);
-        dashboard\primary\success("Successfully paused user", $format);
+        dashboard\primary\success("Successfully paused user");
     } else {
-        dashboard\primary\error("Failed to pause user", $format);
+        dashboard\primary\error("Failed to pause user");
     }
 }
 if (isset($_POST['unpauseuser'])) {
@@ -405,9 +420,9 @@ if (isset($_POST['unpauseuser'])) {
     }
     if ($updateQuery->affected_rows > 0) {
         misc\cache\purge('KeyAuthSubs:' . $_SESSION['app'] . ':' . $user);
-        dashboard\primary\success("Successfully unpaused user", $format);
+        dashboard\primary\success("Successfully unpaused user");
     } else {
-        dashboard\primary\error("Failed to unpause user", $format);
+        dashboard\primary\error("Failed to unpause user");
     }
 }
 ?>
@@ -423,7 +438,7 @@ if (isset($_POST['unpauseuser'])) {
 <div id="kt_content_container" class="container-xxl">
     <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
     <div class="alert alert-primary" role="alert">
-        Please join the new Discord server <a href="https://discord.gg/keyauth" target="_blank">https://discord.gg/keyauth</a>
+        Please join Telegram group <a href="https://t.me/keyauth" target="_blank">https://t.me/keyauth</a>
     </div>
     <form method="POST">
         <button data-bs-toggle="modal" type="button" id="modal" data-bs-target="#create-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
@@ -431,6 +446,7 @@ if (isset($_POST['unpauseuser'])) {
         <button data-bs-toggle="modal" type="button" id="modal" data-bs-target="#set-user-var" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
             Set Variable</button>
         <button data-bs-toggle="modal" type="button" data-bs-target="#import-users" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import users</button>
+        <button name="dlusers" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Export Users</button>
         <button data-bs-toggle="modal" type="button" data-bs-target="#extend-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Extend
             User(s)</button>
         <button data-bs-toggle="modal" type="button" data-bs-target="#subtract-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-clock fa-sm text-white-50"></i> Subtract
@@ -513,7 +529,7 @@ if (isset($_POST['unpauseuser'])) {
                                 Expiry:</label>
 
                             <?php
-                            echo '<input class="form-control" type="datetime-local" name="expiry" value="' . date("Y-m-d\TH:i", time()) . '" required>';
+                            echo '<input class="form-control" type="datetime-local" name="expiry" value="' . date("Y-m-d\TH:i", time() + 3600) . '" required>';
                             ?>
 
                         </div>
@@ -674,8 +690,8 @@ if (isset($_POST['unpauseuser'])) {
                         </div>
                         <br>
                         <div class="alert alert-primary" role="alert">
-	                    	Watch this tutorial for auth.gg import <a href="https://youtu.be/BkW0vu5e5UI?t=218" target="_blank">https://youtu.be/BkW0vu5e5UI?t=218</a>
-	                    </div>
+                            Watch this tutorial for auth.gg import <a href="https://youtu.be/BkW0vu5e5UI?t=218" target="_blank">https://youtu.be/BkW0vu5e5UI?t=218</a>
+                        </div>
 
                 </div>
 
@@ -1161,6 +1177,14 @@ if (isset($_POST['unpauseuser'])) {
                                 <label for="recipient-name" class="control-label">Password:</label>
 
                                 <input type="password" class="form-control" name="pass" placeholder="Set new password, we cannot read old password because it's hashed with BCrypt">
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <label for="recipient-name" class="control-label">Email:</label>
+
+                                <input type="email" class="form-control" name="email" placeholder="Change email address, for forget password function. Emails hashed with SHA1">
 
                             </div>
 

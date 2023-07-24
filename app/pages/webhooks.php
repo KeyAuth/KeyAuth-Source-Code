@@ -1,13 +1,13 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
-	die();
+    die();
 }
 if($role == "Manager" && !($permissions & 32)) {
-	die('You weren\'t granted permissions to view this page.');
+    die('You weren\'t granted permissions to view this page.');
 }
 if(!isset($_SESSION['app'])) {
-	die("Application not selected.");
+    die("Application not selected.");
 }
 
 if (isset($_POST['genwebhook'])) {
@@ -89,7 +89,7 @@ if (isset($_POST['editwebhook'])) {
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex align-items-center">
-												<h4 class="modal-title">Edit Webhook</h4>
+                                                <h4 class="modal-title">Edit Webhook</h4>
                                                 <!--begin::Close-->
                                                 <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
                                                     <span class="svg-icon svg-icon-1">
@@ -106,9 +106,9 @@ if (isset($_POST['editwebhook'])) {
                                                     <div class="form-group">
                                                         <label for="recipient-name" class="control-label">Webhook Endpoint:</label>
                                                         <input type="url" class="form-control" name="baselink" maxlength="200" value="' . $baselink . '" required>
-														<input type="hidden" name="webhook" value="' . $webhook . '">
+                                                        <input type="hidden" name="webhook" value="' . $webhook . '">
                                                     </div>
-													<div class="form-group">
+                                                    <div class="form-group">
                                                         <label for="recipient-name" class="control-label">User-Agent:</label>
                                                         <input type="text" class="form-control" name="useragent" value="' . $useragent . '" required>
                                                     </div>
@@ -116,11 +116,11 @@ if (isset($_POST['editwebhook'])) {
                                             <div class="modal-footer">
                                                 <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                                 <button class="btn btn-danger waves-effect waves-light" name="savewebhook">Save</button>
-												</form>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
-									</div>';
+                                    </div>';
 }
 
 if (isset($_POST['savewebhook'])) {
@@ -158,8 +158,8 @@ if (isset($_POST['savewebhook'])) {
 <!--begin::Container-->
 <div id="kt_content_container" class="container-xxl">
     <div class="alert alert-warning" role="alert">
-		People often this mistake this for Discord webhooks, please read <a href="https://docs.keyauth.cc/website/dashboard/webhooks" target="_blank">https://docs.keyauth.cc/website/dashboard/webhooks</a>
-	</div>
+        People often this mistake this for Discord webhooks, please read <a href="https://docs.keyauth.cc/website/dashboard/webhooks" target="_blank">https://docs.keyauth.cc/website/dashboard/webhooks</a>
+    </div>
     <button data-bs-toggle="modal" type="button" data-bs-target="#create-webhook"
         class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
         Create Webhook</button><br><br>
@@ -302,27 +302,27 @@ if (isset($_POST['savewebhook'])) {
                         // echo "  <td>". $row["status"]. "</td>";
 
                         echo '<form method="POST">
-			<td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions 
-			<!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
-			<span class="svg-icon svg-icon-5 m-0">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-					<path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
-				</svg>
-			</span>
-			<!--end::Svg Icon--></a>
-			<!--begin::Menu-->
-			<div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4">
-				<!--begin::Menu item-->
-				<div class="menu-item px-3">
-					<button class="btn menu-link px-3" style="font-size:0.95rem;" name="deletewebhook" value="' . $row["webid"] . '">Delete</button>
-				</div>
-				<!--end::Menu item-->
-				<!--begin::Menu item-->
-				<div class="menu-item px-3">
-					<button class="btn menu-link px-3" style="font-size:0.95rem;" name="editwebhook" value="' . $row["webid"] . '">Edit</button>
-				</div>
-				<!--end::Menu item-->
-			</div></td></tr></form>';
+            <td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions 
+            <!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
+            <span class="svg-icon svg-icon-5 m-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
+                </svg>
+            </span>
+            <!--end::Svg Icon--></a>
+            <!--begin::Menu-->
+            <div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4">
+                <!--begin::Menu item-->
+                <div class="menu-item px-3">
+                    <button class="btn menu-link px-3" style="font-size:0.95rem;" name="deletewebhook" value="' . $row["webid"] . '">Delete</button>
+                </div>
+                <!--end::Menu item-->
+                <!--begin::Menu item-->
+                <div class="menu-item px-3">
+                    <button class="btn menu-link px-3" style="font-size:0.95rem;" name="editwebhook" value="' . $row["webid"] . '">Edit</button>
+                </div>
+                <!--end::Menu item-->
+            </div></td></tr></form>';
                     }
                 }
             }
