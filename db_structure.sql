@@ -43,24 +43,13 @@ CREATE TABLE `accounts` (
   `lastreset` int DEFAULT NULL,
   `emailVerify` int NOT NULL DEFAULT '1',
   `permissions` bit(64) NOT NULL DEFAULT b'11111111111',
-  `afCode` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `affiliatedBy` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `securityKey` int NOT NULL DEFAULT '0',
   `staff` int DEFAULT '0',
-  `staffDiscordID` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `staffDiscordID` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `formBanned` int DEFAULT '0',
   `connection` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `stafftype` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-CREATE TABLE `afLogs` (
-  `id` int NOT NULL,
-  `afCode` varchar(50) DEFAULT NULL,
-  `referrer` varchar(3000) DEFAULT NULL,
-  `username` varchar(65) DEFAULT NULL,
-  `date` int DEFAULT NULL,
-  `action` varchar(40) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `apps` (
   `id` int NOT NULL,
@@ -367,9 +356,6 @@ ALTER TABLE `accounts`
   ADD KEY `idx_email_sha1` (`email`,`username`),
   ADD KEY `idx_accounts_owner` (`owner`);
 
-ALTER TABLE `afLogs`
-  ADD PRIMARY KEY (`id`);
-
 ALTER TABLE `apps`
   ADD PRIMARY KEY (`id`),
   ADD KEY `sellerkey_idx` (`sellerkey`),
@@ -483,9 +469,6 @@ ALTER TABLE `whitelist`
 
 
 ALTER TABLE `acclogs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `afLogs`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `apps`
