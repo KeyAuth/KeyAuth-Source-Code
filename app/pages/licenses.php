@@ -10,6 +10,11 @@ if(!isset($_SESSION['app'])) {
         die("Application not selected.");
 }
 if (isset($_POST['deletekey'])) {
+    if($_SESSION['role'] == "tester") {
+        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
     $userToo = ($_POST['delUserToo'] == "on") ? 1 : 0;
     $resp = misc\license\deleteSingular($_POST['deletekey'], $userToo);
     switch ($resp) {
@@ -236,6 +241,11 @@ if (isset($_POST['dlkeys'])) {
 
 }
 if (isset($_POST['delkeys'])) {
+    if($_SESSION['role'] == "tester") {
+        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
     $resp = misc\license\deleteAll();
     switch ($resp) {
         case 'failure':
@@ -250,6 +260,11 @@ if (isset($_POST['delkeys'])) {
     }
 }
 if (isset($_POST['deleteallunused'])) {
+    if($_SESSION['role'] == "tester") {
+        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
     $resp = misc\license\deleteAllUnused();
     switch ($resp) {
         case 'failure':
@@ -264,6 +279,11 @@ if (isset($_POST['deleteallunused'])) {
     }
 }
 if (isset($_POST['deleteallused'])) {
+    if($_SESSION['role'] == "tester") {
+        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
+        echo "<meta http-equiv='Refresh' Content='2'>";
+        return;
+    }
     $resp = misc\license\deleteAllUsed();
     switch ($resp) {
         case 'failure':

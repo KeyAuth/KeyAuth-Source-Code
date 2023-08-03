@@ -12,6 +12,10 @@ function add($name, $data, $authed, $secret = null)
         $data = etc\sanitize($data);
         $authed = etc\sanitize($authed);
 
+        if(strlen($data) > 1000) {
+                return 'too_long';
+        }
+
         $name_check = mysql\query("SELECT 1 FROM `vars` WHERE `varid` = ? AND `app` = ?",[$name, $secret ?? $_SESSION['app']]);
         if ($name_check->num_rows > 0) {
                 return 'exists';
@@ -59,6 +63,10 @@ function edit($name, $data, $authed, $secret = null)
         $name = etc\sanitize($name);
         $data = etc\sanitize($data);
         $authed = etc\sanitize($authed);
+
+        if(strlen($data) > 1000) {
+                return 'too_long';
+        }
 
         $query = mysql\query("UPDATE `vars` SET `msg` = ?, `authed` = ? WHERE `varid` = ? AND `app` = ?",[$data, $authed, $name, $secret ?? $_SESSION['app']]);
         if ($query->affected_rows > 0) {

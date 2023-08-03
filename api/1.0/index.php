@@ -1,6 +1,9 @@
 <?php
+include '../../includes/misc/autoload.phtml';
+include '../../includes/api/shared/autoload.phtml';
+include '../../includes/api/1.0/autoload.phtml';
+
 header("Access-Control-Allow-Origin: *"); // allow browser applications to request API
-error_reporting(0);
 
 set_exception_handler(function ($exception) {
     error_log("\n--------------------------------------------------------------\n");
@@ -9,7 +12,8 @@ set_exception_handler(function ($exception) {
     error_log(print_r($_POST, true));
     error_log("\n--------------------------------------------------------------");
     http_response_code(500);
-    die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
+    $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
+    die(json_encode(array("success" => false, "message" => "Error: " . $errorMsg)));
 });
 
 if(empty($_POST['ownerid'])) {
@@ -23,10 +27,6 @@ if(empty($_POST['name'])) {
 if(strlen(hex2bin($_POST['ownerid'])) != 10) {
     die(json_encode(array("success" => false, "message" => "OwnerID should be 10 characters long. Select app & copy code snippet from https://keyauth.cc/app/")));
 }
-
-include '../../includes/misc/autoload.phtml';
-include '../../includes/api/shared/autoload.phtml';
-include '../../includes/api/1.0/autoload.phtml';
 
 $ownerid = misc\etc\sanitize(hex2bin($_POST['ownerid'])); // ownerid of account that owns application
 $name = misc\etc\sanitize(hex2bin($_POST['name'])); // application name
@@ -84,6 +84,13 @@ if ($banned) {
     die(api\v1_0\Encrypt(json_encode(array(
         "success" => false,
         "message" => "This application has been banned from KeyAuth.cc for violating terms." // yes we self promote to customers of those who break ToS. Should've followed terms :shrug:
+    )), $secret));
+}
+
+if ($_GET['host'] == "keyauth.business") {
+    die(api\v1_0\Encrypt(json_encode(array(
+        "success" => false,
+        "message" => "Please tell the developer of this program to use latest API domain. This domain is old, it will expire in a month."
     )), $secret));
 }
 

@@ -33,6 +33,9 @@ if (isset($_POST['genvar'])) {
         case 'exists':
             dashboard\primary\error("Variable name already exists!");
             break;
+        case 'too_long':
+            dashboard\primary\error("Variable too long! Must be 1000 characters or less");
+            break;
         case 'failure':
             dashboard\primary\error("Failed to create variable!");
             break;
@@ -137,6 +140,9 @@ if (isset($_POST['savevar'])) {
     switch ($resp) {
         case 'failure':
             dashboard\primary\error("Failed to edit variable!");
+            break;
+        case 'too_long':
+            dashboard\primary\error("Variable too long! Must be 1000 characters or less");
             break;
         case 'success':
             misc\cache\purge('KeyAuthVar:' . $_SESSION['app'] . ':' . $_POST['variable']);

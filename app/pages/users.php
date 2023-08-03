@@ -342,21 +342,26 @@ if (isset($_POST['resetuser'])) {
     }
 }
 if (isset($_POST['setvar'])) {
-    $readOnly = misc\etc\sanitize($_POST['readOnly']) == NULL ? 0 : 1;
-    $resp = misc\user\setVariable(urldecode($_POST['user']), $_POST['var'], $_POST['data'], null, $readOnly);
-    switch ($resp) {
-        case 'missing':
-            dashboard\primary\error("No users found!");
-            break;
-        case 'failure':
-            dashboard\primary\error("Failed to set variable!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully set variable!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
+    if(strlen($_POST['data']) > 500) {
+        dashboard\primary\error("Variable data must be 500 characters or less!");
+    }
+    else {
+        $readOnly = misc\etc\sanitize($_POST['readOnly']) == NULL ? 0 : 1;
+        $resp = misc\user\setVariable(urldecode($_POST['user']), $_POST['var'], $_POST['data'], null, $readOnly);
+        switch ($resp) {
+            case 'missing':
+                dashboard\primary\error("No users found!");
+                break;
+            case 'failure':
+                dashboard\primary\error("Failed to set variable!");
+                break;
+            case 'success':
+                dashboard\primary\success("Successfully set variable!");
+                break;
+            default:
+                dashboard\primary\error("Unhandled Error! Contact us if you need help");
+                break;
+        }
     }
 }
 if (isset($_POST['banuser'])) {
@@ -619,7 +624,7 @@ if (isset($_POST['unpauseuser'])) {
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">Variable Data:
                                 <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Assigns variable to selected user(s) which you can get and set from loader"></i></label>
-                            <textarea class="form-control" name="data" placeholder="User variable data" required rows="3"></textarea>
+                            <textarea class="form-control" name="data" placeholder="User variable data" maxlength="500" required rows="3"></textarea>
                         </div>
                         <br>
                         <div class="form-check">

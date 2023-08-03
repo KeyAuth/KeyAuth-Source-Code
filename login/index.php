@@ -21,7 +21,8 @@ set_exception_handler(function ($exception) {
     error_log(print_r($_POST, true));
     error_log("\n--------------------------------------------------------------");
     http_response_code(500);
-    \dashboard\primary\error($exception->getMessage());
+    $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
+    \dashboard\primary\error($errorMsg);
 });
 ?>
 <html>

@@ -93,6 +93,8 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
                         {
                                 return 'tester_limit';
                         }
+
+                        $mask = "KEYAUTH-" . $mask;
                         break;
                 case 'Reseller':
                         if ($amount < 0) 
@@ -370,13 +372,11 @@ function unban($key, $secret = null)
 
         $status = "Not Used";
         $query = mysql\query("SELECT `usedby` FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
-        if ($query->num_rows > 0) 
+        $row = mysqli_fetch_array($query->result);
+        if (!is_null($row['usedby'])) 
         {
-                $row = mysqli_fetch_array($query->result);
-                $usedby = $row['usedby'];
-                $status = "Used";
-                
-                user\unban($usedby, $secret);
+                $status = "Used";       
+                user\unban($row['usedby'], $secret);
         }
 
         $query = mysql\query("UPDATE `keys` SET `banned` = NULL, `status` = ? WHERE `app` = ? AND `key` = ?",[$status, $secret ?? $_SESSION['app'], $key]);// update key from banned to its old status

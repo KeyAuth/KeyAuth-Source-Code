@@ -1,7 +1,10 @@
 <?php
+include '../../includes/misc/autoload.phtml';
+include '../../includes/api/shared/autoload.phtml';
+include '../../includes/api/1.0/autoload.phtml';
+
 header("Access-Control-Allow-Origin: *"); // allow browser applications to request API
 header('Content-Type: application/json; charset=utf-8');
-error_reporting(0);
 
 set_exception_handler(function ($exception) {
     error_log("\n--------------------------------------------------------------\n");
@@ -10,7 +13,8 @@ set_exception_handler(function ($exception) {
     error_log(print_r($_POST, true));
     error_log("\n--------------------------------------------------------------");
     http_response_code(500);
-    die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
+    $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
+    die(json_encode(array("success" => false, "message" => "Error: " . $errorMsg)));
 });
 
 if(empty(($_POST['ownerid'] ?? $_GET['ownerid']))) {
@@ -24,10 +28,6 @@ if(empty(($_POST['name'] ?? $_GET['name']))) {
 if(strlen(($_POST['ownerid'] ?? $_GET['ownerid'])) != 10) {
     die(json_encode(array("success" => false, "message" => "OwnerID should be 10 characters long. Select app & copy code snippet from https://keyauth.cc/app/")));
 }
-
-include '../../includes/misc/autoload.phtml';
-include '../../includes/api/shared/autoload.phtml';
-include '../../includes/api/1.0/autoload.phtml';
 
 $ownerid = misc\etc\sanitize($_POST['ownerid'] ?? $_GET['ownerid']); // ownerid of account that owns application
 $name = misc\etc\sanitize($_POST['name'] ?? $_GET['name']); // application name

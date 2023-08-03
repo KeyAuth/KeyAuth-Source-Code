@@ -4,11 +4,12 @@ include '../includes/misc/autoload.phtml';
 set_exception_handler(function ($exception) {
         error_log("\n--------------------------------------------------------------\n");
         error_log($exception);
-            error_log("\nRequest data:");
-            error_log(print_r($_POST, true));
-            error_log("\n--------------------------------------------------------------");
+        error_log("\nRequest data:");
+        error_log(print_r($_POST, true));
+        error_log("\n--------------------------------------------------------------");
         http_response_code(500);
-        die("Error: " . $exception->getMessage());
+        $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
+        die("Error: " . $errorMsg);
 });
 
 if (session_status() === PHP_SESSION_NONE) {

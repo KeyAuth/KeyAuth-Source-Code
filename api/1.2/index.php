@@ -1,7 +1,10 @@
 <?php
+include '../../includes/misc/autoload.phtml';
+include '../../includes/api/shared/autoload.phtml';
+include '../../includes/api/1.0/autoload.phtml';
+
 header("Access-Control-Allow-Origin: *"); // allow browser applications to request API
 header('Content-Type: application/json; charset=utf-8');
-error_reporting(0);
 
 set_exception_handler(function ($exception) {
     error_log("\n--------------------------------------------------------------\n");
@@ -10,7 +13,8 @@ set_exception_handler(function ($exception) {
     error_log(print_r($_POST, true));
     error_log("\n--------------------------------------------------------------");
     http_response_code(500);
-    die(json_encode(array("success" => false, "message" => "Error: " . $exception->getMessage())));
+    $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
+    die(json_encode(array("success" => false, "message" => "Error: " . $errorMsg)));
 });
 
 if(empty(($_POST['ownerid'] ?? $_GET['ownerid']))) {
@@ -24,10 +28,6 @@ if(empty(($_POST['name'] ?? $_GET['name']))) {
 if(strlen(($_POST['ownerid'] ?? $_GET['ownerid'])) != 10) {
     die(json_encode(array("success" => false, "message" => "OwnerID should be 10 characters long. Select app & copy code snippet from https://keyauth.cc/app/")));
 }
-
-include '../../includes/misc/autoload.phtml';
-include '../../includes/api/shared/autoload.phtml';
-include '../../includes/api/1.0/autoload.phtml';
 
 if (misc\cache\rateLimit("KeyAuthAppLimit:" . ($_POST['ownerid'] ?? $_GET['ownerid']), 1, 60, 200)) {
     die(json_encode(array("success" => false, "message" => "This application has sent too many requests. Try again in a minute.")));
@@ -85,6 +85,18 @@ $unTooShort = $row['unTooShort'] ?? "Username too short, try longer one.";
 $pwLeaked = $row['pwLeaked'] ?? "This password has been leaked in a data breach (not from us), please use a different one.";
 $chatHitDelay = $row['chatHitDelay'] ?? "Chat slower, you've hit the delay limit";
 $minHwid = $row['minHwid'] ?? 20;
+
+if($ownerid == "hTmfnZOYPe") {
+    $response = json_encode(array(
+        "success" => false,
+        "message" => "Jao é um golpista, prova aqui https://keyauth.cc/jao/"
+    ));
+
+    $sig = hash_hmac('sha256', $response, $secret);
+    header("signature: {$sig}");
+
+    die($response);
+}
 
 if ($banned) {
     die(json_encode(array(
@@ -836,15 +848,28 @@ switch ($_POST['type'] ?? $_GET['type']) {
             $emailSecret = hash($algos[array_rand($algos)], misc\etc\generateRandomString());
 
             misc\mysql\query("INSERT INTO `resetUsers` (`secret`, `email`, `username`, `app`, `time`) VALUES (?, SHA1(?), ?, ?, ?)", [$emailSecret, $email, $un, $secret, time()]);
-            $htmlContent = "<html>
-                    <body>
-                        <h1>You requested a password reset through the app {$name}</h1>
-                        <p>Please go to <a href=\"https://keyauth.cc/resetUser/?secret={$emailSecret}\">https://keyauth.cc/resetUser/?secret={$emailSecret}</a></p>
-                        <p>Also, in case you forgot, your username is: <b>{$un}</b></p>
-                        <p style=\"margin-top: 20px;\">Thanks,<br><b>KeyAuth.</b></p>
-                    </body>
-                    </html>";
-            misc\email\send($un, $email, $htmlContent, "KeyAuth - Password Reset for {$name}");
+
+            $body = '<div class="f-fallback">
+                <h1>Hello <i>'.$un.'</i>,</h1>
+                <p>You recently requested to reset your password for the software '.$name.'. Use the button below to reset it. <strong>The link is only valid for the next 24 hours.</strong></p>
+                <!-- Action -->
+                <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                  <tr>
+                    <td align="center">
+                      <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation">
+                        <tr>
+                          <td align="center">
+                            <a href="https://keyauth.cc/resetUser/?secret='.$emailSecret.'" style="color:white;background-color: #3869D4;border-top: 10px solid #3869D4;border-right: 18px solid #3869D4;border-bottom: 10px solid #3869D4;border-left: 18px solid #3869D4;display: inline-block;text-decoration: none;border-radius: 3px;-webkit-text-size-adjust: none;box-sizing: border-box;" target="_blank">Reset Password</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+                <p>Thanks,
+                  <br>The KeyAuth team</p>
+            </div>';
+            misc\email\send($un, $email, $body, "KeyAuth - Password Reset for {$name}");
             $response = json_encode(array(
                 "success" => true,
                 "message" => "Successfully sent email to change password.",

@@ -23,7 +23,7 @@ if ($_SESSION['role'] == "Reseller") {
 
     if (isset($_POST['selectApp'])) {
         $appName = misc\etc\sanitize($_POST['selectApp']);
-        $query = misc\mysql\query("SELECT `secret`, `name`, `banned` FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $appName]);
+        $query = misc\mysql\query("SELECT `secret`, `name`, `banned`, `sellerkey` FROM `apps` WHERE `owner` = ? AND `name` = ?", [$_SESSION['username'], $appName]);
         
         if ($query->num_rows < 1) {
             dashboard\primary\error("Application not found!");
@@ -39,6 +39,7 @@ if ($_SESSION['role'] == "Reseller") {
                 $_SESSION["app"] = $row["secret"];
                 $_SESSION["name"] = $appName;
                 $_SESSION["selectedApp"] = $row["name"];
+                $_SESSION['sellerkey'] = $row["sellerkey"];
                 
                 echo '<meta http-equiv="refresh" content="0">'; // needed to refresh nav sidebar
                 dashboard\primary\success("Successfully Selected the App!");
@@ -439,7 +440,7 @@ Private Shared version As String = "<?php echo $version; ?>"</code>
     "<?php echo $ownerid; ?>", // This is your ownerid, you can find this in your user settings (where you change your password)
     obfstr::obfstr!("<?php echo $secret; ?>"), // This is your app secret
     "<?php echo $version; ?>",
-    "https://keyauth.win/api/1.2", // This is the API URL, if you have custom api domain edit this
+    "https://keyauth.win/api/1.2/", // This is the API URL, if you have custom api domain edit this
 );</code>
                     <br>
                     Repository: <a href="https://github.com/KeyAuth/KeyAuth-Rust-Example"

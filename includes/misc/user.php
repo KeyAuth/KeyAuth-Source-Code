@@ -120,6 +120,7 @@ function ban($username, $reason, $secret = null)
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                         cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
+                        cache\purge('KeyAuthUserData:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 }
                 return 'success';
         } else {
@@ -156,6 +157,7 @@ function unban($username, $secret = null)
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                         cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
+                        cache\purge('KeyAuthUserData:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 }
                 return 'success';
         } else {
@@ -172,6 +174,7 @@ function deleteVar($username, $var, $secret = null)
                 cache\purge('KeyAuthUserVar:' . ($secret ?? $_SESSION['app']) . ':' . $var . ':' . $username);
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                         cache\purge('KeyAuthUserVars:' . ($secret ?? $_SESSION['app']));
+                        cache\purge('KeyAuthUserStoredVars:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 }
                 return 'success';
         } else {

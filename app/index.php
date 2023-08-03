@@ -21,7 +21,8 @@ set_exception_handler(function ($exception) {
     error_log(print_r($_POST, true));
     error_log("\n--------------------------------------------------------------");
     http_response_code(500);
-    \dashboard\primary\error($exception->getMessage());
+    $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
+    \dashboard\primary\error($errorMsg);
 });
 
 $username = $_SESSION['username'];
@@ -51,13 +52,14 @@ if (in_array($role, array("developer", "seller"))) {
 
 if (!$_SESSION['app']) // no app selected yet
 {
-    $query = misc\mysql\query("SELECT * FROM `apps` WHERE `owner` = ? AND `ownerid` = ?",[$_SESSION['username'], $_SESSION['ownerid']]); // select all apps where owner is current user
+    $query = misc\mysql\query("SELECT `secret`, `name`, `banned`, `sellerkey` FROM `apps` WHERE `owner` = ? AND `ownerid` = ?",[$_SESSION['username'], $_SESSION['ownerid']]); // select all apps where owner is current user
     if ($query->num_rows == 1) // if the user only owns one app, load that app (they can still change app after it's loaded)
     {
         $row = mysqli_fetch_array($query->result);
         $_SESSION['name'] = $row["name"];
         $_SESSION["selectedApp"] = $row["name"];
         $_SESSION['app'] = $row["secret"];
+        $_SESSION['sellerkey'] = $row["sellerkey"];
     }
 }
 ?>

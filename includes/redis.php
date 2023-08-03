@@ -1,6 +1,4 @@
 <?php
-error_reporting(0);
-
 include_once (($_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/panel" || $_SERVER['DOCUMENT_ROOT'] == "/usr/share/nginx/html/api") ? "/usr/share/nginx/html" : $_SERVER['DOCUMENT_ROOT']) . '/includes/credentials.php'; // reference credentials
 
 if (!class_exists('Redis')) {

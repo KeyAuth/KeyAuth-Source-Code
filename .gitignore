@@ -20,6 +20,7 @@ purge-redis/
 reset/
 resetUser/
 whoami/
+vendor/
 login/accShare/
 login/emailVerify/
 sitemap.xml

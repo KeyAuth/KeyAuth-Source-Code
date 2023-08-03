@@ -4,38 +4,59 @@ namespace misc\mysql;
 
 function query($query, $args = [], $types = null)
 {
-        error_reporting(0);
-
         static $connection = null;
+        static $readOnlyConnection = null;
 
         global $mysqlRequireSSL;
         global $databaseHost;
         global $databaseUsername;
         global $databasePassword;
         global $databaseName;
+        global $readOnlyRegions;
 
-        if (!$connection) {
-                $connection = new \mysqli();
+        // use read-only database replica, for lower latency in regions far away from the primary database region
+        if(strtolower(substr($query, 0, 6)) == "select" && isset($readOnlyRegions[$_SERVER['SERVER_ADDR']])) {
+                if (!$readOnlyConnection) {
+                        $readOnlyConnection = new \mysqli();
 
-                if ($mysqlRequireSSL) {
-                        $connection->ssl_set(NULL, NULL, "/etc/ssl/certs/ca-bundle.crt", NULL, NULL);
+                        if ($mysqlRequireSSL) {
+                                $readOnlyConnection->ssl_set(NULL, NULL, "/etc/ssl/certs/ca-bundle.crt", NULL, NULL);
+                        }
+
+                        $readOnlyConnection->real_connect($readOnlyRegions[$_SERVER['SERVER_ADDR']]["host"], $readOnlyRegions[$_SERVER['SERVER_ADDR']]["username"], $readOnlyRegions[$_SERVER['SERVER_ADDR']]["password"], $databaseName);
+
+                        if (!$readOnlyConnection)
+                                die($readOnlyConnection->connect_error);
+
+                        $readOnlyConnection->set_charset('utf8');
                 }
+                $connectionToUse = $readOnlyConnection;
+        }
+        else {
+                if (!$connection) {
+                        $connection = new \mysqli();
 
-                $connection->real_connect($databaseHost, $databaseUsername, $databasePassword, $databaseName);
+                        if ($mysqlRequireSSL) {
+                                $connection->ssl_set(NULL, NULL, "/etc/ssl/certs/ca-bundle.crt", NULL, NULL);
+                        }
 
-                if (!$connection)
-                        die($connection->connect_error);
+                        $connection->real_connect($databaseHost, $databaseUsername, $databasePassword, $databaseName);
 
-                $connection->set_charset('utf8');
+                        if (!$connection)
+                                die($connection->connect_error);
+
+                        $connection->set_charset('utf8');
+                }
+                $connectionToUse = $connection;
         }
 
         if ($types === null && $args !== [])
                 $types = str_repeat('s', count($args)); // unless otherwise specified, set type to string
 
-        $stmt = $connection->prepare($query);
+        $stmt = $connectionToUse->prepare($query);
 
         if (!$stmt)
-                die($connection->error);
+                die($connectionToUse->error);
 
         if (strpos($query, '?') !== false)
                 $stmt->bind_param($types, ...$args);

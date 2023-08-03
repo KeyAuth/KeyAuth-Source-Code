@@ -17,7 +17,8 @@ set_exception_handler(function ($exception) {
         error_log(print_r($_POST, true));
         error_log("\n--------------------------------------------------------------");
         http_response_code(500);
-        \dashboard\primary\error($exception->getMessage());
+        $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
+        \dashboard\primary\error($errorMsg);
 });
 ?>
 
@@ -327,17 +328,18 @@ set_exception_handler(function ($exception) {
                 $ip = api\shared\primary\getIp();
                 misc\mysql\query("INSERT INTO `accounts` (`username`, `email`, `password`, `ownerid`, `role`, `registrationip`) VALUES (?, SHA1(LOWER(?)), ?, ?, 'tester', ?)", [$username, $email, $pass_encrypted, $ownerid, $ip]);
                 dashboard\primary\wh_log($logwebhook, "{$username} has registered successfully", $webhookun);
-                $htmlContent = "<html>
-                                        <body>
-                                                <h1>Welcome!</h1>
-                                                <p>Please join our Telegram group for updates and chat <a href=\"https://t.me/keyauth\">https://t.me/keyauth</a></p>
-                                                <p>KeyAuth code can be seen here <a href=\"https://github.com/KeyAuth/\">https://github.com/KeyAuth/</a></p>
-                                                <p>KeyAuth API documentation can be seen here <a href=\"https://keyauth.readme.io/\">https://keyauth.readme.io/</a></p>
-                                                <p>Please leave a review on TrustPilot if you enjoy KeyAuth <a href=\"https://trustpilot.com/review/keyauth.com\">https://trustpilot.com/review/keyauth.com</a></p>
-                                                <p style=\"margin-top: 20px;\">Thanks,<br><b>KeyAuth.</b></p>
-                                        </body>
-                                        </html>";
-                misc\email\send($username, $email, $htmlContent, "Welcome to KeyAuth");
+
+                $body = '<div class="f-fallback">
+                    <h1>Hello <i>'.$username.'</i>,</h1>
+                    <p>Please join our Telegram group for updates and chat <a href="https://t.me/keyauth">https://t.me/keyauth</a></p>
+                    <p>KeyAuth code can be seen here <a href="https://github.com/KeyAuth/">https://github.com/KeyAuth/</a></p>
+                    <p>KeyAuth API documentation can be seen here <a href="https://keyauth.readme.io/">https://keyauth.readme.io/</a></p>
+                    <p>Please review us on TrustPilot, we greatly appreciate it <a href="https://trustpilot.com/review/keyauth.com">https://trustpilot.com/review/keyauth.com</a></p>
+                    <p>Thanks,
+                      <br>The KeyAuth team</p>
+                </div>';
+
+                misc\email\send($username, $email, $body, "Welcome to KeyAuth");
                 $_SESSION['logindate'] = time();
                 $_SESSION['username'] = $username;
                 $_SESSION['ownerid'] = $ownerid;

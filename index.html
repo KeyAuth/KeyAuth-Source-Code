@@ -74,6 +74,10 @@
    <!--End of Tawk.to Script-->
 
 <body>
+   <div style="background-color: #20c997;padding:0.01px" id="android-banner" hidden>
+      <p style="margin-left: 1.5rem;margin-right: 1.5rem;margin-bottom: 0.5rem;color: #163d66;font-size: 20px;">We have an android app!<a href='https://play.google.com/store/apps/details?id=com.wnelson03.rn&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200" height="75"/></a>
+      </p>
+   </div>
    <div style="background-color: #afd6ff;padding:0.01px">
       <p style="margin-left: 1.5rem;margin-right: 1.5rem;margin-bottom: 0.5rem;color: #163d66;font-size: 20px;">Please join Telegram group <a href="https://t.me/keyauth" target="_blank">https://t.me/keyauth</a> 
       </p>
@@ -601,6 +605,12 @@
    <script src="https://cdn.keyauth.cc/v2/animation.js"></script>
    <script src="https://cdn.keyauth.cc/v2/bootstrap.bundle.min.js"></script>
       <script>
+let element = document.getElementById("android-banner");
+console.log(navigator.userAgent.toLowerCase());
+if(navigator.userAgent.toLowerCase().indexOf("android") > -1) {
+	element.removeAttribute("hidden");
+}
+
 window.onload  = function() {
   const xhttp = new XMLHttpRequest();
   xhttp.onload = function() {
