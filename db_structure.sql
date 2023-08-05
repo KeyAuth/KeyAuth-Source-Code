@@ -126,7 +126,9 @@ CREATE TABLE `apps` (
   `customDomainAPI` varchar(253) DEFAULT NULL,
   `customerPanelIcon` varchar(200) NOT NULL DEFAULT 'https://cdn.keyauth.cc/front/assets/img/favicon.png',
   `forceHwid` int DEFAULT '1',
-  `minHwid` int DEFAULT '20'
+  `minHwid` int DEFAULT '20',
+  `sellerLogs` int DEFAULT '0',
+  `sellerApiWhitelist` varchar(49) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `auditLog` (
