@@ -4,25 +4,22 @@ if ($_SESSION['role'] == "Reseller") {
     die();
 }
 if ($role == "Manager" && !($permissions & 8)) {
-    die('You weren\'t granted permissions to view this page.');
+    misc\auditLog\send("Attempted (and failed) to view chats.");
+    dashboard\primary\error("You weren't granted permission to view this page!");
+    die();
 }
 if (!isset($_SESSION['app'])) {
+    dashboard\primary\error("Application not selected");
     die("Application not selected.");
 }
 
 if (isset($_POST['deletemsg'])) {
     $resp = misc\chat\deleteMessage($_POST['deletemsg']);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to delete message!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully deleted message!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
+    match($resp){
+        'failure' => dashboard\primary\error("Failed to delete message!"),
+        'success' => dashboard\primary\success("Successfully deleted message!"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
 }
 if (isset($_POST['muteuser'])) {
     $muted = misc\etc\sanitize($_POST['muted']);
@@ -30,49 +27,39 @@ if (isset($_POST['muteuser'])) {
     $time = $time * $muted + time();
 
     $resp = misc\chat\muteUser($_POST['user'], $time);
-    switch ($resp) {
-        case 'missing':
-            dashboard\primary\error("User doesn't exist!");
-            break;
-        case 'failure':
-            dashboard\primary\error("Failed to mute user!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully muted user!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
+    match($resp){
+        'missing' => dashboard\primary\error("User doesn't exist!"),
+        'failure' => dashboard\primary\error("Failed to mute user!"),
+        'success' => dashboard\primary\success("Successfully muted user!"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
 }
 if (isset($_POST['unmuteuser'])) {
     $resp = misc\chat\unMuteUser($_POST['user']);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to unmute user!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully unmuted user!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
+    match($resp){
+        'failure' => dashboard\primary\error("Failed to unmute user!"),
+        'success' => dashboard\primary\success("Successfully unmuted user!"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
 }
 if (isset($_POST['clearchannel'])) {
     $resp = misc\chat\clearChannel($_POST['channel']);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to clear channel!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully cleared channel!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
+    match($resp){
+        'failure' => dashboard\primary\error("Failed to clear channel!"),
+        'success' => dashboard\primary\success("Successfully cleared channel!"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
 }
+
+if (isset($_POST['deleteallchatchannels'])){
+    $resp = misc\chat\deleteAllChannels();
+    match($resp){
+        'failure' => dashboard\primary\error("Failed to delete all chat channels!"),
+        'success' => dashboard\primary\success("Successfully deleted all chat channels!"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
+}
+
 if (isset($_POST['editchan'])) {
     $chan = misc\etc\sanitize($_POST['editchan']);
     $query = misc\mysql\query("SELECT * FROM `chats` WHERE `name` = ? AND `app` = ?", [$chan, $_SESSION['app']]);
@@ -82,40 +69,20 @@ if (isset($_POST['editchan'])) {
         return;
     }
 ?>
-   
-    <div id="edit-user" class="modal show" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true" o ydo>
 
-        <div class="modal-dialog">
-
-            <div class="modal-content">
-
-                <div class="modal-header d-flex align-items-center">
-
-                    <h4 class="modal-title">Edit Channel</h4>
-
-                     <!--begin::Close-->
-                     <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
-                        <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                            </svg>
-                        </span>
-                    </div>
-                    <!--end::Close-->
-
-                </div>
-
-                <div class="modal-body">
-
-                    <form method="post">
-
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Chat cooldown
-                                Unit:</label>
-
-                            <select name="unit" class="form-control">
+<!-- Edit Chat Channel Modal -->
+<div id="edit-chat-channel-modal" tabindex="-1" aria-hidden="true"
+    class="fixed grid place-items-center h-screen bg-black bg-opacity-60 z-50 p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+            <div class="px-6 py-6 lg:px-8">
+                <h3 class="mb-4 text-xl font-medium text-white-900">Edit Chat Channel</h3>
+                <form class="space-y-6" method="POST">
+                    <div>
+                        <div class="relative mb-4">
+                            <select id="unit" name="unit"
+                                class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                 <option value="1">Seconds</option>
                                 <option value="60">Minutes</option>
                                 <option value="3600">Hours</option>
@@ -125,33 +92,33 @@ if (isset($_POST['editchan'])) {
                                 <option value="31556926">Years</option>
                                 <option value="315569260">Lifetime</option>
                             </select>
-
+                            <label for="unit"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Chat
+                                Cooldown Unit</label>
                         </div>
 
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Chat cooldown: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Delay users will have to wait to send their next message"></i></label>
-
-                            <input name="delay" type="number" class="form-control" placeholder="Multiplied by selected delay unit" required>
-
+                        <div class="relative mb-4">
+                            <input type="text" inputmode="numeric" id="delay" name="delay"
+                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                placeholder=" " autocomplete="on">
+                            <label for="delay"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Cooldown
+                                Time * By Unit</label>
                         </div>
-                </div>
+                    </div>
 
-                <div class="modal-footer">
+                    <button name="savechan" value="<?= $chan; ?>"
+                        class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Save
+                        Changes</button>
 
-                    <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
-
-                    <button class="btn btn-danger waves-effect waves-light" value="<?php echo $chan; ?>" name="savechan">Save</button>
-
-                    </form>
-
-                </div>
-
+                    <button onClick="window.location.href=window.location.href"
+                        class="w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Cancel</button>
+                </form>
             </div>
-
         </div>
-
     </div>
+</div>
+<!-- End Edit Chat Channel Modal -->
 
 <?php
 }
@@ -170,371 +137,335 @@ if (isset($_POST['savechan'])) {
 }
 if (isset($_POST['deletechan'])) {
     $resp = misc\chat\deleteChannel($_POST['deletechan']);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to delete channel!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully deleted channel!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
+    match($resp){
+        'failure' => dashboard\primary\error("Failed to delete channel!"),
+        'success' => dashboard\primary\success("Successfully deleted channel!"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
+}
+
+if (isset($_POST['addchannel'])) {
+    if ($_SESSION['role'] != "seller") {
+        dashboard\primary\error("You must upgrade to seller to create chat channels");
+    } else {
+        $unit = misc\etc\sanitize($_POST['unit']);
+        $delay = misc\etc\sanitize($_POST['delay']);
+        $delay = $delay * $unit;
+        $resp = misc\chat\createChannel($_POST['name'], $delay);
+        match($resp){
+            'failure' => dashboard\primary\error("Failed to create channel!"),
+            'success' => dashboard\primary\success("Successfully created channel!"),
+            default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+        };
     }
 }
 ?>
- <!-- Include the jQuery library -->
- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script>
-$(document).ready(function() {
-$('div.modal-content').css('border', '2px solid #1b8adb');
-});
-</script>
-<!--begin::Container-->
-<div id="kt_content_container" class="container-xxl">
-    <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
-    <form method="POST">
-        <button data-bs-toggle="modal" type="button" data-bs-target="#create-channel" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i>
-            Create Channel</button>
-        <button data-bs-toggle="modal" type="button" data-bs-target="#unmute-user" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-undo fa-sm text-white-50"></i> Unmute
-            User</button><br><br>
-        <button data-bs-toggle="modal" type="button" data-bs-target="#clear-channel" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Clear channel</button>
-    </form>
 
 
-    <div id="create-channel" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div class="p-4 bg-[#09090d] block sm:flex items-center justify-between lg:mt-1.5">
+    <div class="mb-1 w-full bg-[#0f0f17] rounded-xl">
+        <div class="mb-4 p-4">
+            <?php require '../app/layout/breadcrumb.php'; ?>
+            <h1 class="text-xl font-semibold text-white-900 sm:text-2xl">Chats</h1>
+            <p class="text-xs text-gray-500">Allow your users to chat with each other. <a
+                    href="https://keyauth.readme.io/reference/chats-1" target="_blank"
+                    class="text-blue-600 hover:underline">Learn More</a>.
+            </p>
+            <br>
+            <div class="p-4 flex flex-col">
+                <div class="overflow-x-auto">
+                    <!-- Chat Functions -->
+                    <button
+                        class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                        data-modal-toggle="create-chat-channel-modal" data-modal-target="create-chat-channel-modal">
+                        <i class="lni lni-circle-plus mr-2 mt-1"></i>Create Chat Channel
+                    </button>
+                    <button
+                        class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                        data-modal-toggle="unmute-user-modal" data-modal-target="unmute-user-modal">
+                        <i class="lni lni-volume-mute mr-2 mt-1"></i>Unmute User
+                    </button>
+                    <!-- End Chat Functions -->
 
-        <div class="modal-dialog">
+                    <br>
 
-            <div class="modal-content">
+                    <!-- Delete Chat Functions -->
+                    <button
+                        class="inline-flex text-white bg-red-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                        data-modal-toggle="clear-chat-channel-modal" data-modal-target="clear-chat-channel-modal">
+                        <i class="lni lni-trash-can mr-2 mt-1"></i>Clear Chat Channel
+                    </button>
+                    <button
+                        class="inline-flex text-white bg-red-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                        data-modal-toggle="delete-all-chat-channels-modal" data-modal-target="delete-all-chat-channels-modal">
+                        <i class="lni lni-trash-can mr-2 mt-1"></i>Delete All Chat Channels
+                    </button>
 
-                <div class="modal-header d-flex align-items-center">
+                    <!-- Create Chat Channel Modal -->
+                    <div id="create-chat-channel-modal" tabindex="-1" aria-hidden="true"
+                        class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <!-- Modal content -->
+                            <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+                                <div class="px-6 py-6 lg:px-8">
+                                    <h3 class="mb-4 text-xl font-medium text-white-900">Create Chat Channel</h3>
+                                    <hr class="h-px mb-4 mt-4 bg-gray-700 border-0">
+                                    <form class="space-y-6" method="POST">
+                                        <div>
+                                            <div class="relative mb-4">
+                                                <input type="text" id="name" name="name"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                    placeholder=" " autocomplete="on">
+                                                <label for="name"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Chat
+                                                    Channel Name</label>
+                                            </div>
 
-                    <h4 class="modal-title">Add Channels</h4>
+                                            <div class="relative mb-4">
+                                                <select id="unit" name="unit"
+                                                    class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                                    <option value="1">Seconds</option>
+                                                    <option value="60">Minutes</option>
+                                                    <option value="3600">Hours</option>
+                                                    <option value="86400">Days</option>
+                                                    <option value="604800">Weeks</option>
+                                                    <option value="2629743">Months</option>
+                                                    <option value="31556926">Years</option>
+                                                    <option value="315569260">Lifetime</option>
+                                                </select>
+                                                <label for="unit"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Chat
+                                                    Cooldown Unit</label>
+                                            </div>
 
-                    <!--begin::Close-->
-                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                        <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                            </svg>
-                        </span>
+                                            <div class="relative mb-4">
+                                                <input type="text" inputmode="numeric" id="delay" name="delay"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                    placeholder=" " autocomplete="on">
+                                                <label for="delay"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Cooldown
+                                                    Time * By Unit</label>
+                                            </div>
+                                        </div>
+
+                                        <button name="addchannel"
+                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Create
+                                            Chat Cannel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <!--end::Close-->
+                    <!-- End Create Chat Channel Modal -->
 
-                </div>
+                    <!-- Clear Chat Channel Modal -->
+                    <div id="clear-chat-channel-modal" tabindex="-1"
+                        class="fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                                <div class="p-6 text-center">
+                                    <div class="flex items-center p-4 mb-4 text-sm text-white border border-yellow-500 rounded-lg bg-[#0f0f17]"
+                                        role="alert">
+                                        <svg class="flex-shrink-0 inline w-4 h-4 mr-3" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                                        </svg>
+                                        <span class="sr-only">Info</span>
+                                        <div>
+                                            <span class="font-medium">Notice!</span> You're about to clear a chat
+                                            channel. This will delete all messages in this channel. This can not be
+                                            undone!
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to clear
+                                        the chat channel? This can not be undone.</h3>
+                                    <div class="relative mb-4">
+                                        <select type="text" id="channel" name="channel"
+                                            class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                            <?php
+                                                        $query = misc\mysql\query("SELECT * FROM `chats` WHERE `app` = ?", [$_SESSION['app']]);
+                                                        $rows = array();
+                                                        while ($r = mysqli_fetch_assoc($query->result)) {
+                                                            $rows[] = $r;
+                                                        }
+                                                        foreach ($rows as $row) {
+                                                        ?>
 
-                <div class="modal-body">
+                                            <option><?= $row["name"]; ?></option>
 
-                    <form method="post">
-
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Name:</label>
-
-                            <input class="form-control" name="name" placeholder="Chat channel name" required>
-
+                                            <?php
+                                                    } ?>
+                                        </select>
+                                        <label for="channel"
+                                            class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Select
+                                            Channel</label>
+                                    </div>
+                                    <form method="POST">
+                                        <button data-modal-hide="clear-chat-channel-modal" name="clearchannel"
+                                            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                                            Yes, I'm sure
+                                        </button>
+                                        <button data-modal-hide="clear-chat-channel-modal" type="button"
+                                            class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                            cancel</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Chat cooldown
-                                Unit:</label>
-
-                            <select name="unit" class="form-control">
-                                <option value="1">Seconds</option>
-                                <option value="60">Minutes</option>
-                                <option value="3600">Hours</option>
-                                <option value="86400">Days</option>
-                                <option value="604800">Weeks</option>
-                                <option value="2629743">Months</option>
-                                <option value="31556926">Years</option>
-                                <option value="315569260">Lifetime</option>
-                            </select>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Chat cooldown:
-                                <i class="fas fa-question-circle fa-lg text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="Delay users will have to wait to send their next message"></i></label>
-
-                            <input name="delay" type="number" class="form-control" placeholder="Multiplied by selected delay unit" required>
-
-                        </div>
-
-                </div>
-
-                <div class="modal-footer">
-
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
-                    <button class="btn btn-danger" name="addchannel">Add</button>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <div id="unmute-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-
-        <div class="modal-dialog">
-
-            <div class="modal-content">
-
-                <div class="modal-header d-flex align-items-center">
-
-                    <h4 class="modal-title">Unmute User</h4>
-
-                    <!--begin::Close-->
-                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                        <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                            </svg>
-                        </span>
                     </div>
-                    <!--end::Close-->
+                    <!-- Unmute User Modal -->
 
-                </div>
+                    <!-- Unmute User Channel Modal -->
+                    <div id="unmute-user-modal" tabindex="-1"
+                        class="fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                                <div class="p-6 text-center">
+                                    <form method="POST">
+                                        <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to
+                                            unmute
+                                            this user?</h3>
+                                        <div class="relative mb-4">
+                                            <select type="text" id="user" name="user"
+                                                class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                                <?php
+                                                        $query = misc\mysql\query("SELECT * FROM `chatmutes` WHERE `app` = ?", [$_SESSION['app']]);
+                                                        $rows = array();
+                                                        while ($r = mysqli_fetch_assoc($query->result)) {
+                                                            $rows[] = $r;
+                                                        }
+                                                        foreach ($rows as $row) {
+                                                        ?>
 
-                <div class="modal-body">
+                                                <option><?= $row["user"]; ?></option>
 
-                    <form method="post">
+                                                <?php
+                                                        } ?>
+                                            </select>
+                                            <label for="user"
+                                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Select
+                                                User To Unmute</label>
+                                        </div>
+                                        <button data-modal-hide="unmute-user-modal" name="unmuteuser"
+                                            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                                            Yes, I'm sure
+                                        </button>
+                                        <button data-modal-hide="unmute-user-modal" type="button"
+                                            class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                            cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Unmute User Modal -->
 
-                        <div class="form-group">
+                    <!-- Delete All Chat Channels Modal -->
+                    <div id="delete-all-chat-channels-modal" tabindex="-1"
+                        class="fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                                <div class="p-6 text-center">
+                                    <div class="flex items-center p-4 mb-4 text-sm text-white border border-yellow-500 rounded-lg bg-[#0f0f17]"
+                                        role="alert">
+                                        <svg class="flex-shrink-0 inline w-4 h-4 mr-3" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                                        </svg>
+                                        <span class="sr-only">Info</span>
+                                        <div>
+                                            <span class="font-medium">Notice!</span> You're about to delete all of your
+                                            chat channels. This can not be undone!
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to delete
+                                        all of your chat channels?</h3>
+                                    <form method="POST">
+                                        <button data-modal-hide="delete-all-chat-channels-modal"
+                                            name="deleteallchatchannels"
+                                            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                                            Yes, I'm sure
+                                        </button>
+                                        <button data-modal-hide="delete-all-chat-channels-modal" type="button"
+                                            class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                            cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Delete All Chat Channels Modal -->
 
-                            <label for="recipient-name" class="control-label">Name:</label>
+                    <!-- Mute User Modal -->
+                    <div id="mute-user-modal" tabindex="-1" aria-hidden="true"
+                        class="fixed grid place-items-center hidden h-screen bg-black bg-opacity-60 z-50 p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <!-- Modal content -->
+                            <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+                                <div class="px-6 py-6 lg:px-8">
+                                    <h3 class="mb-4 text-xl font-medium text-white-900">Mute User</h3>
+                                    <form class="space-y-6" method="POST">
+                                        <div>
+                                            <div class="relative mb-4">
+                                                <select id="muted" name="muted"
+                                                    class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                                    <option value="1">Seconds</option>
+                                                    <option value="60">Minutes</option>
+                                                    <option value="3600">Hours</option>
+                                                    <option value="86400">Days</option>
+                                                    <option value="604800">Weeks</option>
+                                                    <option value="2629743">Months</option>
+                                                    <option value="31556926">Years</option>
+                                                    <option value="315569260">Lifetime</option>
+                                                </select>
+                                                <label for="muted"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Mute
+                                                    Unit</label>
 
-                            <select class="form-control" name="user">
+                                                <input type="hidden" class="muteuser" name="user">
+
+                                            </div>
+
+                                            <div class="relative mb-4">
+                                                <input type="text" inputmode="numeric" id="time" name="time"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                    placeholder=" " autocomplete="on">
+                                                <label for="time"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Mute
+                                                    Duration:</label>
+                                            </div>
+                                        </div>
+
+                                        <button name="muteuser"
+                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Mute
+                                            User</button>
+
+                                        <button type="button" onclick="closeModal('mute-user-modal')"
+                                            class="w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Mute User Modal -->
+
+                    <!-- START TABLE -->
+                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg pt-5">
+                        <table id="kt_datatable_chats" class="w-full text-sm text-left text-white">
+                            <thead>
+                                <tr class="fw-bolder fs-6 text-blue-700 px-7">
+                                    <th class="px-6 py-3">Chat Name</th>
+                                    <th class="px-6 py-3">Message Delay</th>
+                                    <th class="px-6 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+
 
                                 <?php
-
-                                $query = misc\mysql\query("SELECT * FROM `chatmutes` WHERE `app` = ?", [$_SESSION['app']]);
-                                $rows = array();
-                                while ($r = mysqli_fetch_assoc($query->result)) {
-                                    $rows[] = $r;
-                                }
-                                foreach ($rows as $row) {
-                                ?>
-
-                                    <option><?php echo $row["user"]; ?></option>
-
-                                <?php
-                                } ?>
-
-                            </select>
-
-                        </div>
-
-                </div>
-
-                <div class="modal-footer">
-
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
-                    <button class="btn btn-danger" name="unmuteuser">Unmute</button>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <div id="clear-channel" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-
-        <div class="modal-dialog">
-
-            <div class="modal-content">
-
-                <div class="modal-header d-flex align-items-center">
-
-                    <h4 class="modal-title">Clear Channel</h4>
-
-                    <!--begin::Close-->
-                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                        <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                            </svg>
-                        </span>
-                    </div>
-                    <!--end::Close-->
-                </div>
-
-                <div class="modal-body">
-
-                    <form method="post">
-
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Channel
-                                name:</label>
-
-                            <select class="form-control" name="channel">
-
-                                <?php
-                                $query = misc\mysql\query("SELECT * FROM `chats` WHERE `app` = ?", [$_SESSION['app']]);
-                                $rows = array();
-                                while ($r = mysqli_fetch_assoc($query->result)) {
-                                    $rows[] = $r;
-                                }
-                                foreach ($rows as $row) {
-                                ?>
-
-                                    <option><?php echo $row["name"]; ?></option>
-
-                                <?php
-                                } ?>
-
-                            </select>
-
-                        </div>
-
-                </div>
-
-                <div class="modal-footer">
-
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
-                    <button class="btn btn-danger" name="clearchannel">Clear</button>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <?php
-    if (isset($_POST['addchannel'])) {
-        if ($_SESSION['role'] != "seller") {
-            dashboard\primary\error("You must upgrade to seller to create chat channels");
-        } else {
-            $unit = misc\etc\sanitize($_POST['unit']);
-            $delay = misc\etc\sanitize($_POST['delay']);
-            $delay = $delay * $unit;
-            $resp = misc\chat\createChannel($_POST['name'], $delay);
-            switch ($resp) {
-                case 'failure':
-                    dashboard\primary\error("Failed to create channel!");
-                    break;
-                case 'success':
-                    dashboard\primary\success("Successfully created channel!");
-                    break;
-                default:
-                    dashboard\primary\error("Unhandled Error! Contact us if you need help");
-                    break;
-            }
-        }
-    }
-    ?>
-    <div id="mute-user" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-
-        <div class="modal-dialog">
-
-            <div class="modal-content">
-
-                <div class="modal-header d-flex align-items-center">
-
-                    <h4 class="modal-title">Mute User</h4>
-
-                    <!--begin::Close-->
-                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                        <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                            </svg>
-                        </span>
-                    </div>
-                    <!--end::Close-->
-                </div>
-
-                <div class="modal-body">
-
-                    <form method="post">
-
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Unit Of Time
-                                Muted:</label>
-
-                            <select name="muted" class="form-control">
-                                <option value="86400">Days</option>
-                                <option value="60">Minutes</option>
-                                <option value="3600">Hours</option>
-                                <option value="1">Seconds</option>
-                                <option value="604800">Weeks</option>
-                                <option value="2629743">Months</option>
-                                <option value="31556926">Years</option>
-                                <option value="315569260">Lifetime</option>
-                            </select>
-
-                            <input type="hidden" class="muteuser" name="user">
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label for="recipient-name" class="control-label">Time
-                                Muted:</label>
-
-                            <input class="form-control" name="time" placeholder="Multiplied by selected unit of time muted" required>
-
-                        </div>
-
-                </div>
-
-                <div class="modal-footer">
-
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
-                    <button class="btn btn-danger" name="muteuser">Mute</button>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-    <table id="kt_datatable_chats" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
-        <thead>
-            <tr class="fw-bolder fs-6 text-gray-800 px-7">
-                <th>Name</th>
-                <th>Delay</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-
-
-            <?php
             if ($_SESSION['app']) {
                 $query = misc\mysql\query("SELECT * FROM `chats` WHERE `app` = ?", [$_SESSION['app']]);
                 $rows = array();
@@ -547,155 +478,155 @@ $('div.modal-content').css('border', '2px solid #1b8adb');
 
 
 
-                    <tr>
+                                <tr>
 
 
 
-                        <td><?php echo $chan; ?></td>
+                                    <td><?= $chan; ?></td>
 
 
 
-                        <td><?php echo dashboard\primary\time2str(time() - $row["delay"]); ?></td>
+                                    <td><?= dashboard\primary\time2str(time() - $row["delay"]); ?></td>
 
+                                    <form method="POST">
+                                        <td>
+                                            <div x-data="{ open: false }" class="z-0">
+                                                <button x-on:click="open = true"
+                                                    class="flex items-center border border-gray-700 rounded-lg focus:opacity-60 text-white focus:text-white font-semibold rounded focus:outline-none focus:shadow-inner py-2 px-4"
+                                                    type="button">
+                                                    <span class="mr-1">Actions</span>
+                                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 20 20" style="margin-top:3px">
+                                                        <path
+                                                            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                                    </svg>
+                                                </button>
+                                                <ul x-show="open" x-on:click.away="open = false"
+                                                    class="bg-[#09090d] text-white rounded shadow-lg absolute py-2 mt-1"
+                                                    style="min-width:15rem">
+                                                    <li>
+                                                        <button name="deletechan"
+                                                            class="block hover:opacity-60 whitespace-no-wrap py-2 px-4 hover:text-red-700"
+                                                            value="<?= $chan; ?>">
+                                                            Delete Channel
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button name="editchan"
+                                                            class="block hover:opacity-60 whitespace-no-wrap py-2 px-4 hover:text-blue-700"
+                                                            value="<?= $chan; ?>">
+                                                            Edit Channel
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                </tr>
+                                </form>
 
-
-                        <form method="POST">
-                            <td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions
-                                    <!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
-                                    <span class="svg-icon svg-icon-5 m-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
-                                        </svg>
-                                    </span>
-                                    <!--end::Svg Icon-->
-                                </a>
-                                <!--begin::Menu-->
-                                <div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4">
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3">
-                                        <button class="btn menu-link px-3" style="font-size:0.95rem;" name="deletechan" value="<?php echo $chan; ?>">Delete</button>
-                                    </div>
-                                    <!--end::Menu item-->
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3">
-                                        <button class="btn menu-link px-3" style="font-size:0.95rem;" name="editchan" value="<?php echo $chan; ?>">Edit</button>
-                                    </div>
-                                    <!--end::Menu item-->
-                                </div>
-                            </td>
-                    </tr>
-                    </form>
-
-            <?php
+                                <?php
                 }
             }
             ?>
 
-        </tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- END CHAT TABLE -->
+                    <p class="text-xs text-red-600">Dropdown actions in <b>RED</b> do not show a confirmation!<a class="text-blue-700"> Dropdown actions in <b>BLUE</b> will show a confirmation!</a></p>
 
-    </table>
+                    <br>
 
-    <br><br>
+                    <!-- START MESSAGES TABLE -->
+                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg pt-5">
+                        <table id="kt_datatable_messages" class="w-full text-sm text-left text-white">
+                            <thead>
+                                <tr class="fw-bolder fs-6 text-blue-700 px-7">
+                                    <th class="px-6 py-3">Author</th>
+                                    <th class="px-6 py-3">Message</th>
+                                    <th class="px-6 py-3">Time Sent</th>
+                                    <th class="px-6 py-3">Channel</th>
+                                    <th class="px-6 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
 
+                                <?php
+                                if ($_SESSION['app']) {
+                                    $query = misc\mysql\query("SELECT * FROM `chatmsgs` WHERE `app` = ?", [$_SESSION['app']]);
+                                    $rows = array();
+                                    while ($r = mysqli_fetch_assoc($query->result)) {
+                                        $rows[] = $r;
+                                    }
+                                    foreach ($rows as $row) {
+                                        $user = $row['author'];
+                                ?>
 
-    <table id="kt_datatable_messages" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
-        <thead>
-            <tr class="fw-bolder fs-6 text-gray-800 px-7">
-                <th>Author</th>
-                <th>Message</th>
-                <th>Time Sent</th>
-                <th>Channel</th>
-                <th>Action</th>
-            </tr>
-        </thead>
+                                <tr>
+                                    <td><?= $user; ?></td>
+                                    <td><?= $row["message"]; ?></td>
+                                    <td>
+                                        <script>
+                                        document.write(convertTimestamp(<?= $row["timestamp"]; ?>));
+                                        </script>
+                                    </td>
+                                    <td><?= $row["channel"]; ?></td>
 
+                                    <form method="POST">
+                                        <td>
 
-        <tbody>
+                                            <div x-data="{ open: false }" class="z-0">
+                                                <button x-on:click="open = true"
+                                                    class="flex items-center border border-gray-700 rounded-lg focus:opacity-60 text-white focus:text-white font-semibold rounded focus:outline-none focus:shadow-inner py-2 px-4"
+                                                    type="button">
+                                                    <span class="mr-1">Actions</span>
+                                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 20 20" style="margin-top:3px">
+                                                        <path
+                                                            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                                    </svg>
+                                                </button>
+                                                <ul x-show="open" x-on:click.away="open = false"
+                                                    class="bg-[#09090d] text-white rounded shadow-lg absolute py-2 mt-1"
+                                                    style="min-width:15rem">
+                                                    <li>
+                                                        <button name="deletemsg"
+                                                            class="block hover:opacity-60 whitespace-no-wrap py-2 px-4 hover:text-red-700"
+                                                            value="<?= $row["id"]; ?>">
+                                                            Delete Message
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button"
+                                                            class="block hover:opacity-60 whitespace-no-wrap py-2 px-4 hover:text-blue-700"
+                                                            onclick="muteuser('<?= $user; ?>')">
+                                                            Mute User
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                </tr>
+                                </form>
 
-            <?php
-            if ($_SESSION['app']) {
-                $query = misc\mysql\query("SELECT * FROM `chatmsgs` WHERE `app` = ?", [$_SESSION['app']]);
-                $rows = array();
-                while ($r = mysqli_fetch_assoc($query->result)) {
-                    $rows[] = $r;
-                }
-                foreach ($rows as $row) {
-                    $user = $row['author'];
-            ?>
+                                <?php
+    }
+}
+?>
 
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- END MESSAGES TABLE -->
+                    <p class="text-xs text-red-600">Dropdown actions in <b>RED</b> do not show a confirmation!<a class="text-blue-700"> Dropdown actions in <b>BLUE</b> will show a confirmation!</a></p>
 
+                    <script>
+                    function muteuser(key) {
 
-                    <tr>
+                        var muteuser = $('.muteuser');
 
+                        muteuser.attr('value', key);
 
-
-                        <td><?php echo $user; ?></td>
-
-
-
-                        <td><?php echo $row["message"]; ?></td>
-
-
-
-                        <td>
-                            <script>
-                                document.write(convertTimestamp(<?php echo $row["timestamp"]; ?>));
-                            </script>
-                        </td>
-
-
-
-                        <td><?php echo $row["channel"]; ?></td>
-
-
-                        <form method="POST">
-                            <td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions
-                                    <!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
-                                    <span class="svg-icon svg-icon-5 m-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
-                                        </svg>
-                                    </span>
-                                    <!--end::Svg Icon-->
-                                </a>
-                                <!--begin::Menu-->
-                                <div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4">
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3">
-                                        <button class="btn menu-link px-3" style="font-size:0.95rem;" name="deletemsg" value="<?php echo $row["id"]; ?>">Delete</button>
-                                    </div>
-                                    <!--end::Menu item-->
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3">
-                                        <a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#mute-user" onclick="muteuser('<?php echo $user; ?>')">Mute</a>
-                                    </div>
-                                    <!--end::Menu item-->
-                                </div>
-                            </td>
-                    </tr>
-                    </form>
-
-            <?php
-                }
-            }
-            ?>
-
-        </tbody>
-
-    </table>
-
-    <script>
-        function muteuser(key) {
-
-            var muteuser = $('.muteuser');
-
-            muteuser.attr('value', key);
-
-        }
-    </script>
-</div>
-
-
-
-
-<!--end::Container-->
+                        openModal('mute-user-modal');
+                    }
+                    </script>
