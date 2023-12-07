@@ -56,6 +56,7 @@ $serverhash = $row['hash'];
 $sessionexpiry = $row['session'];
 $forceEncryption = $row['forceEncryption'];
 $forceHwid = $row['forceHwid'];
+$tokensystem = $row['tokensystem'];
 
 $banned = $row['banned'];
 $owner = $row['owner'];
@@ -77,6 +78,7 @@ $keybanned = $row['keybanned'];
 $userbanned = $row['userbanned'];
 $sessionunauthed = $row['sessionunauthed'];
 $hashcheckfail = $row['hashcheckfail'];
+$invalid_token = $row['tokeninvalid'];
 
 // why using null coalescing operators? because if I add a field and it's not in redis cache, it'll be NULL
 $loggedInMsg = $row['loggedInMsg'] ?? "Logged in!";
@@ -172,6 +174,91 @@ switch ($_POST['type'] ?? $_GET['type']) {
             header("signature: {$sig}");
 
             die($response);
+        }
+
+        if ($tokensystem) {
+
+            list($token, $thash) = [misc\etc\sanitize($_POST["token"] ?? $_GET["token"]) , misc\etc\sanitize($_POST["thash"] ?? $_GET["thash"])];
+
+            if (!isset($token)) {
+
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Token Must Be Provided"
+                ));
+
+                $sig = hash_hmac('sha256', $response, $secret);
+                header("signature: {$sig}"); 
+
+                die($response);
+            }
+
+            if (!isset($thash)) {
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Hash Must Be Provided"
+                ));
+
+                $sig = hash_hmac('sha256', $response, $secret);
+                header("signature: {$sig}"); 
+
+                die($response);
+            }
+
+            $verification = misc\token\checktoken("check_data", $token, $secret, null, $thash);
+
+            switch ($verification) {
+                case str_contains($verification, 'token_blacklisted'):
+                    $reason = str_ireplace("token_blacklisted, ", "", $verification);       
+                    $response = json_encode(array(
+                        "success" => false,
+                        "message" => "The Token Has Been Blacklisted For The Following Reason: " . $reason . " Contact Application Developer If This Is A Mistake"
+                    ));
+
+                    $sig = hash_hmac('sha256', $response, $secret);
+                    header("signature: {$sig}"); 
+
+                    die($response);
+                case 'invalid_token':
+
+                    $response = json_encode(array(
+                        "success" => false,
+                        "message" => $invalid_token
+                    ));
+
+                    $sig = hash_hmac('sha256', $response, $secret);
+                    header("signature: {$sig}"); 
+                
+                    die($response);
+
+                case 'hash_mismatch':
+
+                    $response = json_encode(array(
+                        "success" => false,
+                        "message" => "Token File Hashes Must Be The Same"
+                    ));
+
+                    $sig = hash_hmac('sha256', $response, $secret);
+                    header("signature: {$sig}"); 
+                
+                    die($response);
+                
+                case 'success':
+                    break;
+                
+                default:
+
+                    $response = json_encode(array(
+                        "success" => false,
+                        "message" => "Unknown Error Occured"
+                    ));
+
+                    $sig = hash_hmac('sha256', $response, $secret);
+                    header("signature: {$sig}"); 
+                
+                    die($response);
+
+            }
         }
 
         $ver = misc\etc\sanitize($_POST['ver'] ?? $_GET['ver']);
@@ -1659,9 +1746,202 @@ switch ($_POST['type'] ?? $_GET['type']) {
         header("signature: {$sig}");
 
         die($response);
-    default:
-        die(json_encode(array(
-            "success" => false,
-            "message" => "The value inputted for type paramater was not found"
-        )));
-}
+   case '2faenable':
+
+            list($sessionid, $code) = [misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']), misc\etc\sanitize($_POST["code"] ?? $_GET["code"])];
+            $session = api\shared\primary\getSession($sessionid, $secret);
+            $enckey = $session["enckey"];
+    
+            if (!$session["validated"]) {
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "$sessionunauthed"
+                ));
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+    
+                die($response);
+            }
+    
+            $row = misc\cache\fetch('KeyAuthUser:' . $secret . ':' . $session["credential"], "SELECT * FROM `users` WHERE `username` = ? AND `app` = ?", [$session["credential"], $secret], 0);
+    
+            if ($row["2fa"]) {
+    
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "2fa is already enabled on this account"
+                ));
+    
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+    
+                die($response);
+    
+            }
+    
+            include_once '../../auth/GoogleAuthenticator.php';     
+    
+            $_2fa = new GoogleAuthenticator();
+    
+            if (empty($code) || is_null($code)) {
+    
+                $secret_code = $_2fa->createSecret();
+    
+                misc\cache\insert('KeyAuthTwoFactorAuthentication:' . $session["credential"], $secret_code, 300);
+    
+                $qrcode = str_replace(urlencode("https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl="), " ", $_2fa->getQRCodeGoogleUrl($session["credential"], $secret_code, 'KeyAuth'));
+    
+                $response = json_encode(array(
+                    "success" => true,
+                    "2fa" => array(
+                        "secret_code" => $secret_code,
+                        "QRCode" => "otpauth://totp/" . $session["credential"] . "?secret=" . $secret_code . "&issuer=KeyAuth"
+                    )
+                ));
+    
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+    
+                die($response);
+    
+            }
+            else {
+    
+                $secret_code = misc\cache\select('KeyAuthTwoFactorAuthentication:' . $session["credential"]);
+    
+                if (!$secret_code) {
+    
+                    $response = json_encode(array(
+                        "success" => true,
+                        "message" => "2fa session has expired"
+                    ));
+        
+                    $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                    header("signature: {$sig}");
+        
+                    die($response);
+    
+                }
+    
+                if ($_2fa->verifyCode($secret_code, $code, 2)) {
+    
+                    misc\mysql\query("UPDATE `users` SET `2fa` = ?, `googleAuthCode` = ? WHERE `app` = ? AND `username` = ?", [1, $secret_code, $secret, $session["credential"]]);
+                    misc\cache\purge('KeyAuthUser:' . $secret . ':' . $session["credential"]);
+                    misc\cache\purge('KeyAuthTwoFactorAuthentication: ' . $session["credential"]);
+    
+                    $response = json_encode(array(
+                        "success" => true,
+                        "message" => "2fa successfully activated"
+                    ));
+        
+                    $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                    header("signature: {$sig}");
+        
+                    die($response);
+    
+                }
+                else {
+    
+                    $response = json_encode(array(
+                        "success" => true,
+                        "message" => "Invalid code please try again"
+                    ));
+        
+                    $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                    header("signature: {$sig}");
+        
+                    die($response);
+    
+                }
+    
+            }
+        case '2fadisable':
+    
+            list($sessionid, $code) = [misc\etc\sanitize($_POST['sessionid'] ?? $_GET['sessionid']), misc\etc\sanitize($_POST["code"] ?? $_GET["code"])];
+    
+            if (empty($code) || is_null($code)) {
+    
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "Please provide the 2fa code to disable 2fa"
+                ));
+    
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+    
+                die($response);
+    
+            }
+            
+            $session = api\shared\primary\getSession($sessionid, $secret);
+            $enckey = $session["enckey"];
+    
+            if (!$session["validated"]) {
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "$sessionunauthed"
+                ));
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+    
+                die($response);
+            }
+    
+            $row = misc\cache\fetch('KeyAuthUser:' . $secret . ':' . $session["credential"], "SELECT * FROM `users` WHERE `username` = ? AND `app` = ?", [$session["credential"], $secret], 0);
+    
+            if (!$row["2fa"]) {
+    
+                $response = json_encode(array(
+                    "success" => false,
+                    "message" => "2fa is not enabled on this account"
+                ));
+    
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+    
+                die($response);
+    
+            }
+    
+            include_once '../../auth/GoogleAuthenticator.php';     
+    
+            $_2fa = new GoogleAuthenticator();
+    
+            $secret_code = $row["googleAuthCode"];
+    
+            if ($_2fa->verifyCode($secret_code, $code, 2)) {
+    
+                misc\mysql\query("UPDATE `users` SET `2fa` = ?, `googleAuthCode` = ? WHERE `app` = ? AND `username` = ?", [0, NULL, $secret, $row["username"]]);
+                misc\cache\purge('KeyAuthUser:' . $secret . ':' . $session["credential"]);
+    
+                $response = json_encode(array(
+                    "success" => true,
+                    "message" => "2fa successfully activated"
+                ));
+    
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+    
+                die($response);
+    
+            }
+            else {
+    
+                $response = json_encode(array(
+                    "success" => true,
+                    "message" => "Invalid code please try again"
+                ));
+    
+                $sig = !is_null($enckey) ? hash_hmac('sha256', $response, $enckey)  : 'No encryption key supplied';
+                header("signature: {$sig}");
+    
+                die($response);
+    
+            }
+    
+        default:
+            die(json_encode(array(
+                "success" => false,
+                "message" => "The value inputted for type paramater was not found"
+            )));
+    }
