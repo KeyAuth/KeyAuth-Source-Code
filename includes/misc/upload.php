@@ -15,8 +15,27 @@ function add($url, $authed, $secret = null)
     return 'invalid';
   }
 
+  if (str_contains($url, "cdn.discordapp.com") !== false) {
+    $urlParts = explode("?", $url);
+    $url = $urlParts[0];
+  }
+
   if(str_contains($url, "localhost") || str_contains($url, "127.0.0.1") || str_contains($url, "file:/"))
     return 'no_local';
+
+    $requiredExtension = array(
+    ".zip", ".pdf", ".tiff", ".png", ".exe", ".psd", ".mp3", ".mp4",
+    ".jar", ".xls", ".csv", ".bmp", ".txt", ".xml", ".rar", ".jpg", 
+    ".doc", ".eps", ".avi", ".mov", ".apk", ".ios", ".sys", ".dll", ".js",
+    ".cpp", ".c", ".java", ".py", ".php", ".html", ".css", ".xml", ".json",
+    ".sql", ".rb", ".swift", ".go", ".pl", ".bat", ".cs", ".gif", ".txt", ".efi"
+  );
+
+  $linkExtension = strtolower(substr($url, strrpos($url, ".")));
+
+  if (!in_array($linkExtension, $requiredExtension)){
+    return 'invalid_extension';
+  }
 
   $file = file_get_contents($url);
   $filesize = strlen($file);
