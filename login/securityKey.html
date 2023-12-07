@@ -1,12 +1,11 @@
-<html>
-<!--begin::Head-->
-
+<!DOCTYPE html>
+<html lang="en" class="bg-[#09090d] text-white overflow-x-hidden">
 <head>
-    <base href="">
-    <title>Keyauth - Securiy Key</title>
-    <meta charset="utf-8" />
-    <!-- Canonical SEO -->
-    <link rel="canonical" href="https://keyauth.cc" />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+    <meta name="title" content="KeyAuth - Open Source Auth">
 
     <meta content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors" name="description" />
     <meta content="KeyAuth" name="author" />
@@ -15,62 +14,40 @@
     <meta property="og:description" content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors" />
     <meta property="og:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png" />
     <meta property="og:site_name" content="KeyAuth | Secure your software from piracy." />
+    <link rel="shortcut icon" type="image/jpg" href="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
     <!-- Schema.org markup for Google+ -->
     <meta itemprop="name" content="KeyAuth - Open Source Auth">
     <meta itemprop="description" content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
-
     <meta itemprop="image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
     <!-- Twitter Card data -->
     <meta name="twitter:card" content="product">
     <meta name="twitter:site" content="@keyauth">
-    <meta name="twitter:title" content="Keyauth - Securiy Key">
+    <meta name="twitter:title" content="KeyAuth - Open Source Auth">
 
     <meta name="twitter:description" content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
     <meta name="twitter:creator" content="@keyauth">
     <meta name="twitter:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
-
     <!-- Open Graph data -->
-    <meta property="og:title" content="Keyauth - Securiy Key" />
+    <meta property="og:title" content="KeyAuth - Open Source Auth" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="./" />
-    <link rel="shortcut icon" href="https://cdn.keyauth.cc/v2/assets/media/logos/favicon.ico" />
+    
+    <title>KeyAuth - Security Key</title>
 
-    <!--begin::Fonts-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
-    <!--end::Fonts-->
-    <!--begin::Global Stylesheets Bundle(used by all pages)-->
-    <link href="https://cdn.keyauth.cc/v2/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="https://cdn.keyauth.cc/v2/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <!-- Canonical SEO -->
+    <link rel="canonical" href="https://keyauth.cc" />
+
+    <!---Flowbite Stylesheet-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet" />
+
+    <!--Custom Styles-->
+    <link rel="stylesheet" href="https://cdn.keyauth.cc/v3/scripts/animate.min.css" />
+    <link rel="stylesheet" href="https://cdn.keyauth.cc/v3/dist/output.css">
     <script src="https://cdn.keyauth.cc/dashboard/webauthn.js"></script>
-    <!--end::Global Stylesheets Bundle-->
-    <style>
-        /* width */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        /* Track */
-        ::-webkit-scrollbar-track {
-            box-shadow: inset 0 0 5px grey;
-            border-radius: 10px;
-        }
-
-        /* Handle */
-        ::-webkit-scrollbar-thumb {
-            background: #2549e8;
-            border-radius: 10px;
-        }
-
-        /* Handle on hover */
-        ::-webkit-scrollbar-thumb:hover {
-            background: #0a2bbf;
-        }
-    </style>
-
-    <!-- Credits to https://stackoverflow.com/a/45656609 -->
+    <!-- Security Key - Credits to https://stackoverflow.com/a/45656609 -->
     <script>
         checkregistration();
         if (window.history.replaceState) {
@@ -78,86 +55,85 @@
         }
     </script>
 </head>
-<!--end::Head-->
-<!--begin::Body-->
-
-<body id="kt_body" class="bg-dark">
-    <!--begin::Main-->
-    <div class="d-flex flex-column flex-root">
-        <!--begin::Authentication - Sign-in -->
-        <div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
-            <!--begin::Content-->
-            <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
-                <!--begin::Logo-->
-                <a href="../" class="mb-12">
-                    <img alt="Logo" src="https://cdn.keyauth.cc/v2/assets/media/logos/favicon.ico" class="h-80px" />
+<body>
+    <header>
+        <nav class="border-gray-200 px-4 lg:px-6 py-2.5 mb-14">
+            <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
+                <a href="../" class="flex items-center">
+                    <img src="https://cdn.keyauth.cc/v2/assets/media/logos/logo-1-dark.png" class="mr-3 h-12 mt-2" alt="KeyAuth Logo" />
                 </a>
-                <!--end::Logo-->
-                <!--begin::Wrapper-->
-                <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
-                    <!--begin::Form-->
-                    <form class="form w-100" method="post">
-                        <!--begin::Heading-->
-                        <div class="text-center mb-10">
-                            <!--begin::Title-->
-                            <h1 class="text-light mb-3">Enter Security Key</h1>
-                            <!--end::Title-->
-                            <!--begin::Link-->
-                            <div class="text-gray-400 fw-bold fs-4">New Here?
-                                <a href="../register/" class="link-primary fw-bolder">Create an Account</a>
-                            </div>
-                            <!--end::Link-->
-                        </div>
-                        <!--begin::Heading-->
-                        <!--begin::Input group-->
-                        <div class="fv-row mb-10">
-                            <img src="https://cdn.keyauth.cc/u2fkey.jpg" class="rounded img-fluid mb-3">
-                            <div class="fv-row mb-10">
-                                <div class="form-group row">
-                                    <!--end::Input-->
-                                </div>
-                                <!--end::Input group-->
-                                <br>
-                                <!--begin::Actions-->
-                                <div class="text-center">
-                                    <!--begin::Submit button-->
-                                    <button type="button" onclick="checkregistration()" class="btn btn-lg btn-primary w-100 mb-5">
-                                        <span class="indicator-label">Continue</span>
-                                        <span class="indicator-progress">Please wait...
-                                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                                    </button>
-                                    <!--end::Submit button-->
+                <div class="flex items-center lg:order-2">
+                    <a href="../login" class="text-white focus:ring-0 font-medium rounded-lg text-sm px-4 py-2 lg:px-5 lg:py-2.5 mr-2 hover:opacity-60 transition duration-200 focus:outline-none focus:ring-gray-800">
+                        Client Area
+                    </a>
+                    <a href="../register" class="text-white focus:ring-0 font-medium rounded-lg text-sm px-4 py-2 lg:px-5 lg:py-2.5 mr-2 bg-blue-600 hover:opacity-80 focus:outline-none focus:ring-blue-800 transition duration-200">
+                        Onboard Now
+                    </a>
+                    <button data-collapse-toggle="mmenu" type="button" class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200  " aria-controls="mmenu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <svg class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1" id="mmenu">
+                    <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                        <li>
+                            <a href="../" class="block py-2 pr-4 pl-3 border-b lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700 hover:text-white lg:hover:bg-transparent border-gray-700 transition duration-200" aria-current="page">Home</a>
+                        </li>
+                        <li>
+                            <a href="../#features" class="block py-2 pr-4 pl-3 border-b lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700 hover:text-white lg:hover:bg-transparent border-gray-700 transition duration-200">Features</a>
+                        </li>
+                        <li>
+                            <a href="../#plans" class="block py-2 pr-4 pl-3 border-b lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700 hover:text-white lg:hover:bg-transparent border-gray-700 transition duration-200">
+                                Plans
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../#team" class="block py-2 pr-4 pl-3 border-b lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700 hover:text-white lg:hover:bg-transparent border-gray-700 transition duration-200">
+                                Our Team
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-                                </div>
-                                <!--end::Actions-->
-                    </form>
-                    <!--end::Form-->
-                </div>
-                <!--end::Wrapper-->
-            </div>
-            <!--end::Content-->
-            <!--begin::Footer-->
-            <div class="d-flex flex-center flex-column-auto p-10">
-                <!--begin::Links-->
-                <div class="d-flex align-items-center fw-bold fs-6">
-                    <a href="https://keyauth.cc" class="text-muted text-hover-primary px-2">About</a>
-                    <a href="https://keyauth.cc/app/?page=support" class="text-muted text-hover-primary px-2">Contact Us</a>
-                </div>
-                <!--end::Links-->
-            </div>
-            <!--end::Footer-->
+<section>
+    <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 grid lg:grid-cols-2 gap-8 lg:gap-16">
+        <div class="flex flex-col justify-center">
+            <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white-900 md:text-5xl lg:text-6xl ">Security Key Required</h1>
+            <p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl ">If you're using a Security Key for your KeyAuth account, you will need to insert it now to gain access.</p>
+            <a href="https://t.me/keyauth" class="text-blue-600  hover:underline font-medium text-lg inline-flex items-center">Need Help? 
+                <svg class="w-3.5 h-3.5 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                </svg>
+            </a>
         </div>
-        <!--end::Authentication - Sign-in-->
+        <div>
+            <div class="w-full lg:max-w-xl p-6 space-y-8 sm:p-8 bg-[#09090d] rounded-lg shadow-xl ">
+                <h2 class="text-2xl font-bold text-white-900 ">
+                    Insert Security Key
+                </h2>
+                <form method="POST">
+                    
+                    <img class="h-auto max-w-xl rounded-lg shadow-xl  " width="500px" height="500px" src="https://cdn.keyauth.cc/v3/imgs/securityKey.png" alt="Security Key">
+
+                    <button type="button" onclick="checkregistration()" class="w-full px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 sm:w-full mt-5">Continue</button>
+                </form>
+            </div>
+        </div>
     </div>
-    <!--end::Main-->
-    <!--begin::Javascript-->
-    <!--begin::Global Javascript Bundle(used by all pages)-->
+</section>
+
+    <!--Flowbite JS-->
+    <script src="https://cdn.keyauth.cc/v3/dist/flowbite.js"></script>
+
     <script src="https://cdn.keyauth.cc/v2/assets/plugins/global/plugins.bundle.js"></script>
     <script src="https://cdn.keyauth.cc/v2/assets/js/scripts.bundle.js"></script>
-    <!--end::Global Javascript Bundle-->
-    <!--begin::Page Custom Javascript(used by this page)-->
-    <!--end::Page Custom Javascript-->
-    <!--end::Javascript-->
 </body>
-<!--end::Body-->
 </html>
