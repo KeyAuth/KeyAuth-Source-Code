@@ -8,8 +8,7 @@ set_exception_handler(function ($exception) {
         error_log(print_r($_POST, true));
         error_log("\n--------------------------------------------------------------");
         http_response_code(500);
-        $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
-        die("Error: " . $errorMsg);
+        die("Error: " . $exception->getMessage());
 });
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -21,6 +20,7 @@ if ($_SESSION['role'] == "Reseller") {
 }
 
 if (!isset($_SESSION['app'])) {
+        dashboard\primary\error("Application not selected");
         die("Application not selected.");
 }
 
@@ -56,7 +56,7 @@ if (isset($_POST['draw'])) {
 
         while ($row = mysqli_fetch_assoc($query->result)) {
                 $data[] = array(
-                        "logdate" => '<div id="' . $row['id'] . '-logdate"><script>document.getElementById("' . $row['id'] . '-logdate").innerHTML=convertTimestamp(' . $row["logdate"] . ');</script></div>',
+                        "logdate" => '<div id="' . $row['id'] . '-logdate"><script>document.getElementById("' . $row['id'] . '-logdate").textContent=convertTimestamp(' . $row["logdate"] . ');</script></div>',
                         "logdata" => $row['logdata'],
                         "credential" => $row['credential'] ?? 'N/A',
                         "pcuser" => $row['pcuser'] ?? 'N/A',
