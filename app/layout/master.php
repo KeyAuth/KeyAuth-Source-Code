@@ -1,45 +1,39 @@
-<?php $page = isset($_GET['page']) ? $_GET['page'] : "manage-apps"; ?>
-<!--begin::Main-->
-<!--begin::Root-->
-<div class="d-flex flex-column flex-root">
-    <!--begin::Page-->
-    <div class="page d-flex flex-row flex-column-fluid">
+<?php
+$page = isset($_GET['page']) ? $_GET['page'] : "manage-apps";
 
-        <?php include 'aside/_base.php' ?>
+require '../app/layout/topbar.php';
 
-        <!--begin::Wrapper-->
-        <div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper">
+?>
 
-            <?php include 'header/_base.php' ?>
+<div class="flex overflow-hidden pt-16 bg-[#09090d]">
+    
+    <?php
+    if ($_SESSION["role"] == 'Reseller'){
+        include '../app/layout/reselleraside.php';
+    } else{
+        include '../app/layout/aside.php';
+    }
+    
+    ?>
 
-            <!--begin::Content-->
-            <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+    <div class="hidden fixed inset-0 z-10" id="sidebarBackdrop"></div>
 
-                <?php include 'toolbars/_toolbar-1.php' ?>
+    <?php
+    if (str_contains($page, ".")) {
+        require '../404_error.html';
+    }
 
-                <!--begin::Post-->
-                <div class="post d-flex flex-column-fluid" id="kt_post">
+    ?>
+    <div id="main-content" class="overflow-y-auto relative w-full h-full lg:ml-64">
+        <main>
+        <?php
+            require __DIR__ . "/../pages/{$page}.php";
+            ?>
 
-                    <?php
-                        // prevent directory traversal
-                        if(str_contains($page, ".")) {
-                            die("Page name is invalid");
-                        }
-                        require __DIR__ . "/../pages/{$page}.php";
-                    ?>
+        </main>
 
-                </div>
-                <!--end::Post-->
-            </div>
-            <!--end::Content-->
-
-            <?php include '_footer.php' ?>
-
-        </div>
-        <!--end::Wrapper-->
+        <?php 
+    require '../app/layout/footer.php';
+    ?>
     </div>
-    <!--end::Page-->
 </div>
-<!--end::Root-->
-
-<!--end::Main-->
