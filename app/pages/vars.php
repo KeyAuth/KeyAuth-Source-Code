@@ -4,9 +4,12 @@ if ($_SESSION['role'] == "Reseller") {
     die();
 }
 if($role == "Manager" && !($permissions & 128)) {
-    die('You weren\'t granted permissions to view this page.');
+    misc\auditLog\send("Attempted (and failed) to view vars.");
+    dashboard\primary\error("You weren't granted permission to view this page!");
+    die();
 }
 if(!isset($_SESSION['app'])) {
+    dashboard\primary\error("Application not selected");
     die("Application not selected.");
 }
 
@@ -29,53 +32,31 @@ if (isset($_POST['genvar'])) {
     }
     $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
     $resp = misc\variable\add($_POST['varname'], $_POST['vardata'], $authed);
-    switch ($resp) {
-        case 'exists':
-            dashboard\primary\error("Variable name already exists!");
-            break;
-        case 'too_long':
-            dashboard\primary\error("Variable too long! Must be 1000 characters or less");
-            break;
-        case 'failure':
-            dashboard\primary\error("Failed to create variable!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully created variable!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
+    match($resp){
+        'exists' => dashboard\primary\error("Variable name already exists!"),
+        'too_long' => dashboard\primary\error("Variable too long! Must be 1000 characters or less"),
+        'failure' => dashboard\primary\error("Failed to create variable"),
+        'success' => dashboard\primary\success("Successfully created variable"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
 }
 
 if (isset($_POST['delvars'])) {
     $resp = misc\variable\deleteAll();
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to delete all variables!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully deleted all variables!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
+    match($resp){
+        'failure' => dashboard\primary\error("Failed to delete all variables"),
+        'success' => dashboard\primary\success("Successfully deleted all variables"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
 }
 
 if (isset($_POST['deletevar'])) {
     $resp = misc\variable\deleteSingular($_POST['deletevar']);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to delete variable!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully deleted variable!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
+    match($resp){
+        'failure' => dashboard\primary\error("Failed to delete variable"),
+        'success' => dashboard\primary\success("Successfully deleted variable"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
 }
 
 // edit modal
@@ -93,177 +74,205 @@ if (isset($_POST['editvar'])) {
 
     $data = $row["msg"];
 
-    echo '<div id="edit-webhook" class="modal show" role="dialog" aria-labelledby="myModalLabel" style="display: block;" aria-modal="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header d-flex align-items-center">
-                                                <h4 class="modal-title">Edit Variable</h4>
-                                                <!--begin::Close-->
-                                                <div class="btn btn-sm btn-icon btn-active-color-primary" onClick="window.location.href=window.location.href">
-                                                    <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                                <!--end::Close-->
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="post"> 
-                                                    <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Variable Data:</label>
-                                                        <textarea maxlength="1000" class="form-control" name="msg" required rows="3">'.$data.'</textarea>
-                                                        <input type="hidden" name="variable" value="' . $variable . '">
-                                                    </div>
-                                                    <br>
-                                                    <div class="form-check">
-                                                    <input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
-                                                    <label class="form-check-label" for="flexCheckChecked">
-                                                        Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
-                                                    </label>
-                                                    </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" onClick="window.location.href=window.location.href" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-danger waves-effect waves-light" name="savevar">Save</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>';
+    echo  '
+    <div id="edit-variable-modal" tabindex="-1" aria-hidden="true"
+        class="fixed grid place-items-center h-screen bg-black bg-opacity-60 z-50 p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative w-full max-w-md max-h-full">
+            <!-- Modal content -->
+            <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+                <div class="px-6 py-6 lg:px-8">
+                    <h3 class="mb-4 text-xl font-medium text-white-900">Edit Variable</h3>
+                    <form class="space-y-6" method="POST">
+                        <div>
+
+                        <div class="relative mb-4">
+                            <label for="msg" name="msg"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">
+                                Variable Data</label>
+                            <textarea id="msg" name="msg" rows="4"
+                                class="block p-2.5 w-full text-sm text-white-900 bg-[#0f0f17] rounded-lg border border-gray-700 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="" maxlength="1000" required>' . $data . '</textarea>
+                                <input type="hidden" name="variable" value="' . $variable . '">
+                        </div>
+
+                        </div>
+                        <div class="flex items-center mb-4">
+                        <input id="authed" name="authed" type="checkbox"
+                            class="w-4 h-4 text-blue-600 bg-[#0f0f17] border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            checked>
+                        <label for="authed"
+                            class="ml-2 text-sm font-medium text-white-900">Authenticated</label>
+                    </div>
+
+                        <button name="savevar"
+                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Save
+                            Changes</button>
+                        <button
+                            class="w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center" onClick="window.location.href=window.location.href">Cancel
+                            </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Edit Var Modal -->';
 }
 
 if (isset($_POST['savevar'])) {
     $authed = misc\etc\sanitize($_POST['authed']) == NULL ? 0 : 1;
     $resp = misc\variable\edit($_POST['variable'], $_POST['msg'], $authed);
     switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to edit variable!");
-            break;
-        case 'too_long':
-            dashboard\primary\error("Variable too long! Must be 1000 characters or less");
-            break;
         case 'success':
             misc\cache\purge('KeyAuthVar:' . $_SESSION['app'] . ':' . $_POST['variable']);
             dashboard\primary\success("Successfully edited variable!");
             break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
     }
+    match($resp){
+        'failure' => dashboard\primary\error("Failed to edit variable!"),
+        'too_long' => dashboard\primary\error("Variable too long! Must be 1000 characters or less"),
+        'success' => dashboard\primary\success("Successfully edited variable!"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
 }
 ?>
-    <!-- Include the jQuery library -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script>
-    $(document).ready(function() {
-    $('div.modal-content').css('border', '2px solid #1b8adb');
-    });
-    </script>
-<!--begin::Container-->
-<div id="kt_content_container" class="container-xxl">
-    <div class="alert alert-warning" role="alert">
-        You must use the <b>var()</b> function for these. <b><u>Do NOT</u></b> use the <b>getvar()</b> function, that's for user variables which are completely different.
-    </div>
-    <form method="post">
-        <button data-bs-toggle="modal" type="button" data-bs-target="#create-variable" class="dt-button buttons-print btn btn-primary mr-1"><i class="fas fa-plus-circle fa-sm text-white-50"></i> Create Variable</button><br><br>
-        <button name="delvars" data-bs-toggle="modal" type="button" data-bs-target="#deleteallvars" class="dt-button buttons-print btn btn-danger mr-1"><i class="fas fa-trash-alt fa-sm text-white-50"></i> Delete All Variables</button>
-    </form>
-    <br>
-    <div id="create-variable" class="modal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header d-flex align-items-center">
-                    <h4 class="modal-title">Add Variable</h4>
-                    <!--begin::Close-->
-                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                        <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                            </svg>
-                        </span>
+<div class="p-4 bg-[#09090d] block sm:flex items-center justify-between lg:mt-1.5">
+    <div class="mb-1 w-full bg-[#0f0f17] rounded-xl">
+        <div class="mb-4 p-4">
+            <?php require '../app/layout/breadcrumb.php'; ?>
+            <h1 class="text-xl font-semibold text-white-900 sm:text-2xl ">Global Variables</h1>
+            <p class="text-xs text-gray-500">Pass, assign, obtain data globally. <a
+                    href="https://keyauth.readme.io/reference/variables-1" target="_blank"
+                    class="text-blue-600  hover:underline">Learn More</a>.</p>
+            <br>
+            <div class="overflow-x-auto">
+
+                <!-- Alert Box -->
+                <div id="alert-4" class="flex items-center p-4 mb-4 text-yellow-800 rounded-lg bg-[#09090d]"
+                    role="alert">
+                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                    </svg>
+                    <span class="sr-only">Info</span>
+                    <div class="ml-3 text-sm font-medium text-yellow-500">
+                        These are global variables. You must use 'var()', not get/setvar()(aka user variables). Please
+                        view our <a href="https://keyauth.readme.io/reference/variables-1"
+                            class="font-semibold underline hover:no-underline">Documentation</a> to learn how to use
+                        global variables.
                     </div>
-                    <!--end::Close-->
                 </div>
+                <!-- End Alert Box -->
 
-                <div class="modal-body">
-                    <form method="post">
-                        <div class="alert alert-primary" role="alert">
-                            If your variable is longer than a few hundred characters, you should use download() function <a href="https://keyauth.cc/app/?page=files">https://keyauth.cc/app/?page=files</a>
-                        </div>
-                        <div class="form-group">
-                            <label for="recipient-name" class="control-label">Variable Name:</label>
-                            <input type="text" class="form-control" name="varname" placeholder="Name To Reference Variable By" required maxlength="49">
-                        </div>
-                        <div class="form-group">
-                            <label for="recipient-name" class="control-label">Variable Data: <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="Get string from KeyAuth server, where it's more secure"></i></label>
-                                <textarea maxlength="1000" class="form-control" name="vardata" placeholder="Value of Variable" required rows="3"></textarea>
-                        </div>
-                        <br>
-                        <div class="form-check">
-                            <input class="form-check-input" name="authed" type="checkbox" id="flexCheckChecked" checked>
-                            <label class="form-check-label" for="flexCheckChecked">
-                                Authenticated <i class="fas fa-question-circle fa-lg text-white-50" data-toggle="tooltip" data-placement="top" title="If checked, KeyAuth will force user to be logged in to use."></i>
-                            </label>
-                        </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button class="btn btn-danger" name="genvar">Add</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+                <!-- Global Variable Functions -->
+                <button
+                    class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                    data-modal-toggle="set-global-var-modal" data-modal-target="set-global-var-modal">
+                    <i class="lni lni-circle-plus mr-2 mt-1"></i>Create Global Variable
+                </button>
+                <!-- End Global Variable Functions -->
 
-    <div class="modal fade" tabindex="-1" id="deleteallvars">
-        <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-900px">
-            <!--begin::Modal content-->
-            <div class="modal-content">
-                <!--begin::Modal header-->
-                <div class="modal-header">
-                    <h2 class="modal-title">Delete All Variables</h2>
+                <br>
 
-                    <!--begin::Close-->
-                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                        <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                            </svg>
-                        </span>
+                <!-- Delete Global Variable Functions -->
+                <button
+                    class="inline-flex text-white bg-red-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                    data-modal-toggle="delete-all-vars-modal" data-modal-target="delete-all-vars-modal">
+                    <i class="lni lni-trash-can mr-2 mt-1"></i>Delete All Variables
+                </button>
+                <!-- End Delete Global Variable Functions -->
+
+                <!-- Set Global Var Modal -->
+                <div id="set-global-var-modal" tabindex="-1" aria-hidden="true"
+                    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                    <div class="relative w-full max-w-md max-h-full">
+                        <!-- Modal content -->
+                        <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+                            <div class="px-6 py-6 lg:px-8">
+                                <h3 class="mb-4 text-xl font-medium text-white-900">Set Global Variable</h3>
+                                <hr class="h-px mb-4 mt-4 bg-gray-700 border-0">
+                                <form class="space-y-6" method="POST">
+                                    <div>
+                                        <div class="relative mb-4">
+                                            <input type="text" id="varname" name="varname"
+                                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                placeholder=" " autocomplete="on" required>
+                                            <label for="varname"
+                                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Variable
+                                                Name</label>
+                                        </div>
+
+                                        <div class="relative mb-4">
+                                            <label for="vardata" name="vardata"
+                                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">
+                                                Variable Data</label>
+                                            <textarea id="vardata" name="vardata" rows="4"
+                                                class="block p-2.5 w-full text-sm text-white-900 bg-[#0f0f17] rounded-lg border border-gray-700 focus:ring-blue-500 focus:border-blue-500"
+                                                placeholder="" maxlength="1000" required></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center mb-4">
+                                        <input id="authed" name="authed" type="checkbox" 
+                                            class="w-4 h-4 text-blue-600 bg-[#0f0f17] border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                            checked>
+                                        <label for="authed"
+                                            class="ml-2 text-sm font-medium text-white-900">Authenticated</label>
+                                    </div>
+                                    <button name="genvar"
+                                        class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Set
+                                        Global Var</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <!--end::Close-->
                 </div>
-                <div class="modal-body">
-                    <label class="fs-5 fw-bold mb-2">
-                        <p> Are you sure you want to delete all variables? This can not be undone.</p>
-                    </label>
-                </div>
-                <div class="modal-footer">
-                    <form method="post">
-                        <button class="btn btn-light" data-bs-dismiss="modal">No</button>
-                        <button name="delvars" class="btn btn-danger">Yes</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+                <!-- End Create Global Var Modal -->
 
-    <table id="kt_datatable_vars" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
-        <thead>
-            <tr class="fw-bolder fs-6 text-gray-800 px-7">
-                <th>Variable Name</th>
-                <th>Variable Data</th>
-                <th>Authenticated</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-    </table>
+                <!-- Delete All Vars Modal -->
+                <div id="delete-all-vars-modal" tabindex="-1"
+                    class="fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                    <div class="relative w-full max-w-md max-h-full">
+                        <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                            <div class="p-6 text-center">
+                                <div class="flex items-center p-4 mb-4 text-sm text-white border border-yellow-500 rounded-lg bg-[#0f0f17]"
+                                    role="alert">
+                                    <span class="sr-only">Info</span>
+                                    <div>
+                                        <span class="font-medium">Notice!</span> You're about to delete all of your
+                                        global variables. This can not be undone.
+                                    </div>
+                                </div>
+                                <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to delete
+                                    all of your global variables?</h3>
+                                <form method="POST">
+                                    <button data-modal-hide="delete-all-vars-modal" name="delvars"
+                                        class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                                        Yes, I'm sure
+                                    </button>
+                                    <button data-modal-hide="delete-all-vars-modal" type="button"
+                                        class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                        cancel</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Delete All Vars Modal -->
 
-</div>
-<!--end::Container-->
+                <!-- START TABLE -->
+                <div class="relative overflow-x-auto shadow-md sm:rounded-lg pt-5">
+                    <table id="kt_datatable_vars" class="w-full text-sm text-left text-white">
+                        <thead>
+                            <tr class="fw-bolder fs-6 text-blue-700 px-7">
+                                <th class="px-6 py-3">Variable Name</th>
+                                <th class="px-6 py-3">Variable Data</th>
+                                <th class="px-6 py-3">Autheticated</th>
+                                <th class="px-6 py-3">Actions</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <p class="text-xs text-red-600">Dropdown actions in <b>RED</b> do not show a confirmation!<a
+                            class="text-blue-700"> Dropdown actions in <b>BLUE</b> will show a confirmation!</a></p>
