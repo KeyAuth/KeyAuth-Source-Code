@@ -6,6 +6,7 @@ use misc\etc;
 use misc\cache;
 use misc\blacklist;
 use misc\mysql;
+use misc\token;
 
 function deleteSingular($username, $secret = null)
 {
@@ -20,6 +21,7 @@ function deleteSingular($username, $secret = null)
 
         $query = mysql\query("DELETE FROM `subs` WHERE `app` = ? AND `user` = ?", [$secret ?? $_SESSION['app'], $username]);
         $query = mysql\query("DELETE FROM `uservars` WHERE `app` = ? AND `user` = ?", [$secret ?? $_SESSION['app'], $username]);
+        $query = mysql\query("DELETE FROM `tokens` WHERE `app` = ? AND `assigned` = ? AND `type` = ?", [$secret ?? $_SESSION['app'], $username, "user"]);
         $query = mysql\query("DELETE FROM `users` WHERE `app` = ? AND `username` = ?", [$secret ?? $_SESSION['app'], $username]);
 
         if ($query->affected_rows > 0) {
@@ -116,12 +118,45 @@ function ban($username, $reason, $secret = null)
                 blacklist\add($ip, "IP Address", ($secret ?? $_SESSION['app']));
         }
         if ($query->affected_rows > 0) {
+                mysql\query("UPDATE `tokens` SET `banned` = ?, `reason` = ? WHERE `app` = ? AND `assigned` = ? AND `type` = ?", [1, $reason, $secret ?? $_SESSION['app'], $username, "user"]);
                 cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
+                cache\purge('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app']) . ':' . token\IsAssignedToken($username, "user", $secret ?? $_SESSION["app"], true));
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                         cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
-                        cache\purge('KeyAuthUserData:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 }
+                return 'success';
+        } else {
+                return 'failure';
+        }
+}
+function pauseUser($username, $secret = null){
+        $username = etc\sanitize($username);
+        $query = mysql\query("SELECT * FROM `subs` WHERE `app` = ? AND `expiry` > ? AND `user` = ?", [$secret ?? $_SESSION['app'], time(), $username], "sis");
+        $updateQuery = NULL;
+        while ($row = mysqli_fetch_array($query->result)){
+                $expires = $row['expiry'];
+                $exp = (int)$expires - time();
+                $updateQuery = mysql\query("UPDATE `subs` SET `paused` = 1, `expiry` = ? WHERE `app` = ? AND `id` = ?", [$exp, $secret ?? $_SESSION['app'], $row['id']], "iss");
+        }
+        if ($updateQuery->affected_rows > 0){
+                cache\purge('KeyAuthSubs:' . $secret ?? $_SESSION['app'] . ':' . $username);
+                return 'success';
+        } else {
+                return 'failure';
+        }
+}
+function unpauseUser($username, $secret = null){
+        $username = etc\sanitize($username);
+        $query = mysql\query("SELECT * FROM `subs` WHERE `app` = ? AND `user` = ? AND `paused` = 1", [$secret ?? $_SESSION['app'], $username]);
+        $updateQuery = NULL;
+        while ($row = mysqli_fetch_array($query->result)){
+                $expires = $row['expiry'];
+                $exp = (int)$expires + time();
+                $updateQuery = mysql\query("UPDATE `subs` SET `paused` = 0, `expiry` = ? WHERE `app` = ? AND `id` = ?", [$exp, $secret ?? $_SESSION['app'], $row['id']], "iss");
+        }
+        if ($updateQuery->affected_rows > 0){
+                cache\purge('KeyAuthSubs:' . $secret ?? $_SESSION['app'] . ':' . $username);
                 return 'success';
         } else {
                 return 'failure';
@@ -153,11 +188,13 @@ function unban($username, $secret = null)
         $query = mysql\query("DELETE FROM `bans` WHERE `hwid` = ? OR `ip` = ? AND `app` = ?", [$hwid, $ip, $secret ?? $_SESSION['app']]);
         $query = mysql\query("UPDATE `users` SET `banned` = NULL WHERE `app` = ? AND `username` = ?", [$secret ?? $_SESSION['app'], $username]);
         if ($query->affected_rows > 0) {
+                mysql\query("UPDATE `tokens` SET `banned` = 0, `reason` = NULL WHERE `app` = ? AND `assigned` = ? AND `type` = ?", [$secret ?? $_SESSION['app'], $username, "user"]);
+
+                cache\purge('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app']) . ':' . token\IsAssignedToken($username, "user", $secret ?? $_SESSION["app"], true));
                 cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                         cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
-                        cache\purge('KeyAuthUserData:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 }
                 return 'success';
         } else {
@@ -174,7 +211,6 @@ function deleteVar($username, $var, $secret = null)
                 cache\purge('KeyAuthUserVar:' . ($secret ?? $_SESSION['app']) . ':' . $var . ':' . $username);
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                         cache\purge('KeyAuthUserVars:' . ($secret ?? $_SESSION['app']));
-                        cache\purge('KeyAuthUserStoredVars:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 }
                 return 'success';
         } else {
@@ -303,6 +339,7 @@ function add($username, $sub, $expiry, $secret = null, $password = null)
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 }
+                if (token\ModifyUserToken($username, "User") === "failed") { return "failure"; }
                 return 'success';
         } else {
                 return 'failure';
@@ -334,6 +371,8 @@ function deleteExpiredUsers($secret = null)
                         cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
                 }
+                $query = mysql\query("DELETE FROM `tokens` WHERE `app` = ? AND `assigned` = ? AND `type` = ?", [$secret ?? $_SESSION['app'], $row['username'], "user"]);
+                if ($query->affected_rows > 0) { cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); } else { return "failure"; }
                 return 'success';
         } else {
                 return 'failure';
@@ -348,6 +387,9 @@ function deleteAll($secret = null)
                         cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
                 }
+                $query = mysql\query("DELETE FROM `tokens` WHERE `app` = ? AND `type` = ?", [$secret ?? $_SESSION['app'], "user"]);
+
+                if ($query->affected_rows > 0) { cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); } else { return "failure"; }
                 return 'success';
         } else {
                 return 'failure';
@@ -362,6 +404,9 @@ function resetAll($secret = null)
                         cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
                 }
+                $query = mysql\query("UPDATE `tokens` SET `hash` = NULL WHERE `app` = ? AND `type` = ?", [$secret ?? $_SESSION['app'], "user"]);
+
+                if ($query->affected_rows > 0) { cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); } else { return "failure"; }
                 return 'success';
         } else {
                 return 'failure';
@@ -376,6 +421,9 @@ function unbanAll($secret = null)
                         cache\purge('KeyAuthUsernames:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
                 }
+                $query = mysql\query("UPDATE `tokens` SET `banned` = 0, `reason` = NULL WHERE `app` = ?", [$secret ?? $_SESSION['app']]);
+
+                if ($query->affected_rows > 0) { cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); } else { return "failure"; }
                 return 'success';
         } else {
                 return 'failure';
@@ -423,12 +471,12 @@ function changePassword($username, $password, $secret = null)
                 return 'failure';
         }
 }
-function changeEmail($username, $email, $secret = null)
-{
-        $username = etc\sanitize($username);
-        $email = etc\sanitize($email);
 
-        $query = mysql\query("UPDATE `users` SET `email` = SHA(?) WHERE `username` = ? AND `app` = ?", [$email, $username, $secret ?? $_SESSION['app']]);
+function disable2fa($username, $secret = null) {
+
+        $username = etc\sanitize($username);
+
+        $query = mysql\query("UPDATE `users` SET `googleAuthCode` = NULL, `2fa` = 0 WHERE `username` = ? AND `app` = ?", [$username, $secret ?? $_SESSION['app']]);
         if ($query->affected_rows > 0) {
                 cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
@@ -438,4 +486,6 @@ function changeEmail($username, $email, $secret = null)
         } else {
                 return 'failure';
         }
+
 }
+
