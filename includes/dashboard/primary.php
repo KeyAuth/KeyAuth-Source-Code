@@ -114,3 +114,17 @@ function success($msg)
 
                 </script>';
 }
+
+function popover($id, $title, $msg){
+    echo '<div data-popover id="' . $id . '" role="tooltip"
+            class="absolute z-10 invisible inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-[#09090d] rounded-lg shadow-sm opacity-0">
+            <div class="px-3 py-2 bg-[#09090d]/70 rounded-t-lg">
+                <h3 class="font-semibold text-white">' . $title . '</h3>
+            </div>
+            <div class="px-3 py-2">
+                <p>' . $msg . '</p>
+            </div>
+            <div data-popper-arrow></div>
+        </div>';
+}
+?>
