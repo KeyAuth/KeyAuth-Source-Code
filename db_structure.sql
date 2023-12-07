@@ -45,10 +45,7 @@ CREATE TABLE `accounts` (
   `permissions` bit(64) NOT NULL DEFAULT b'11111111111',
   `securityKey` int NOT NULL DEFAULT '0',
   `staff` int DEFAULT '0',
-  `staffDiscordID` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `formBanned` int DEFAULT '0',
-  `connection` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `stafftype` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
+  `connection` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE TABLE `apps` (
@@ -128,7 +125,9 @@ CREATE TABLE `apps` (
   `forceHwid` int DEFAULT '1',
   `minHwid` int DEFAULT '20',
   `sellerLogs` int DEFAULT '0',
-  `sellerApiWhitelist` varchar(49) DEFAULT NULL
+  `sellerApiWhitelist` varchar(49) DEFAULT NULL,
+  `tokensystem` int NOT NULL DEFAULT '0',
+  `tokeninvalid` varchar(99) NOT NULL DEFAULT 'Token Invalid'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `auditLog` (
@@ -299,6 +298,18 @@ CREATE TABLE `support` (
   `message` varchar(200) DEFAULT NULL,
   `staff` int NOT NULL DEFAULT '0',
   `ownerid` varchar(65) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+CREATE TABLE `token` (
+  `id` int NOT NULL,
+  `app` varchar(255) NOT NULL,
+  `token` varchar(32) NOT NULL,
+  `assigned` varchar(255) NOT NULL,
+  `banned` int NOT NULL DEFAULT '0',
+  `reason` varchar(255) NOT NULL,
+  `hash` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `status` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `users` (
