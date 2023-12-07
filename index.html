@@ -1,615 +1,1540 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg-[#09090d] text-white overflow-x-hidden">
+
 <head>
-   <meta charset="UTF-8">
-   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   
-   <meta name="title" content="KeyAuth - Open Source Auth">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-   <!-- Canonical SEO -->
-   <link rel="canonical" href="https://keyauth.cc" />
+    <meta name="title" content="KeyAuth - Open Source Auth">
 
-   <meta
-       content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors"
-       name="description" />
-   <meta content="KeyAuth" name="author" />
-   <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta name="keywords"
-       content="KeyAuth, Cloud Authentication, Key Authentication,Authentication, API authentication,Security, Encryption authentication, Authenticated encryption, Cybersecurity, Developer, SaaS, Software Licensing, Licensing" />
-   <meta property="og:description"
-       content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors" />
-   <meta property="og:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png" />
-   <meta property="og:site_name" content="KeyAuth | Secure your software from piracy." />
+    <meta
+        content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors"
+        name="description" />
+    <meta content="KeyAuth" name="author" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords"
+        content="KeyAuth, Cloud Authentication, Key Authentication,Authentication, API authentication,Security, Encryption authentication, Authenticated encryption, Cybersecurity, Developer, SaaS, Software Licensing, Licensing" />
+    <meta property="og:description"
+        content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors" />
+    <meta property="og:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png" />
+    <meta property="og:site_name" content="KeyAuth | Secure your software from piracy." />
+    <link rel="shortcut icon" type="image/jpg" href="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
-   <!-- Schema.org markup for Google+ -->
-   <meta itemprop="name" content="KeyAuth - Open Source Auth">
-   <meta itemprop="description"
-       content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
+    <!-- Schema.org markup for Google+ -->
+    <meta itemprop="name" content="KeyAuth - Open Source Auth">
+    <meta itemprop="description"
+        content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
+    <meta itemprop="image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
-   <meta itemprop="image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
+    <!-- Twitter Card data -->
+    <meta name="twitter:card" content="product">
+    <meta name="twitter:site" content="@keyauth">
+    <meta name="twitter:title" content="KeyAuth - Open Source Auth">
 
-   <!-- Twitter Card data -->
-   <meta name="twitter:card" content="product">
-   <meta name="twitter:site" content="@keyauth">
-   <meta name="twitter:title" content="KeyAuth - Open Source Auth">
+    <meta name="twitter:description"
+        content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
+    <meta name="twitter:creator" content="@keyauth">
+    <meta name="twitter:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
 
-   <meta name="twitter:description"
-       content="Secure your software against piracy, an issue causing $422 million in losses annually - Fair pricing & Features not seen in competitors">
-   <meta name="twitter:creator" content="@keyauth">
-   <meta name="twitter:image" content="https://cdn.keyauth.cc/front/assets/img/favicon.png">
+    <!-- Open Graph data -->
+    <meta property="og:title" content="KeyAuth - Open Source Auth" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="./" />
 
+    <title>KeyAuth - Open Source Auth</title>
 
-   <!-- Open Graph data -->
-   <meta property="og:title" content="KeyAuth - Open Source Auth" />
-   <meta property="og:type" content="website" />
-   <meta property="og:url" content="./" />
-   
-   <title>KeyAuth - Open Source Auth</title>
-   <meta name="viewport" content="width=device-width, initial-scale=1">
-   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-   <script src="https://code.jquery.com/jquery-3.6.3.min.js"
-      integrity="sha384-Ft/vb48LwsAEtgltj7o+6vtS2esTU9PCpDqcXs4OCVQFZu5BqprHtUCZ4kjK+bpE" crossorigin="anonymous">
-   </script>
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
-     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
-   </script>
-   <link rel="stylesheet" href="https://cdn.keyauth.cc/v2/keyauth.css">
-   <link rel="shortcut icon" type="image/jpg" href="https://cdn.keyauth.cc/front/assets/img/favicon.png">
-   <script type="text/javascript" src="https://widget.trustpilot.com/bootstrap/v5/tp.widget.sync.bootstrap.min.js" async></script>
+    <!-- Canonical SEO -->
+    <link rel="canonical" href="https://keyauth.cc" />
+
+    <link rel="stylesheet" href="https://cdn.keyauth.cc/v3/dist/output.css">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.keyauth.cc/v3/scripts/animate.min.css" />
 </head>
 
 <body>
-   <div style="background-color: #20c997;padding:0.01px" id="android-banner" hidden>
-      <p style="margin-left: 1.5rem;margin-right: 1.5rem;margin-bottom: 0.5rem;color: #163d66;font-size: 20px;">We have an android app!<a href='https://play.google.com/store/apps/details?id=com.wnelson03.rn&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200" height="75"/></a>
-      </p>
-   </div>
-   <div style="background-color: #afd6ff;padding:0.01px">
-      <p style="margin-left: 1.5rem;margin-right: 1.5rem;margin-bottom: 0.5rem;color: #163d66;font-size: 20px;">Please join Telegram group <a href="https://t.me/keyauth" target="_blank">https://t.me/keyauth</a> 
-      </p>
-   </div>
-   <nav class="navbar navbar-expand-lg navbar-dark mt-3">
-      <div class="container">
-         <a class="navbar-brand">
-            <img
-               src="https://cdn.keyauth.cc/v2/assets/media/logos/logo-1-dark.png"
-               width="180" height="100" class="" alt="">
-         </a>
-         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-         </button>
-         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-lg-0">
-               <li class="nav-item">
-                  <a class="nav-link" href="#features">Features</a>
-               </li>
-               <li class="nav-item">
-                  <a class="nav-link" href="#pricing">Pricing</a>
-               </li>
-               <li class="nav-item">
-                  <a class="nav-link" href="free-trial/">Free Trial</a>
-               </li>
-               <li class="nav-item">
-                  <a class="nav-link" href="gdpr/">GDPR</a>
-               </li>
-               <li class="nav-item">
-                  <a class="nav-link" href="https://headwayapp.co/keyauth-changelog" target="_blank">Changelog</a>
-               </li>
-               <div class="dropdown show">
-                  <a class="nav-link dropdown-toggle" href="https://t.me/keyauth" target="_blank" id="dropdownMenuLink" data-toggle="dropdown"
-                     aria-haspopup="true" aria-expanded="false">
-                     Support
-                  </a>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                     <a class="dropdown-item" href="https://keyauth.readme.io" target="_blank">Docs</a>
-                     <a class="dropdown-item" href="https://keyauth.cc/app/?page=support">Website</a>
-                     <a class="dropdown-item" href="https://t.me/keyauth" target="_blank">Telegram</a>
-                  </div>
-               </div>
-            </ul>
-            <a href="./login/"><button class="btn btn-login text-light"><i class="fad fa-sign-in-alt"></i> Login</button></a>
-         </div>
-      </div>
-   </nav>
-   <div class="container">
-      <section class="top-section">
-         <div class="row align-items-center">
-            <div class="col-sm-6" id="text-animate">
-               <span class="first-descreption"></span>
-               <h1 class="fw-bolder mt-1">
-                  <br>
-               </h1>
-               <p class="seconed-descreption mt-3">
-                  KeyAuth is an Open-source authentication system with cloud-hosted subscriptions available as well.
-               </p>
-               <a href="./register/"><button class="btn btn-invite my-1"><i class="fas fa-paper-plane mr-2"></i>
-                     Register</button></a>
-               &nbsp;
-               <a href="./login/"><button class="btn btn-dashboard my-1 animate-up-2"><i class="fal fa-sign-in"></i>
-                     &nbsp;Login To Dashboard</button></a>
+    <header>
+        <nav class="border-gray-200 px-4 lg:px-6 py-2.5 mb-14">
+            <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
+                <a href="./" class="flex items-center">
+                    <img src="https://cdn.keyauth.cc/v2/assets/media/logos/logo-1-dark.png" class="mr-3 h-12 mt-2"
+                        alt="KeyAuth Logo" />
+                </a>
+                <div class="flex items-center lg:order-2">
+                    <a href="./login"
+                        class="text-white focus:ring-0 font-medium rounded-lg text-sm px-4 py-2 lg:px-5 lg:py-2.5 mr-2 hover:opacity-60 transition duration-200 focus:outline-none focus:ring-gray-800">
+                        Client Area
+                    </a>
+                    <a href="./register"
+                        class="text-white focus:ring-0 font-medium rounded-lg text-sm px-4 py-2 lg:px-5 lg:py-2.5 mr-2 bg-blue-600 hover:opacity-80 focus:outline-none focus:ring-blue-800 transition duration-200">
+                        Onboard Now
+                    </a>
+                    <button data-collapse-toggle="mmenu" type="button"
+                        class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden focus:outline-none focus:ring-0"
+                        aria-controls="mmenu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        <svg class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1" id="mmenu">
+                    <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                        <li>
+                            <a href="./"
+                                class="block py-2 pr-4 pl-3 border-b lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700 hover:text-white lg:hover:bg-transparent border-gray-700 transition duration-200"
+                                aria-current="page">Home</a>
+                        </li>
+                        <li>
+                            <a href="#features"
+                                class="block py-2 pr-4 pl-3 border-b lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700 hover:text-white lg:hover:bg-transparent border-gray-700 transition duration-200">Features</a>
+                        </li>
+                        <li>
+                            <button id="mm-button" data-dropdown-toggle="mm"
+                                class="flex justify-between items-center py-2 pr-4 pl-3 w-full font-medium border-b lg:w-auto lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700hover:text-white lg:hover:bg-transparent border-gray-700 hover:text-white transition duration-200">Insights
+                                <svg class="ml-1 w-5 h-5 lg:w-4 lg:h-4" fill="currentColor" viewBox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"></path>
+                                </svg></button>
+                            <div id="mm"
+                                class="grid hidden absolute z-10 w-full border shadow-md border-[#0f0f17] lg:rounded-lg lg:w-auto lg:grid-cols-3 bg-[#0f0f17]">
+                                <div class="p-2 bg-[#09090d] lg:rounded-lg text-white lg:col-span-2">
+                                    <ul>
+                                        <li>
+                                            <a href="https://youtube.com/keyauth" target="_blank"
+                                                class="flex items-center p-3 rounded-lg hover:bg-[#0f0f17]">
+                                                <div class="p-2 mr-4 rounded-lg shadow bg-[#0f0f17]">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path
+                                                            d="M21.593 7.203a2.506 2.506 0 0 0-1.762-1.766c-1.566-.43-7.83-.437-7.83-.437s-6.265-.007-7.832.404a2.56 2.56 0 0 0-1.766 1.778c-.413 1.566-.417 4.814-.417 4.814s-.004 3.264.406 4.814c.23.857.905 1.534 1.763 1.765 1.582.43 7.83.437 7.83.437s6.265.007 7.831-.403a2.515 2.515 0 0 0 1.767-1.763c.414-1.565.417-4.812.417-4.812s.02-3.265-.407-4.831ZM9.996 15.005l.005-6 5.207 3.005-5.212 2.995Z">
+                                                        </path>
+                                                    </svg>
+
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold">
+                                                        Explore Our YouTube Channel
+                                                    </div>
+                                                    <div class="text-sm font-light text-gray-400">Watch Feature
+                                                        Showcases and Updates on YouTube.</div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://t.me/keyauth" target="_blank"
+                                                class="flex items-center p-3 rounded-lg hover:bg-[#0f0f17]">
+                                                <div class="p-2 mr-4 rounded-lg shadow bg-[#0f0f17]">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path
+                                                            d="m20.665 3.72-17.73 6.837c-1.21.486-1.203 1.16-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.7H9.84l.002.002-.314 4.692c.46 0 .663-.211.92-.46l2.212-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.24-.473-1.8-1.282-1.434Z">
+                                                        </path>
+                                                    </svg>
+
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold">
+                                                        Connect on Our Telegram Platform
+                                                    </div>
+                                                    <div class="text-sm font-light text-gray-400">Connect and
+                                                        Communicate on Telegram.</div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/keyauth" target="_blank"
+                                                class="flex items-center p-3 rounded-lg hover:bg-[#0f0f17]">
+                                                <div class="p-2 mr-4 rounded-lg shadow bg-[#0f0f17]">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path fill-rule="evenodd"
+                                                            d="M12.026 2a9.973 9.973 0 0 0-9.974 9.974c0 4.406 2.857 8.145 6.82 9.465.5.09.68-.217.68-.481 0-.237-.008-.865-.011-1.696-2.775.602-3.361-1.338-3.361-1.338-.452-1.152-1.107-1.459-1.107-1.459-.905-.619.069-.605.069-.605 1.002.07 1.527 1.028 1.527 1.028.89 1.524 2.336 1.084 2.902.829.09-.645.35-1.085.635-1.334-2.214-.251-4.542-1.107-4.542-4.93 0-1.087.389-1.979 1.024-2.675-.101-.253-.446-1.268.099-2.64 0 0 .837-.269 2.742 1.021a9.582 9.582 0 0 1 2.496-.336 9.555 9.555 0 0 1 2.496.336c1.906-1.291 2.742-1.021 2.742-1.021.545 1.372.203 2.387.099 2.64.64.696 1.024 1.587 1.024 2.675 0 3.833-2.33 4.675-4.552 4.922.355.308.675.916.675 1.846 0 1.334-.012 2.41-.012 2.737 0 .267.178.577.687.479C19.146 20.115 22 16.379 22 11.974 22 6.465 17.535 2 12.026 2Z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold">
+                                                        Explore Our GitHub Repositories
+                                                    </div>
+                                                    <div class="text-sm font-light text-gray-400">Explore Official
+                                                        Examples on GitHub.</div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://twitter.com/KeyAuth" target="_blank"
+                                                class="flex items-center p-3 rounded-lg hover:bg-[#0f0f17]">
+                                                <div class="p-2 mr-4 rounded-lg shadow bg-[#0f0f17]">
+                                                    <svg class="w-5 h-5" fill="currentColor" version="1.1" id="svg5"
+                                                        xmlns:svg="http://www.w3.org/2000/svg"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                                        viewBox="0 0 1668.56 1221.19"
+                                                        style="enable-background:new 0 0 1668.56 1221.19;"
+                                                        xml:space="preserve">
+                                                        <g id="layer1" transform="translate(52.390088,-25.058597)">
+                                                            <path id="path1009"
+                                                                d="M283.94,167.31l386.39,516.64L281.5,1104h87.51l340.42-367.76L984.48,1104h297.8L874.15,558.3l361.92-390.99
+                                                   h-87.51l-313.51,338.7l-253.31-338.7H283.94z M412.63,231.77h136.81l604.13,807.76h-136.81L412.63,231.77z" />
+                                                        </g>
+                                                    </svg>
+
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold">
+                                                        Follow Us on X / Twitter
+                                                    </div>
+                                                    <div class="text-sm font-light text-gray-400">Stay Informed with the
+                                                        Latest on X / Twitter.</div>
+                                                </div>
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                                <div class="py-5 px-5 lg:rounded-lg lg:col-span-1 bg-[#0f0f17]">
+                                    <h3 class="mb-4 text-sm font-semibold text-white">Explore Our Examples</h3>
+                                    <ul class="space-y-4 text-sm text-gray-400">
+                                        <li>
+                                            <a href="https://github.com/KeyAuth/KeyAuth-CPP-Example"
+                                                class="hover:text-blue-500" target="_blank">
+                                                C++
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/KeyAuth/KeyAuth-CSHARP-Example"
+                                                class="hover:text-blue-500" target="_blank">
+                                                C# (CSharp)
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/mazkdevf/KeyAuth-JS-Example"
+                                                class="hover:text-blue-500" target="_blank">
+                                                JavaScript
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/KeyAuth/KeyAuth-Python-Example"
+                                                class="hover:text-blue-500" target="_blank">
+                                                Python
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/KeyAuth/KeyAuth-PHP-Example"
+                                                class="hover:text-blue-500" target="_blank">
+                                                PHP
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/KeyAuth/KeyAuth-Rust-Example"
+                                                class="hover:text-blue-500" target="_blank">
+                                                Rust
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/KeyAuth-Archive/KeyAuth-JAVA-api"
+                                                class="hover:text-blue-500" target="_blank">
+                                                Java
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/mazkdevf/KeyAuth-Ruby-Example"
+                                                class="hover:text-blue-500" target="_blank">
+                                                Ruby
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="#plans"
+                                class="block py-2 pr-4 pl-3 border-b lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700 hover:text-white lg:hover:bg-transparent border-gray-700 transition duration-200">
+                                Plans
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#team"
+                                class="block py-2 pr-4 pl-3 border-b lg:hover:bg-transparent lg:border-0 lg:p-0 text-gray-400 hover:bg-gray-700 hover:text-white lg:hover:bg-transparent border-gray-700 transition duration-200">
+                                Our Team
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="col-sm-6" id="image-animate">
-               <img class="rounded-3 img-perspective-main" width="120%"
-                  src="https://cdn.keyauth.cc/v2/dashboard-pic.png">
+        </nav>
+    </header>
+
+    <section class="">
+        <div class="max-w-screen-xl px-4 py-8 mx-auto lg:py-16">
+            <div class="grid items-center gap-8 mb-8 lg:mb-16 lg:gap-12 lg:grid-cols-12 ">
+                <div class="col-span-6 text-center sm:mb-6 lg:text-left lg:mb-0">
+                    <a class="inline-flex items-center justify-between px-1 py-1 pr-4 mb-6 text-sm text-gray-400 bg-[#0f0f17] rounded-full text-white hover:opacity-60 transition duration-200 animate-on-scroll-in-down"
+                        href="./app/?page=forms" target="_blank" role="alert">
+                        <span class="px-3 py-1 mr-3 text-xs text-white rounded-full bg-blue-700">
+                            Join US!
+                        </span> <span class="text-sm font-medium">
+                          Apply for support, enjoy unlimited seller subscription while on staff. 
+                        </span>
+                        <svg class="w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                    <h1
+                        class="mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl text-white animate-on-scroll">
+                        Unleashing the Ultimate Power of Authentication
+                    </h1>
+                    <p
+                        class="max-w-xl mx-auto mb-6 font-base lg:mx-0 xl:mb-8 md:text-lg xl:text-xl text-gray-400 animate-on-scroll-right">
+                        KeyAuth Seamlessly Blends Cloud-Powered Subscription Hosting with an Open-Source Foundation.
+                    </p>
+                    <a href="./register/" target="_blank"
+                        class="inline-flex items-center justify-center px-5 py-3 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-0 focus:ring-blue-900 transition duration-200 animate-on-scroll">
+                        Onboard Now
+                        <svg class="w-5 h-5 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                    <a href="./login/" target="_blank"
+                        class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center border rounded-lg focus:ring-0 text-white border-gray-700 hover:opacity-60 focus:ring-gray-800 transition duration-200 animate-on-scroll">
+                        Client Area
+                    </a>
+                </div>
+                <div class="col-span-6 animate-on-scroll-right">
+
+                    <div
+                        class="relative mx-auto border-[#0f0f17] bg-[#0f0f17] border-[8px] rounded-t-xl h-[172px] max-w-[301px] md:h-[294px] md:max-w-[512px]">
+                        <div class="rounded-lg overflow-hidden h-[156px] md:h-[278px]">
+                            <img src="https://cdn.keyauth.cc/v2/dashboard-pic.png" class="h-[156px] md:h-[278px] w-full"
+                                alt="">
+                        </div>
+                    </div>
+                    <div
+                        class="relative mx-auto bg-[#0f0f17] rounded-b-xl rounded-t-sm h-[17px] max-w-[351px] md:h-[21px] md:max-w-[597px]">
+                        <div
+                            class="absolute left-1/2 top-0 -translate-x-1/2 rounded-b-xl w-[56px] h-[5px] md:w-[96px] md:h-[8px] bg-[#09090d]">
+                        </div>
+                    </div>
+
+                </div>
             </div>
-         </div>
-      </section>
-   </div>
-   <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1440 320">
-      <path fill="#0f1624" fill-opacity="1"
-         d="M0,64L120,90.7C240,117,480,171,720,170.7C960,171,1200,117,1320,90.7L1440,64L1440,320L1320,320C1200,320,960,320,720,320C480,320,240,320,120,320L0,320Z">
-      </path>
-   </svg>
-   <section id="features" class="features-sections">
-      <div class="container">
-         <div class="features-typograpghy">
-            <p class="text-center features-title-tag">Why KeyAuth?</p>
-            <h4 class="text-center features-main-title">
-               What makes KeyAuth different from other services?
-            </h4>
-            <h6 class="text-center mt-4">
-               <p class="tag-features d-inline-block" data-toggle="tooltip" data-html="true"
-                  title="All requests sent to and from the server are AES-256 Encrypted and then Hex encoded" id="fet2">
-                  AES-256 Encryption</p>
-               <p class="tag-features d-inline-block" data-toggle="tooltip" data-html="true"
-                  title="API endpoint exclusive to customers with the Seller role, access to all KeyAuth resources outbound"
-                  id="fet3">SellerAPI</p>
-               <p class="tag-features d-inline-block" data-toggle="tooltip" data-html="true"
-                  title="Enable the Hardware Lock to require the server to check if HWID matches" id="fet4">Optional
-                  HWID Lock</p>
-               <p class="tag-features d-inline-block" data-toggle="tooltip" data-html="true"
-                  title="Upload files securely on the server-side, only allowing users to download after authentication"
-                  id="fet5">Server-sided Files</p>
-               <p class="tag-features d-inline-block" data-toggle="tooltip" data-html="true"
-                  title="Protect your API link(s) by having KeyAuth send requests on the server-side." id="fet6">
-                  Webhooks</p>
-               <p class="tag-features d-inline-block" data-toggle="tooltip" data-html="true"
-                  title="Blacklist your client's hardware info such as Windows SID and IP address" id="fet7">Hardware
-                  Blacklist</p>
-            </h6>
-            <br>
-         </div>
-         <div class="featureOne" style="margin-top: 2%;">
-            <div class="row mt-3">
-               <div class="col-md-6 my-1 mt-5 feature-typo">
-                  <span class="statics-info-tag"><i class="fal fa-key"></i></span>
-                  <h4 class="text-light feature-title mt-4 fw-bold">End-to-end encryption</h4>
-                  <p class="feature-descreption mt-1 w-75">KeyAuth values privacy and security. Preserve your user's
-                     experience and your application's integrity.</p>
-                  <p class="seacondery-info">
-                     <div class="row mt-4">
-                        <p class="fw-bold">Protect your user's data from start to finish.</p>
-                     </div>
-               </div>
-               <div class="col-md-6 my-1">
-                  <center>
-                     <img id="box" src="https://cdn.keyauth.cc/front/assets/img/presentation-mockup-2.png"
-                        class="img-fluid img-perspective-reverse" width="600px" height="600px">
-                  </center>
-               </div>
+            <div class="grid gap-8 sm:gap-12 md:grid-cols-3 pt-12 animate-on-scroll-in-up" id="features">
+                <div class="flex justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-3 text-blue-500 shrink-0"
+                        fill="currentColor" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M14.2 14.5v.24c-.7.6-1.2 1.5-1.2 2.46V20H6.5c-1.5 0-2.81-.5-3.89-1.57C1.54 17.38 1 16.09 1 14.58c0-1.3.39-2.46 1.17-3.48S4 9.43 5.25 9.15c.42-1.53 1.25-2.77 2.5-3.72S10.42 4 12 4c1.95 0 3.6.68 4.96 2.04c1.12 1.12 1.77 2.46 1.97 3.96c-2.57.04-4.73 2.08-4.73 4.5m8.8 2.8v3.5c0 .6-.6 1.2-1.3 1.2h-5.5c-.6 0-1.2-.6-1.2-1.3v-3.5c0-.6.6-1.2 1.2-1.2v-1.5c0-1.4 1.4-2.5 2.8-2.5s2.8 1.1 2.8 2.5V16c.6 0 1.2.6 1.2 1.3m-2.5-2.8c0-.8-.7-1.3-1.5-1.3s-1.5.5-1.5 1.3V16h3v-1.5Z" />
+                    </svg>
+
+                    <div>
+                        <h3 class="mb-1 text-lg font-semibold leading-tight text-white">
+                            Server-Side Webhooks & Variables
+                        </h3>
+                        <p class="font-light text-gray-400">
+                            Private Webhooks, Secure Server-side File Management, and Protected Variables.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <svg class="w-6 h-6 mr-3 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <h3 class="mb-1 text-lg font-semibold leading-tight text-white">
+                            Privacy First
+                        </h3>
+                        <p class="font-light text-gray-400">
+                            We prioritize your needs, your users, and the sanctity of your data.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <svg class="w-6 h-6 mr-3 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M2.165 19.551c.186.28.499.449.835.449h15c.4 0 .762-.238.919-.606l3-7A.998.998 0 0 0 21 11h-1V8c0-1.103-.897-2-2-2h-6.655L8.789 4H4c-1.103 0-2 .897-2 2v13h.007a1 1 0 0 0 .158.551ZM18 8v3H6c-.4 0-.762.238-.919.606L4 14.129V8h14Z">
+                        </path>
+                    </svg>
+                    <div>
+                        <h3 class="mb-1 text-lg font-semibold leading-tight text-white">
+                            Open-Source
+                        </h3>
+                        <p class="font-light text-gray-400">
+                            KeyAuth operates as open-source, granting you full transparency into its functionalities.
+                        </p>
+                    </div>
+                </div>
             </div>
-         </div>
-         <div class="featureOne">
-            <div class="row mt-3">
-               <div class="col-md-6 my-1">
-                  <center>
-                     <img id="box" src="https://cdn.keyauth.cc/v2/cpp-example.png"
-                        class="img-fluid img-perspective" width="600px" height="600px">
-                  </center>
-               </div>
-               <div class="col-sm-6 my-1 mt-5 feature-typo" style="left: 0rem;">
-                  <span class="statics-info-tag tag-fix"><i class="fal fa-star-shooting"></i></span>
-                  <h4 class="text-light feature-title mt-4 fw-bold">Easy Setup</h4>
-                  <p class="feature-descreption mt-1 w-75">Integrate KeyAuth just in seconds using our latest examples!
-                  </p>
-                  <p class="seacondery-info"></p>
-               </div>
+        </div>
+    </section>
+
+    <section class="mt-32 animate-on-scroll-right">
+        <div
+            class="gap-8 items-center py-8 px-4 mx-auto max-w-screen-xl xl:gap-16 md:grid md:grid-cols-2 sm:py-16 lg:px-6">
+            <img class="w-full" src="https://cdn.keyauth.cc/v3/imgs/apps.svg" alt="">
+            <div class="mt-4 md:mt-0">
+                <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-white">
+                    Craft <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r to-blue-600 from-sky-400">Secure</span>
+                    and <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r to-blue-600 from-sky-400">Reliable</span>
+                    Applications with KeyAuth
+                </h2>
+                <p class="mb-6 font-light md:text-lg text-gray-400">
+                    KeyAuth is a cloud-based subscription authentication platform that allows you to implement
+                    authentication into your software, website, or application with ease.
+                </p>
             </div>
-         </div>
-         <div class="featureOne">
-            <div class="row mt-3">
-               <div class="col-sm-6 my-1 mt-5 feature-typo" style="left: 0rem;">
-                  <h4 class="text-light feature-title mt-4 fw-bold">Detailed Tutorials</h4>
-                  <p class="feature-descreption mt-1 w-75">KeyAuth provides descriptive visual instructions for novice
-                     programmers.</p>
-                  <p class="seacondery-info"></p>
-                  <a href="https://youtube.com/keyauth" target="_blank" class="btn btn-danger mr-3 animate-up-2 mb-3"><i
-                        class="fab fa-youtube mr-2"></i> YouTube Channel</a>
-                  <a href="https://github.com/keyauth" target="_blank" class="btn btn-primary animate-up-2 mb-3"><i
-                        class="fab fa-github mr-2"></i> GitHub</a>
-               </div>
-               <div class="col-md-6 my-1">
-                  <center>
-                     <iframe width="560" height="315" src="https://www.youtube.com/embed/9-qgmsUUCK4"
-                        title="YouTube video player" frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen></iframe>
-                  </center>
-               </div>
+        </div>
+    </section>
+
+    <section class="max-w-screen-xl px-4 py-8 mx-auto lg:py-16">
+        <div class="container px-4 mx-auto">
+            <div class="flex flex-wrap -m-8">
+                <div class="w-full md:w-1/2 p-8">
+                    <h2 class="mb-4 text-2xl md:text-4xl tracking-tight font-extrabold text-white"
+                        style="letter-spacing: -0.5px;">
+                        KeyAuth is the <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r to-blue-600 from-sky-400">Ultimate</span>
+                        Authentication Solution
+                    </h2>
+                </div>
+                <div class="w-full md:w-1/2 p-8">
+                    <div class="flex flex-wrap justify-center -m-8 2xl:-m-16 pt-12">
+                        <div class="w-auto text-center p-4 md:mr-2">
+                            <h3 class="mb-2.5 text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r to-blue-600 from-sky-400"
+                                style="letter-spacing: -0.5px;" data-v="accountsCreated" id="accs">
+                              0
+                            </h3>
+                            <p class="font-medium text-gray-400 tracking-tight">
+                                Accounts
+                            </p>
+                        </div>
+                        <div class="w-auto text-center p-4 md:mr-2">
+                            <h3 class="mb-2.5 text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r to-blue-600 from-sky-400"
+                                style="letter-spacing: -0.5px;" data-v="createdApps" id="apps">
+                              0
+                            </h3>
+                            <p class="font-medium text-gray-400 tracking-tight">
+                                Applications
+                            </p>
+                        </div>
+                        <div class="w-auto text-center p-4 md:mr-2">
+                            <h3 class="mb-2.5 text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r to-blue-600 from-sky-400"
+                                style="letter-spacing: -0.5px;" data-v="licensesGenerated" id="licenses">
+                               0
+                            </h3>
+                            <p class="font-medium text-gray-400 tracking-tight">
+                                Licenses
+                            </p>
+                        </div>
+                        <div class="w-auto text-center p-4">
+                            <h3 class="mb-2.5 text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r to-blue-600 from-sky-400"
+                                style="letter-spacing: -0.5px;" data-v="usersLoggedin" id="activeUsers">
+                                0
+                            </h3>
+                            <p class="font-medium text-gray-400 tracking-tight">
+                                Users Logged In
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-         </div>
-      </div>
-      <br>
-      <br>
-      <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1440 320">
-         <path fill="#131c2c" fill-opacity="1"
-            d="M0,64L120,90.7C240,117,480,171,720,170.7C960,171,1200,117,1320,90.7L1440,64L1440,320L1320,320C1200,320,960,320,720,320C480,320,240,320,120,320L0,320Z">
-         </path>
-      </svg>
-      <section class="statics-section">
-         <div class="container stats-section-two">
-            <p class="text-center features-title-tag">#</p>
-            <h4 class="text-center features-main-title">Numbers Don't Lie</h4>
-            <center>
-                <div class="card w-75 mt-4 p-2">
-                  <div class="row">
-                     <div class="col-md-6 my-3">
-                        <i class="fal fa-users statc-icon"></i>
-                        <h3 class="d-block mt-3 count-num fw-bold" id="accs"></h3>
-                        <span class="stats-desc">Accounts</span>
-                     </div>
-                     <div class="col-md-6 my-3">
-                        <i class="fal fa-solid fa-browser statc-icon"></i>
-                        <h3 class="d-block mt-3 count-num fw-bold" id="apps"></h3>
-                        <span class="stats-desc">Applications</span>
-                     </div>
-                     <div class="col-md-6 my-3">
-                        <i class="fal fa-key statc-icon"></i>
-                        <h3 class="d-block mt-3 count-num fw-bold" id="licenses"></h3>
-                        <span class="stats-desc">Licenses</span>
-                     </div>
-                     <div class="col-md-6 my-3">
-                        <i class="fal fa-chart-line statc-icon"></i>
-                        <h3 class="d-block mt-3 count-num fw-bold" id="activeUsers"></h3>
-                        <span class="stats-desc">Users currently logged in</span>
-                     </div>
-                  </div>
-              <i>Stats refresh every 30 mins, they're cached</i>
-               </div>
-               </div>
-            <!-- TrustBox widget -->
-            <div class="trustpilot-widget" data-locale="en-US" data-template-id="5419b6a8b0d04a076446a9ad" data-businessunit-id="5fc04266fbe9b10001db10cb" data-style-height="130px" data-style-width="100%" data-theme="dark" data-stars="4,5">
-            <a href="https://www.trustpilot.com/review/keyauth.com" target="_blank">Trustpilot</a>
+        </div>
+    </section>
+
+    <section class="animate-on-scroll">
+        <div
+            class="gap-8 items-center py-8 px-4 mx-auto max-w-screen-xl xl:gap-16 md:grid md:grid-cols-2 sm:py-16 lg:px-6">
+            <div>
+                <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-white">
+                    Control <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r to-blue-600 from-sky-400">Everything</span>
+                    with the Mobile App.
+                </h2>
+                <p class="mb-6 font-light md:text-lg text-gray-400">
+                    KeyAuth's mobile app allows you to do anything from anywhere. Manage your users, view your logs, and
+                    more.
+                </p>
+                <div class="items-center space-y-4 sm:flex sm:space-y-0 sm:space-x-4">
+                    <a target="_blank" href="https://www.apple.com/fi/app-store/"
+                        class="w-full sm:w-auto bg-[#0f0f17] border-2 hover:opacity-60 transition duration-200 focus:ring-0 focus:outline-none text-white rounded-lg inline-flex items-center justify-center px-8 py-2.5">
+                        <svg class="mr-3 w-7 h-7" fill="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M19.665 16.812a10.315 10.315 0 0 1-1.02 1.837c-.538.767-.979 1.297-1.317 1.592-.525.482-1.089.73-1.692.744-.432 0-.954-.123-1.562-.373-.61-.249-1.17-.371-1.683-.371-.537 0-1.113.122-1.73.371-.616.25-1.114.381-1.495.393-.577.025-1.154-.229-1.729-.764-.367-.32-.826-.87-1.377-1.648-.59-.829-1.075-1.794-1.455-2.891-.407-1.187-.61-2.335-.61-3.447 0-1.273.274-2.372.825-3.292a4.857 4.857 0 0 1 1.73-1.751 4.65 4.65 0 0 1 2.34-.662c.46 0 1.063.142 1.81.422.747.28 1.227.422 1.436.422.158 0 .69-.167 1.593-.498.853-.307 1.573-.434 2.163-.384 1.6.129 2.801.759 3.6 1.895-1.43.867-2.137 2.08-2.123 3.637.012 1.213.453 2.222 1.317 3.023.382.365.828.658 1.315.863-.106.307-.218.6-.336.882ZM15.998 2.381c0 .95-.348 1.838-1.039 2.659-.836.976-1.846 1.541-2.94 1.452a2.967 2.967 0 0 1-.022-.36c0-.913.396-1.889 1.103-2.688.352-.404.8-.741 1.343-1.009.542-.264 1.054-.41 1.536-.435.013.128.02.255.02.381Z">
+                            </path>
+                        </svg>
+
+                        <div class="text-left">
+                            <div class="mb-1 text-xs">
+                                <span class="font-semibold">
+                                    Download on the
+                                </span>
+                            </div>
+                            <div class="-mt-1 font-sans text-sm font-semibold">
+                                App Store
+                            </div>
+                        </div>
+                    </a>
+
+                    <a target="_blank" href="https://play.google.com/store/apps/details?id=com.wnelson03.rn&hl=en_US"
+                        class="w-full sm:w-auto bg-[#0f0f17] border-2 hover:opacity-60 transition duration-200 focus:ring-0 focus:outline-none text-white rounded-lg inline-flex items-center justify-center px-8 py-2.5">
+                        <svg class="mr-3 w-7 h-7" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 512 512">
+                            <path fill="currentColor"
+                                d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z">
+                            </path>
+                        </svg>
+
+                        <div class="text-left">
+                            <div class="mb-1 text-xs">
+                                <span class="font-semibold">
+                                    Download on the
+                                </span>
+                            </div>
+                            <div class="-mt-1 font-sans text-sm font-semibold">Google Play</div>
+                        </div>
+                    </a>
+                </div>
             </div>
-            <!-- End TrustBox widget -->
-            </center>
-         </div>
-         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1440 320">
-            <path fill="#0f1624" fill-opacity="1"
-               d="M0,64L120,90.7C240,117,480,171,720,170.7C960,171,1200,117,1320,90.7L1440,64L1440,320L1320,320C1200,320,960,320,720,320C480,320,240,320,120,320L0,320Z">
-            </path>
-         </svg>
+
+            <div
+                class="relative mx-auto border-[#0f0f17] bg-[#0f0f17] border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl hidden mx-auto w-64 md:flex">
+                <div class="w-[148px] h-[18px] bg-[#0f0f17] top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute">
+                </div>
+                <div class="h-[46px] w-[3px] bg-[#0f0f17] absolute -left-[17px] top-[124px] rounded-l-lg"></div>
+                <div class="h-[46px] w-[3px] bg-[#0f0f17] absolute -left-[17px] top-[178px] rounded-l-lg"></div>
+                <div class="h-[64px] w-[3px] bg-[#0f0f17] absolute -right-[17px] top-[142px] rounded-r-lg"></div>
+                <div class="rounded-[2rem] overflow-hidden w-[272px] h-[572px] bg-[#0f0f17]">
+                    <img src="https://cdn.keyauth.cc/v3/imgs/mobile.png" class="w-[272px] h-[572px]" alt="">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="plans">
+        <div class="max-w-screen-xl px-4 py-8 mx-auto lg:px-6 sm:py-16 lg:py-24">
+            <div class="mx-auto max-w-screen-md text-center">
+                <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-white">Pricing Options</h2>
+                <p class="font-light mb-12 text-gray-400 sm:text-xl">We offer a variety of plans to suit your
+                    needs.</p>
+
+                <div class="flex items-center justify-center mb-12 -mt-6">
+                    <label class="relative inline-flex items-center mr-5 cursor-pointer">
+                        <input type="checkbox" id="pricing_anually_month" value="" class="sr-only peer" checked>
+                        <div
+                            class="w-11 h-6 border-2 border-blue-700 bg-[#0f0f17] rounded-full peer peer-focus:ring-0 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-[#0C0C12] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0C0C12]">
+                        </div>
+                        <span class="ml-3 text-sm font-medium text-gray-300">Annual pricing <span class="text-xs">(save
+                                50% +)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex flex-wrap -m-7">
+                <div class="w-full md:w-1/3 p-7 animate-on-scroll">
+                    <div class="h-full p-8 border border-[#0f0f17] rounded-xl bg-[#0f0f17]">
+                        <div class="flex flex-wrap justify-between border-b border-gray-800 pb-7 mb-7">
+                            <div class="w-full xl:w-auto">
+                                <h3 class="font-bold text-2xl text-white">Tester</h3>
+                            </div>
+                            <div class="w-full xl:w-auto xl:text-right">
+                                <h3 class="mb-0.5 font-bold text-2xl text-white">
+                                    <span class="text-sm mr-0.5">$</span> <span id="tester_mode"></span>
+                                </h3>
+                                <p class="text-sm text-gray-400">
+                                    Limited Access for those looking to experiment implementing KeyAuth
+                                </p>
+                            </div>
+                        </div>
+                        <ul class="mb-8">
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Users: 10
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Upload Files: (10 MB)
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm4.207 12.793-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Create Webhooks
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Variables: 5
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Logs: 20
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Hardware Blacklist
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm4.207 12.793-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Reseller & Manager Access
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm4.207 12.793-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    SellerAPI Access
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm4.207 12.793-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Telegram Bot
+                                </p>
+                            </li>
+                        </ul>
+
+                        <button type="button"
+                            class="text-white border-2 hover:bg-white hover:text-black focus:ring-0 focus:outline-none transition duration-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center items-center mb-3 w-full">
+                            <a href="./register/">
+                                <span class="inline-flex">Start for Free
+                                    <svg class="w-3.5 h-3.5 ml-2 mt-0.5" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
+                                    </svg></span>
+                            </a>
+                        </button>
+
+                        <p class="text-sm text-gray-500 text-center">No credit card required</p>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-1/3 p-7 animate-on-scroll-in-up">
+                    <div class="h-full p-8 border border-[#0f0f17] rounded-xl bg-[#0f0f17]">
+                        <div class="flex flex-wrap justify-between border-b border-gray-800 pb-7 mb-7">
+                            <div class="w-full xl:w-auto">
+                                <h3 class="font-bold text-2xl text-white">Developer</h3>
+                            </div>
+                            <div class="w-full xl:w-auto xl:text-right">
+                                <h3
+                                    class="mb-0.5 font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r to-[#4fea74] from-[#1db233]">
+                                    <span class="text-sm mr-0.5">$</span><span id="developer_mode"></span>
+                                </h3>
+                                <p class="text-sm text-gray-400">
+                                    Ample limits plus full access to reseller system. Most folks start here.
+                                </p>
+                            </div>
+                        </div>
+                        <ul class="mb-8">
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Users: Unlimited
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Upload Files: (50 MB)
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Create Webhooks
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Variables: Unlimited
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Logs: Unlimited
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Hardware Blacklist
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Reseller & Manager Access
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm4.207 12.793-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    SellerAPI Access
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm4.207 12.793-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Telegram Bot
+                                </p>
+                            </li>
+                        </ul>
+
+                        <button type="button"
+                            class="text-[#1db233] border-2 border-[#1db233] hover:bg-[#1db233] hover:text-white focus:ring-0 focus:outline-none transition duration-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center items-center mb-3 w-full">
+                            <a href="./app/?page=upgrade">
+                                <span class="inline-flex">
+                                    Purchase Developer Now
+                                    <svg class="w-3.5 h-3.5 ml-2 mt-0.5" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
+                                    </svg></span>
+                            </a>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-1/3 p-7 animate-on-scroll-right">
+                    <div class="h-full p-8 border border-[#0f0f17] rounded-xl bg-[#0f0f17]">
+                        <div class="flex flex-wrap justify-between border-b border-gray-800 pb-7 mb-7">
+                            <div class="w-full xl:w-auto">
+                                <h3 class="font-bold text-2xl text-white">Seller</h3>
+                            </div>
+                            <div class="w-full xl:w-auto xl:text-right">
+                                <h3
+                                    class="mb-0.5 font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r to-[#36e2dd] from-[#1e96fc]">
+                                    <span class="text-sm mr-0.5">$</span><span id="seller_mode"></span>
+                                </h3>
+                                <p class="text-sm text-gray-400">
+                                    Full-fledged supporter, we appreciate you for keeping our servers running!
+                                </p>
+                            </div>
+                        </div>
+                        <ul class="mb-8">
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Users: Unlimited
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Upload Files: (75 MB)
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Create Webhooks
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Variables: Unlimited
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Logs: Unlimited
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Hardware Blacklist
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Reseller & Manager Access
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    SellerAPI Access
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Telegram Bot
+                                </p>
+                            </li>
+                        </ul>
+
+                        <button type="button"
+                            class="text-[#1e96fc] border-2 border-[#1e96fc] hover:bg-[#1e96fc] hover:text-white focus:ring-0 focus:outline-none transition duration-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center items-center mb-3 w-full">
+                            <a href="./app/?page=upgrade">
+                                <span class="inline-flex">
+                                    Purchase Seller Now
+                                    <svg class="w-3.5 h-3.5 ml-2 mt-0.5" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
+                                    </svg></span>
+                            </a>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="w-full p-7 animate-on-scroll-in-up">
+                    <div class="h-full p-8 border border-[#0f0f17] rounded-xl bg-[#0f0f17]">
+                        <div class="flex flex-wrap justify-between border-b border-gray-800 pb-7 mb-7">
+                            <div class="w-full xl:w-auto">
+                                <h3 class="font-bold text-2xl text-white">Enterprise <span class="text-xs">(Source
+                                        Code)</span></h3>
+                            </div>
+                            <div class="w-full xl:w-auto xl:text-right">
+                                <h3
+                                    class="mb-0.5 font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r to-[#eeba0b] from-[#f4e409]">
+                                    <span class="text-sm mr-0.5">$</span>79.99 / One-Time
+                                </h3>
+                                <p class="text-sm text-gray-400">
+                                    Opt for large-scale projects at $79.99 one-time cost. <br>Access paid KeyAuth
+                                    features' source code, one-on-one setup support, and more.
+                                </p>
+                            </div>
+                        </div>
+                        <ul class="mb-8 md:grid md:grid-cols-2">
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm4.207 12.793-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Cloud Hosted Subscription (KeyAuth Servers)
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Source code of paid KeyAuth features
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    One-on-one setup support
+                                </p>
+                            </li>
+                            <li class="flex items-center mb-4 font-medium text-base text-white">
+                                <svg class="h-5 w-5 mr-2.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2Zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706Z">
+                                    </path>
+                                </svg>
+                                <p>
+                                    Tutorial video showing how to host KeyAuth for 100% free
+                                </p>
+                            </li>
+                        </ul>
+
+                        <button type="button"
+                            class="text-[#eeba0b] border-2 border-[#eeba0b] hover:bg-[#eeba0b] hover:text-black focus:ring-0 focus:outline-none transition duration-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center items-center mb-3 w-full">
+                            <a href="./app/?page=upgrade">
+                                <span class="inline-flex">
+                                    Purchase Enterprise Now
+                                    <svg class="w-3.5 h-3.5 ml-2 mt-0.5" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
+                                    </svg>
+                                </span>
+                            </a>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-[#09090d]">
+        <div class="grid gap-8 py-8 px-4 mx-auto max-w-screen-xl sm:gap-16 lg:gap-20 md:grid-cols-2 lg:py-16 md:px-6">
+            <div class="text-gray-400 sm:text-lg mb-8">
+                <h2 class="mb-4 text-3xl font-extrabold tracking-tight md:text-4xl text-white">Our 
+                    integrations
+                </h2>
+                <p class="font-medium text-sm">Explore seamless integrations
+                    effortlessly linking with widely-used systems.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-8 text-gray-400 sm:gap-12 sm:grid-cols-3">
+                <a class="flex justify-center items-center">
+                    <svg class="h-9" viewBox="0 0 71 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                        d="M5.29468 5.37022L10.8052 3.53059L10.4343 5.09783C10.912 5.21098 11.4317 5.36184 12.0057 5.56717C13.2797 6.02184 14.4341 6.54984 15.4713 7.14908L17.7635 2.31954C16.6719 1.62811 15.3854 1.07287 13.9019 0.655917C12.4185 0.236868 10.933 0.0273438 9.44117 0.0273438C7.80478 0.0273438 6.36745 0.282964 5.12916 0.792108C3.89087 1.30125 2.93753 2.03459 2.26496 2.98792C1.59239 3.94545 1.25505 5.06012 1.25505 6.33193C1.25505 7.64146 1.58191 8.68699 2.23772 9.47061C2.89144 10.2521 3.66877 10.8304 4.56973 11.2034C5.47068 11.5763 6.59373 11.9346 7.93888 12.2803C8.30136 12.3704 8.62193 12.4563 8.92155 12.5443L9.27774 11.0379L13.5583 14.4091L8.04993 16.2487L8.34536 14.9958C7.63716 14.8533 6.85564 14.6186 5.97564 14.2603C4.52154 13.6674 3.31049 12.9529 2.34667 12.1169L0 16.892C1.25505 17.8558 2.74267 18.6143 4.46287 19.1695C6.18097 19.7247 7.8865 20.0013 9.57736 20.0013C11.0692 20.0013 12.4248 19.7729 13.6442 19.3183C14.8637 18.8636 15.8317 18.168 16.5503 17.2314C17.269 16.2948 17.6294 15.1361 17.6294 13.7533C17.6294 12.406 17.292 11.3207 16.6195 10.4931C15.9469 9.66547 15.1591 9.05994 14.2581 8.67861C13.3572 8.29727 12.2257 7.91384 10.8617 7.53251C10.516 7.44032 10.2122 7.35232 9.92517 7.26641L9.57526 8.74146L5.29468 5.37022Z"
+                        fill="#fff"></path>
+                    <path
+                        d="M25.5395 6.13672C21.2841 6.13672 18.3633 9.21882 18.3633 13.0405C18.3633 17.3798 21.5816 19.9716 25.7029 19.9716C27.6662 19.9716 30.0149 19.4541 31.3245 18.3331L29.3046 15.3055C28.6509 15.8775 27.0124 16.2337 26.2749 16.2337C24.6658 16.2337 23.7103 15.4145 23.438 14.5701H32.3867V13.5602C32.3888 8.9192 29.4136 6.13672 25.5395 6.13672ZM23.3835 11.4565C23.5469 10.8573 24.0372 9.87463 25.5374 9.87463C27.1214 9.87463 27.5844 10.8845 27.7206 11.4565H23.3835Z"
+                        fill="#fff"></path>
+                    <path d="M38.9894 1.44531H34.0781V19.6446H38.9894V1.44531Z" fill="#fff"></path>
+                    <path d="M46.63 1.44531H41.7188V19.6446H46.63V1.44531Z" fill="#fff"></path>
+                    <path d="M54.2706 6.46875H49.3594V19.6478H54.2706V6.46875Z" fill="#fff"></path>
+                    <path
+                        d="M51.8159 0C50.2885 0 49.0586 1.22781 49.0586 2.75525C49.0586 4.28268 50.2864 5.51259 51.8159 5.51259C53.3434 5.51259 54.5712 4.28477 54.5712 2.75525C54.5712 1.22781 53.3434 0 51.8159 0Z"
+                        fill="#fff"></path>
+                    <path
+                        d="M65.8414 12.8802L69.8789 6.46875H64.5046L62.7299 9.55295L60.9574 6.46875H55.581L59.6206 12.8802L55.3086 19.6478H60.6557L62.7572 16.1551L64.8042 19.6478H70.1785L65.8414 12.8802Z"
+                        fill="#fff"></path>
+                    </svg>                        
+                </a>
+                <a class="flex justify-center items-center">
+                    <svg class="h-9" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 508.67 96.36">
+                        <g fill="#fff">
+                            <path
+                                d="M170.85,20.2h27.3q9.87,0,16.7,3.08a22.5,22.5,0,0,1,10.21,8.58,23.34,23.34,0,0,1,3.4,12.56A23.24,23.24,0,0,1,224.93,57a23.94,23.94,0,0,1-10.79,8.92q-7.24,3.3-17.95,3.29H170.85Zm25.06,36.54q6.65,0,10.22-3.32a11.8,11.8,0,0,0,3.57-9.07,11.5,11.5,0,0,0-3.18-8.5q-3.2-3.18-9.63-3.19h-8.54V56.74Z" />
+                            <path
+                                d="M269.34,69.13a37,37,0,0,1-10.22-4.27V53.24a27.77,27.77,0,0,0,9.2,4.38,39.31,39.31,0,0,0,11.17,1.71,8.71,8.71,0,0,0,3.82-.66c.86-.44,1.29-1,1.29-1.58a2.37,2.37,0,0,0-.7-1.75,6.15,6.15,0,0,0-2.73-1.19l-8.4-1.89q-7.22-1.68-10.25-4.65a10.39,10.39,0,0,1-3-7.81,10.37,10.37,0,0,1,2.66-7.07,17.13,17.13,0,0,1,7.56-4.65,36,36,0,0,1,11.48-1.65A43.27,43.27,0,0,1,292,27.69a30.25,30.25,0,0,1,8.12,3.22v11a30,30,0,0,0-7.6-3.11,34,34,0,0,0-8.85-1.16q-6.58,0-6.58,2.24a1.69,1.69,0,0,0,1,1.58,16.14,16.14,0,0,0,3.74,1.08l7,1.26Q295.65,45,299,48t3.36,8.78a11.61,11.61,0,0,1-5.57,10.12Q291.26,70.61,281,70.6A46.41,46.41,0,0,1,269.34,69.13Z" />
+                            <path
+                                d="M318.9,67.66a21,21,0,0,1-9.07-8,21.59,21.59,0,0,1-3-11.34,20.62,20.62,0,0,1,3.15-11.27,21.16,21.16,0,0,1,9.24-7.8,34.25,34.25,0,0,1,14.56-2.84q10.5,0,17.43,4.41V43.65a21.84,21.84,0,0,0-5.7-2.73,22.65,22.65,0,0,0-7-1.05q-6.51,0-10.19,2.38a7.15,7.15,0,0,0-.1,12.43q3.57,2.41,10.36,2.41a23.91,23.91,0,0,0,6.9-1,25.71,25.71,0,0,0,5.84-2.49V66a34,34,0,0,1-17.85,4.62A32.93,32.93,0,0,1,318.9,67.66Z" />
+                            <path
+                                d="M368.64,67.66a21.77,21.77,0,0,1-9.25-8,21.14,21.14,0,0,1-3.18-11.41A20.27,20.27,0,0,1,359.39,37a21.42,21.42,0,0,1,9.21-7.74,38.17,38.17,0,0,1,28.7,0,21.25,21.25,0,0,1,9.17,7.7,20.41,20.41,0,0,1,3.15,11.27,21.29,21.29,0,0,1-3.15,11.41,21.51,21.51,0,0,1-9.2,8,36.32,36.32,0,0,1-28.63,0Zm21.27-12.42a9.12,9.12,0,0,0,2.56-6.76,8.87,8.87,0,0,0-2.56-6.68,9.53,9.53,0,0,0-7-2.49,9.67,9.67,0,0,0-7,2.49,8.9,8.9,0,0,0-2.55,6.68,9.15,9.15,0,0,0,2.55,6.76,9.53,9.53,0,0,0,7,2.55A9.4,9.4,0,0,0,389.91,55.24Z" />
+                            <path
+                                d="M451.69,29V44.14a12.47,12.47,0,0,0-6.93-1.75c-3.73,0-6.61,1.14-8.61,3.4s-3,5.77-3,10.53V69.2H416V28.25h16.8v13q1.4-7.14,4.52-10.53a10.38,10.38,0,0,1,8-3.4A11.71,11.71,0,0,1,451.69,29Z" />
+                            <path
+                                d="M508.67,18.8V69.2H491.52V60a16.23,16.23,0,0,1-6.62,7.88A20.81,20.81,0,0,1,474,70.6a18.11,18.11,0,0,1-10.15-2.83A18.6,18.6,0,0,1,457.11,60a25.75,25.75,0,0,1-2.34-11.17,24.87,24.87,0,0,1,2.48-11.55,19.43,19.43,0,0,1,7.21-8,19.85,19.85,0,0,1,10.61-2.87q12.24,0,16.45,10.64V18.8ZM489,55a8.83,8.83,0,0,0,2.63-6.62A8.42,8.42,0,0,0,489,42a11,11,0,0,0-13.89,0,8.55,8.55,0,0,0-2.59,6.47A8.67,8.67,0,0,0,475.14,55,9.42,9.42,0,0,0,482,57.51,9.56,9.56,0,0,0,489,55Z" />
+                            <path
+                                d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
+                            <ellipse cx="242.92" cy="24.93" rx="8.55" ry="7.68" />
+                            <path d="M234.36,37.9a22.08,22.08,0,0,0,17.11,0V69.42H234.36Z" />
+                        </g>
+                    </svg>                                             
+                </a>
+                <a class="flex justify-center items-center">
+                    <svg class="h-12" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 468 222.5" style="enable-background:new 0 0 468 222.5" xml:space="preserve"><style>.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#fff}</style><path class="st0" d="M414 113.4c0-25.6-12.4-45.8-36.1-45.8-23.8 0-38.2 20.2-38.2 45.6 0 30.1 17 45.3 41.4 45.3 11.9 0 20.9-2.7 27.7-6.5v-20c-6.8 3.4-14.6 5.5-24.5 5.5-9.7 0-18.3-3.4-19.4-15.2h48.9c0-1.3.2-6.5.2-8.9zm-49.4-9.5c0-11.3 6.9-16 13.2-16 6.1 0 12.6 4.7 12.6 16h-25.8zM301.1 67.6c-9.8 0-16.1 4.6-19.6 7.8l-1.3-6.2h-22v116.6l25-5.3.1-28.3c3.6 2.6 8.9 6.3 17.7 6.3 17.9 0 34.2-14.4 34.2-46.1-.1-29-16.6-44.8-34.1-44.8zm-6 68.9c-5.9 0-9.4-2.1-11.8-4.7l-.1-37.1c2.6-2.9 6.2-4.9 11.9-4.9 9.1 0 15.4 10.2 15.4 23.3 0 13.4-6.2 23.4-15.4 23.4zM223.8 61.7l25.1-5.4V36l-25.1 5.3zM223.8 69.3h25.1v87.5h-25.1zM196.9 76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7 15.9-6.3 19-5.2v-23c-3.2-1.2-14.9-3.4-20.8 7.4zM146.9 47.6l-24.4 5.2-.1 80.1c0 14.8 11.1 25.7 25.9 25.7 8.2 0 14.2-1.5 17.5-3.3V135c-3.2 1.3-19 5.9-19-8.9V90.6h19V69.3h-19l.1-21.7zM79.3 94.7c0-3.9 3.2-5.4 8.5-5.4 7.6 0 17.2 2.3 24.8 6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5 67.6 54 78.2 54 95.9c0 27.6 38 23.2 38 35.1 0 4.6-4 6.1-9.6 6.1-8.3 0-18.9-3.4-27.3-8v23.8c9.3 4 18.7 5.7 27.3 5.7 20.8 0 35.1-10.3 35.1-28.2-.1-29.8-38.2-24.5-38.2-35.7z"/></svg>                                                                
+                </a>
+            </div>
+        </div>
       </section>
 
-      <section id="pricing">
-         <p class="text-center features-title-tag">#</p>
-         <h4 class="text-center features-main-title">Pricing</h4>
-         <div class="container" id="pricing">
-            <div class="row">
-               <div class="col-12 col-lg-8">
-                  <div class="d-flex align-items-center">
-                     <div class="mt-2">
-                     </div>
-                  </div>
-               </div>
-               <div class="col-12 col-lg-4">
-                  <div>
-                  </div>
-               </div>
-            </div>
-            <div class="row mt-6">
-               <div class="col-12 col-lg-4">
-                  <div class="card shadow-soft mb-5 mb-lg-6 px-2">
-                     <div class="card-header border-light py-5 px-4">
-                        <div class="d-flex mb-3"><span class="h5 mb-0">$</span> <span class="price display-2 mb-0"
-                              data-annual="0" data-monthly="0">0</span> <span
-                              class="h6 font-weight-normal align-self-end">/year</span></div>
-                        <h4 class="mb-3 text-white">Tester Subscription</h4>
-                        <p class="font-weight-normal mb-0">Limited Access for those looking to experiment implementing
-                           KeyAuth</p>
-                     </div>
-                     <div class="card-body pt-5">
-                        <ul class="list-group simple-list">
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Users<span
-                                 class="font-weight-bolder"> 10</span></li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Upload Files (10 MB)</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-times" style="color: #e03131;"></i></span> Create Webhooks</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Variables<span
-                                 class="font-weight-bolder"> 5</span></li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Logs<span
-                                 class="font-weight-bolder"> 20</span></li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Hardware Blacklist</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-times" style="color: #e03131;"></i></span> Reseller & Manager Accounts
-                           </li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-times" style="color: #e03131;"></i></span> SellerAPI Access</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-times" style="color: #e03131;"></i></span> Discord Bot</li>
-                        </ul>
-                     </div>
-                     <div class="card-footer px-4 pb-4">
-                        <a href="./register/" class="btn btn-block btn-outline-light animate-up-2">Start for Free <span
-                              class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a>
-                     </div>
-                  </div>
-               </div>
-               <div class="col-12 col-lg-4">
-                  <div class="card shadow-soft mb-5 mb-lg-6">
-                     <div class="card-header border-light py-5 px-4">
-                        <div class="d-flex mb-3 text-primary"><span class="h5 mb-0">$</span> <span
-                              class="price display-2 text-primary mb-0" data-annual="199" data-monthly="99">9.99</span>
-                           <span class="h6 font-weight-normal align-self-end">/year</span></div>
-                        <h4 class="mb-3 text-white">Developer Subscription</h4>
-                        <p class="font-weight-normal mb-0">Ample limits plus full access to reseller system. Most folks
-                           start here.</p>
-                     </div>
-                     <div class="card-body pt-5">
-                        <ul class="list-group simple-list">
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Users<span
-                                 class="font-weight-bolder"> Unlimited</span></li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Upload Files (50 MB)</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Create Webhooks</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Variables Unlimited</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Logs Unlimited</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Hardware Blacklist</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Reseller & Manager Accounts
-                           </li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-times" style="color: #e03131;"></i></span> SellerAPI Access</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-times" style="color: #e03131;"></i></span> Discord Bot</li>
-                        </ul>
-                     </div>
-                     <div class="card-footer px-4 pb-4">
-                        <a href="./app/?page=upgrade" class="btn btn-block btn-outline-primary">Purchase
-                           Developer Now! <span class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a>
-                     </div>
-                  </div>
-               </div>
-               <div class="col-12 col-lg-4">
-                  <div class="card shadow-soft border-light mb-5 mb-lg-6">
-                     <div class="card-header border-light py-5 px-4">
-                        <div class="d-flex mb-3"><span class="h5 mb-0">$</span> <span
-                              class="price display-2 text-danger mb-0" data-annual="299" data-monthly="199">19.99</span>
-                           <span class="h6 font-weight-normal align-self-end">/year</span></div>
-                        <h4 class="mb-3 text-white">Seller Subscription</h4>
-                        <p class="font-weight-normal mb-0">Full-fledged supporter, we appreciate you for keeping our
-                           servers running!</p>
-                     </div>
-                     <div class="card-body pt-5">
-                        <ul class="list-group simple-list">
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Users<span
-                                 class="font-weight-bolder"> Unlimited</span></li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Upload Files (75 MB)</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Create Webhooks</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Variables Unlimited</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Logs Unlimited</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Hardware Blacklist</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Reseller & Manager Accounts
-                           </li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> SellerAPI Access</li>
-                           <li class="list-group-item font-weight-normal"><span class="icon-gray"><i
-                                    class="fas fa-check" style="color: #0ca678;"></i></span> Discord Bot</li>
-                        </ul>
-                     </div>
-                     <div class="card-footer px-4 pb-4">
-                        <a href="./app/?page=upgrade" class="btn btn-block btn-outline-danger">Purchase
-                           Seller Now! <span class="icon icon-xs ml-3"><i class="fas fa-arrow-right"></i></span></a>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-         <br>
-         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1440 30">
-            <path fill="#0f1624" fill-opacity="1"
-               d="M0,64L120,90.7C240,117,480,171,720,170.7C960,171,1200,117,1320,90.7L1440,64L1440,320L1320,320C1200,320,960,320,720,320C480,320,240,320,120,320L0,320Z">
-            </path>
-         </svg>
-      </section>
-      <section>
-         <p class="text-center features-title-tag">Partners</p>
-         <h1 class="text-gray-900 font-bold text-5xl mb-3 text-center dark:text-gray-200">Our Partners</h1>
-            <div class="container">
-               <div class="row mt-5 tsts">
-                  
-                  <div class="col-md-6 my-2">
-                     <div class="card profiles-user h-100">
-                        <div class="card-head">
-                          
-                        </div>
-                        <div class="card-body card-body-profile">
-                          <div class="row">
-                            <div class="col">
-                              <img class="rounded d-inline-block" src="https://cdn.keyauth.cc/mazk-icon.png" width="60px" />
-                              
-                              <h6 class="mt-2 partner-name-title d-inline-block">
-                                 mazk's 
-                                 
-                                   <span class="verified-tag" data-bs-toggle="tooltip" title="Verified"><i class="fas fa-check-circle"></i></span>
-                                 
-                                 <br />
-                                 
-                                   <span class="tag-partner p-1">C++, C#, JS, PHP</span>
-                                 
-                                   <span class="tag-partner p-1">Developer</span>
-                                 
-                                   <span class="tag-partner p-1"> Paid Coding help</span>
-                                 
-                              </h6>
-                            </div>
-                            
-                          </div>
-                        </div>
-                        <div class="card-footer">
-                          <div class="row">
-                            <div class="col-sm-20 my-2">
-                              <a href="https://mazkdevf.it" target="_blank">
-                                 <button class="btn btn-primary w-100 website-partner-btn"><i class="far fa-browser"></i> Website</button>
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                     </div>
-                  </div>
-                  
-                  <div class="col-md-6 my-2">
-                     <div class="card profiles-user h-100">
-                        <div class="card-head">
-                          
-                        </div>
-                        <div class="card-body card-body-profile">
-                          <div class="row">
-                            <div class="col">
-                              <img class="rounded d-inline-block" src="https://cdn.keyauth.cc/v2/code-nation.png" width="60px" />
-                              
-                              <h6 class="mt-2 partner-name-title d-inline-block">
-                                 Code Nation
-                                 
-                                   <span class="verified-tag" data-bs-toggle="tooltip" title="Verified"><i class="fas fa-check-circle"></i></span>
-                                 
-                                 <br />
-                                 
-                                   <span class="tag-partner p-1">Discord Server</span>
-                                 
-                                   <span class="tag-partner p-1">Developers</span>
-                                 
-                                   <span class="tag-partner p-1">Free/Paid Coding help</span>
-                                 
-                              </h6>
-                            </div>
-                            
-                          </div>
-                        </div>
-                        <div class="card-footer">
-                          <div class="row">
-                            <div class="col-sm-20 my-2">
-                              <a href="https://discord.gg/fgDFTscU" target="_blank">
-                                 <button class="btn btn-primary w-100 discord-server-partner-btn">Join Discord</button>
-                              </a>
-                            </div>
-                            
-                          </div>
-                        </div>
-                     </div>
-                  
-                  </div>
-                  
-                     
-                  
-               </div>
-            </div>
-         
-      </section>
-      <div class="container">
-         <div class="getstarted-box p-5">
-            <h2 class="text-center fw-bold get-title">Join our Telegram</h2>
-            <p class="text-center get-desc">Join our community on Telegram.
-            </p>
-            <center>
-               <a href="https://t.me/keyauth" target="_blank"><button class="btn btn-get-started text-center">Join now!</button></a>
-            </center>
-         </div>
-      </div>
-      <br>
-      <br>
-      <footer style="margin-top: 8%;" class="p-2">
-         <div class="container">
-            <div class="row mt-5">
-               <div class="col-md-3">
-                  <h5 class="footer-vesion">
-                     KeyAuth
-                  </h5>
-                  <a href="https://t.me/KeyAuth" target="_blank" class="text-white"><i class="fab fa-telegram footer-tags mt-2"></i></a>
-                  <span class="d-block mt-3 footer-up-desc">&copy; 2020-<script>document.write(new Date().getFullYear())</script> All Rights Reserved</span>
-               </div>
-               <div class="col-sm-2 first-sec-footer mb-right">
-                  <ul class="all-links">
-                     <li class="link-title">Links</li>
-                     <li><a href="https://youtube.com/keyauth" target="_blank" class="link-footer">YouTube</a></li>
-                     <li><a href="https://github.com/keyauth" target="_blank" class="link-footer">GitHub</a></li>
-                     <li><a href="https://keyauth.readme.io" target="_blank" class="link-footer">Documentation</a></li>
-                  </ul>
-               </div>
-               <div class="col-sm-2 mb-right">
-                  <ul class="all-links">
-                     <li class="link-title">Other</li>
-                     <li>
-                        <a href="https://t.me/keyauth" target="_blank" class="link-footer">
-                           Support
-                     </li>
-                     <li><a href="https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/LICENSE"
-                           target="_blank" class="link-footer">License</a></li>
-                  </ul>
-               </div>
-               <div class="col-sm-2 mb-right">
-                  <ul class="all-links">
-                     <li class="link-title">Status</li>
-                     <li><a href="https://stats.uptimerobot.com/2DrzGFk4PY" target="_blank" class="link-footer">Server Status</a></li>
-                  </ul>
-               </div>
-               <div class="col-sm-2 mb-right">
-                  <ul class="all-links">
-                     <li class="link-title">Documents</li>
-                     <li><a href="https://keyauth.cc/terms" target="_blank" class="link-footer">Terms of Service</a></li>
-                     <li><a href="https://keyauth.cc/terms/#privacy" target="_blank" class="link-footer">Privacy Policy</a></li>
-                  </ul>
-               </div>
-            </div>
-            <hr>
-            <br>
-            <br>
-         </div>
-      </footer>
-   </section>
+    <section>
+        <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+            <div class="flex flex-wrap -m-8">
+                <div class="w-full md:w-1/3 p-8">
+                    <div class="max-w-xs mx-auto text-center">
+                        <svg class="mx-auto mb-9 h-16 w-16" fill="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M5.962 17.672C7 19.33 7 20.566 7 21.998h2c0-1.52 0-3.244-1.343-5.389l-1.695 1.063ZM16.504 3.386C13.977 1.909 7.55.925 4.281 4.304c-3.368 3.48-2.249 9.072.001 11.392.118.122.244.229.37.333.071.06.145.116.204.183l1.494-1.33c-.13-.14-.27-.27-.419-.39-.072-.06-.146-.12-.214-.189-1.66-1.71-2.506-6.016.001-8.607 2.525-2.611 8.068-1.58 9.777-.581 2.691 1.569 4.097 4.308 4.11 4.333l1.788-.895c-.065-.135-1.668-3.29-4.889-5.167Z">
+                            </path>
+                            <path
+                                d="M9.34 12.824c-1.03-1.26-1.787-2.317-1.392-3.506.263-.785.813-1.325 1.637-1.604 1.224-.41 2.92-.16 4.04.601l1.123-1.654c-1.648-1.12-3.982-1.457-5.804-.84-1.408.475-2.435 1.494-2.892 2.865-.776 2.328.799 4.254 1.74 5.405.149.183.29.354.409.512C11 18.325 11 20.111 11 22.003h2c0-2.037 0-4.346-3.201-8.602-.15-.195-.302-.387-.459-.577Zm5.791-3.344c1.835 1.764 3.034 4.447 3.889 8.701l1.961-.395c-.939-4.678-2.316-7.685-4.463-9.748L15.131 9.48Z">
+                            </path>
+                            <path
+                                d="m11.556 9.172-1.115 1.66c.027.019 2.711 1.88 3.801 5.724l1.924-.545c-1.299-4.582-4.476-6.75-4.61-6.84Zm3.132 9.29c.21 1.168.312 2.326.312 3.54h2a21.79 21.79 0 0 0-.343-3.894l-1.969.354Z">
+                            </path>
+                        </svg>
 
-   <script src="https://cdn.keyauth.cc/v2/scrollreveal.js"></script>
-   <script src="https://cdn.keyauth.cc/v2/all.min.js"></script>
-   <script src="https://cdn.keyauth.cc/v2/animation.js"></script>
-   <script src="https://cdn.keyauth.cc/v2/bootstrap.bundle.min.js"></script>
-      <script>
-let element = document.getElementById("android-banner");
-console.log(navigator.userAgent.toLowerCase());
-if(navigator.userAgent.toLowerCase().indexOf("android") > -1) {
-	element.removeAttribute("hidden");
-}
+                        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+                            HMAC Signature Check
+                        </h3>
+                        <p class="mb-8 tracking-tight text-xs">
+                            Ensuring data integrity, we employ HMAC signature checks to verify the authenticity of
+                            requests.
+                        </p>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/3 p-8">
+                    <div class="max-w-xs mx-auto text-center">
+                        <svg class="mx-auto mb-9 h-16 w-16" fill="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M4 7h11v2H4V7Zm0 4h11v2H4v-2Zm0 4h7v2H4v-2Zm15.299-2.708-4.3 4.291-1.292-1.291-1.414 1.415 2.706 2.704 5.712-5.703-1.412-1.416Z">
+                            </path>
+                        </svg>
 
-window.onload  = function() {
-  const xhttp = new XMLHttpRequest();
-  xhttp.onload = function() {
-     const json = JSON.parse(this.responseText);
-    document.getElementById("accs").innerHTML = json.accounts;
-    document.getElementById("apps").innerHTML = json.applications;
-    document.getElementById("licenses").innerHTML = json.licenses;
-    document.getElementById("activeUsers").innerHTML = json.activeUsers;
-  }
-  xhttp.open("GET", "./stats.php");
-  xhttp.send();
-}
-</script>
+                        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+                            Multi Layered Blacklist Options
+                        </h3>
+                        <p class="mb-8 tracking-tight text-xs">
+                            Tailor your security with IP, HWID, and token blacklist options, providing a comprehensive
+                            shield against unauthorized access.
+                        </p>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/3 p-8">
+                    <div class="max-w-xs mx-auto text-center">
+                        <svg class="mx-auto mb-9 h-16 w-16" fill="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M12 2C9.243 2 7 4.243 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.757-2.243-5-5-5ZM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7Zm4 10.723V20h-2v-2.277a1.994 1.994 0 0 1 1.454-3.672 2 2 0 0 1 1.277 2.945 1.99 1.99 0 0 1-.731.727Z">
+                            </path>
+                        </svg>
+
+                        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+                            Data Protection & Encryption
+                        </h3>
+                        <p class="mb-8 tracking-tight text-xs">
+                            We hash emails upon registration and never store passwords in plaintext, safeguarding your
+                            information.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="antialiased" id="team">
+        <div class="max-w-screen-xl px-4 py-8 mx-auto lg:px-6 sm:py-16 lg:py-24">
+            <div class="flex flex-col gap-8 sm:gap-12 xl:gap-16 xl:flex-row xl:items-start">
+                <div class="mt-24">
+                    <h2 class="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl text-white">
+                        Our Team
+                    </h2>
+                    <p class="mt-4 text-base font-normal sm:text-xl text-gray-400">
+                        We are a team of developers who are passionate about creating the best authentication solution
+                        for you.
+                    </p>
+                </div>
+
+                <div class="grid w-full grid-cols-1 gap-4 xl:max-w-3xl shrink-0 sm:grid-cols-2 md:grid-cols-3">
+                    <div class="relative overflow-hidden rounded-lg group">
+                        <img class="object-cover w-full h-[320px] lg:h-auto scale-100 ease-in duration-300 group-hover:scale-125 opacity-60"
+                            src="https://cdn.keyauth.cc/v3/imgs/networking.png" alt="">
+                        <div
+                            class="absolute inset-0 grid items-end justify-center p-4 bg-gradient-to-b from-transparent to-black/60">
+                            <div class="text-center">
+                                <p class="text-xl font-bold text-white">
+                                    IT'S Networking
+                                </p>
+                                <p class="text-base font-medium text-gray-300">
+                                    CEO & Full Stack Developer
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative overflow-hidden rounded-lg group">
+                        <img class="object-cover w-full h-[320px] lg:h-auto scale-100 ease-in duration-300 group-hover:scale-125 opacity-60"
+                            src="https://cdn.keyauth.cc/v3/imgs/shxde.png" alt="">
+                        <div
+                            class="absolute inset-0 grid items-end justify-center p-4 bg-gradient-to-b from-transparent to-black/60">
+                            <div class="text-center">
+                                <p class="text-xl font-bold text-white">
+                                    Shxde
+                                </p>
+                                <p class="text-base font-medium text-gray-300">
+                                    Admin & Support
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative overflow-hidden rounded-lg group">
+                        <img class="object-cover w-full h-[320px] lg:h-auto scale-100 ease-in duration-300 group-hover:scale-125 opacity-60"
+                            src="https://cdn.keyauth.cc/v3/imgs/mazk.png" alt="">
+                        <div
+                            class="absolute inset-0 grid items-end justify-center p-4 bg-gradient-to-b from-transparent to-black/60">
+                            <div class="text-center">
+                                <p class="text-xl font-bold text-white">
+                                    mazkdevf
+                                </p>
+                                <p class="text-base font-medium text-gray-300">
+                                    Full Stack Developer
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+            <div class="mx-auto max-w-screen-md text-center">
+                <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-white">
+                    Partners & Verified Developers
+                </h2>
+                <p class="mb-8 font-light lg:mb-16 text-gray-400 sm:text-xl">
+                    We are proud to have partnered with these amazing developers and projects.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="h-full p-8 border border-[#0f0f17] rounded-xl bg-[#0f0f17] animate-on-scroll">
+                    <div class="flex flex-wrap justify-between border-b border-gray-800 pb-7 mb-7">
+                        <div class="w-full xl:w-auto">
+                            <div>
+                                <img src="https://cdn.keyauth.cc/mazk-icon.png" class="w-12 h-12 rounded-xl mb-2"
+                                    alt="...">
+                                <h3 class="font-bold text-2xl text-white mb-2">
+                                    mazk
+                                </h3>
+                                <span>
+                                    <span class="mt-1">
+                                        <span
+                                            class="bg-[#09090d] text-gray-400 border-2 border-[#09090d]/70 text-xs md:text-sm font-medium px-2.5 py-0.5 rounded">Full
+                                            Stack Developer</span>
+                                        <span
+                                            class="bg-[#09090d] text-gray-400 border-2 border-[#09090d]/70 text-xs md:text-sm font-medium px-2.5 py-0.5 rounded">
+                                            FS Software Developer
+                                        </span>
+                                        <span
+                                            class="ml-1 bg-[#09090d] text-gray-400 border-2 border-[#09090d]/70 text-xs md:text-sm font-medium px-2.5 py-0.5 rounded">
+                                        Friendly
+                                    </span>
+                                </span>
+                            </div>
+
+                            <br>
+                            <span>
+                                <p class="text-sm text-gray-400">
+                                    C++, C#, JS, PHP Developer
+                                </p>
+                            </span>
+                        </div>
+                        <div class="w-full xl:w-auto xl:text-right hidden md:block">
+                            <svg data-tooltip-target="verified-developer" class="w-8 h-8 text-[#fcdf3b]"
+                                fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M19.965 8.521C19.988 8.347 20 8.173 20 8c0-2.379-2.143-4.288-4.521-3.965A3.995 3.995 0 0 0 12 2a3.995 3.995 0 0 0-3.479 2.035C6.138 3.712 4 5.621 4 8c0 .173.012.347.035.521A3.998 3.998 0 0 0 2 12c0 1.465.802 2.785 2.035 3.479A3.977 3.977 0 0 0 4 16c0 2.379 2.138 4.283 4.521 3.965A3.995 3.995 0 0 0 12 22a3.995 3.995 0 0 0 3.479-2.035C17.857 20.283 20 18.379 20 16c0-.173-.012-.347-.035-.521A3.998 3.998 0 0 0 22 12a3.998 3.998 0 0 0-2.035-3.479Zm-9.01 7.895-3.667-3.714 1.424-1.404 2.257 2.286 4.327-4.294 1.408 1.42-5.749 5.706Z">
+                                </path>
+                            </svg>
+
+                            <div id="verified-developer" role="tooltip"
+                                class="absolute z-10 invisible inline-block px-3 py-2 text-xs font-medium text-white transition-opacity duration-300 bg-[#0f0f17] border-2 border-[#09090d] rounded-lg shadow-sm opacity-0 tooltip">
+                                Verified Developer & Partner
+                            </div> 
+                        </div>
+                    </div>
+
+                    <button onclick='relocate("https://mazkdevf.it", "_blank")'
+                    class="text-white border-2 hover:bg-white hover:text-black focus:ring-0 focus:outline-none transition duration-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center items-center mb-3 w-full">
+                     Website
+                    </button>
+
+                </div>
+                <div class="h-full p-8 border border-[#0f0f17] rounded-xl bg-[#0f0f17] animate-on-scroll-right">
+                    <div class="flex flex-wrap justify-between border-b border-gray-800 pb-7 mb-7">
+                        <div class="w-full xl:w-auto">
+                            <div>
+
+                                <img src="https://cdn.keyauth.cc/vaultcord-logo.png" class="w-12 h-12 rounded-xl mb-2"
+                                    alt="...">
+
+                                <h3 class="font-bold text-2xl text-white mb-2">
+                                    VaultCord
+                                </h3>
+                                <span class="mt-1">
+                                    <span
+                                        class="bg-[#09090d] text-gray-400 border-2 border-[#09090d]/70 text-xs md:text-sm font-medium px-2.5 py-0.5 rounded">Discord
+                                        Bot</span>
+                                    <span
+                                        class="bg-[#09090d] text-gray-400 border-2 border-[#09090d]/70 text-xs md:text-sm font-medium px-2.5 py-0.5 rounded">Restore
+                                        members</span>
+                                    <span
+                                        class="bg-[#09090d] text-gray-400 border-2 border-[#09090d]/70 text-xs md:text-sm font-medium px-2.5 py-0.5 rounded">Better
+                                        than RestoreCord</span>
+                                </span>
+                            </div>
+
+                            <br>
+                            <span>
+                                <p class="text-sm text-gray-400">
+                                    Best Discord Restore Bot
+                                </p>
+                            </span>
+                        </div>
+                        <div class="w-full xl:w-auto xl:text-right hidden md:block">
+                            <svg data-tooltip-target="verified-partner" class="w-8 h-8 text-[#1e96fc]"
+                                fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M19.965 8.521C19.988 8.347 20 8.173 20 8c0-2.379-2.143-4.288-4.521-3.965A3.995 3.995 0 0 0 12 2a3.995 3.995 0 0 0-3.479 2.035C6.138 3.712 4 5.621 4 8c0 .173.012.347.035.521A3.998 3.998 0 0 0 2 12c0 1.465.802 2.785 2.035 3.479A3.977 3.977 0 0 0 4 16c0 2.379 2.138 4.283 4.521 3.965A3.995 3.995 0 0 0 12 22a3.995 3.995 0 0 0 3.479-2.035C17.857 20.283 20 18.379 20 16c0-.173-.012-.347-.035-.521A3.998 3.998 0 0 0 22 12a3.998 3.998 0 0 0-2.035-3.479Zm-9.01 7.895-3.667-3.714 1.424-1.404 2.257 2.286 4.327-4.294 1.408 1.42-5.749 5.706Z">
+                                </path>
+                            </svg>
+
+                            <div id="verified-partner" role="tooltip"
+                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-[#0f0f17] border-2 border-[#09090d] rounded-lg shadow-sm opacity-0 tooltip">
+                                Verified Partner
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick='relocate("https://vaultcord.com", "_blank")'
+                    class="text-white border-2 hover:bg-white hover:text-black focus:ring-0 focus:outline-none transition duration-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center items-center mb-3 w-full">
+                     Website
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="p-4 py-6 mx-auto max-w-screen-xl md:p-8 lg:-10 pt-32 md:pt-0">
+            <div class="grid grid-cols-2 gap-8 lg:grid-cols-6">
+                <div class="col-span-2">
+                    <a href="./" class="flex items-center mb-2 text-2xl font-semibold text-white lg:mb-0">
+                        KeyAuth LLC
+                    </a>
+                    <p class="my-4 font-light text-gray-400">
+                        KeyAuth is a game-changing, affordable and easy to use licensing solution for your software.
+                    </p>
+                    <ul class="flex mt-5 space-x-6">
+                        <li>
+                            <a target="_blank" href="https://youtube.com/keyauth"
+                                class="hover:text-white text-gray-400">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M21.593 7.203a2.506 2.506 0 0 0-1.762-1.766c-1.566-.43-7.83-.437-7.83-.437s-6.265-.007-7.832.404a2.56 2.56 0 0 0-1.766 1.778c-.413 1.566-.417 4.814-.417 4.814s-.004 3.264.406 4.814c.23.857.905 1.534 1.763 1.765 1.582.43 7.83.437 7.83.437s6.265.007 7.831-.403a2.515 2.515 0 0 0 1.767-1.763c.414-1.565.417-4.812.417-4.812s.02-3.265-.407-4.831ZM9.996 15.005l.005-6 5.207 3.005-5.212 2.995Z">
+                                    </path>
+                                </svg>
+                            </a>
+                        </li>
+                        <li>
+                            <a target="_blank" href="https://github.com/KeyAuth/"
+                                class="hover:text-white text-gray-400">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M12.026 2a9.973 9.973 0 0 0-9.974 9.974c0 4.406 2.857 8.145 6.82 9.465.5.09.68-.217.68-.481 0-.237-.008-.865-.011-1.696-2.775.602-3.361-1.338-3.361-1.338-.452-1.152-1.107-1.459-1.107-1.459-.905-.619.069-.605.069-.605 1.002.07 1.527 1.028 1.527 1.028.89 1.524 2.336 1.084 2.902.829.09-.645.35-1.085.635-1.334-2.214-.251-4.542-1.107-4.542-4.93 0-1.087.389-1.979 1.024-2.675-.101-.253-.446-1.268.099-2.64 0 0 .837-.269 2.742 1.021a9.582 9.582 0 0 1 2.496-.336 9.555 9.555 0 0 1 2.496.336c1.906-1.291 2.742-1.021 2.742-1.021.545 1.372.203 2.387.099 2.64.64.696 1.024 1.587 1.024 2.675 0 3.833-2.33 4.675-4.552 4.922.355.308.675.916.675 1.846 0 1.334-.012 2.41-.012 2.737 0 .267.178.577.687.479C19.146 20.115 22 16.379 22 11.974 22 6.465 17.535 2 12.026 2Z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </li>
+                        <li>
+                            <a target="_blank" href="https://twitter.com/KeyAuth"
+                                class="hover:text-white text-gray-400">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M19.633 7.994c.013.175.013.349.013.523 0 5.325-4.053 11.46-11.46 11.46A11.38 11.38 0 0 1 2 18.169c.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05a4.05 4.05 0 0 0 1.82.51 4.022 4.022 0 0 1-1.796-3.353c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.024 4.024 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973c-.3.93-.93 1.72-1.771 2.22a8.074 8.074 0 0 0 2.319-.624 8.646 8.646 0 0 1-2.019 2.083Z">
+                                    </path>
+                                </svg>
+                            </a>
+                        </li>
+                        <li>
+                            <a target="_blank" href="https://instagram.com/keyauthllc" class="hover:text-white text-gray-400">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.999 7.375a4.624 4.624 0 1 0 0 9.248 4.624 4.624 0 0 0 0-9.248Zm0 7.627a3.004 3.004 0 1 1 0-6.008 3.004 3.004 0 0 1 0 6.008Z">
+                                    </path>
+                                    <path d="M16.805 8.289a1.078 1.078 0 1 0 0-2.156 1.078 1.078 0 0 0 0 2.156Z"></path>
+                                    <path
+                                        d="M20.533 6.114A4.605 4.605 0 0 0 17.9 3.482a6.607 6.607 0 0 0-2.186-.42c-.963-.042-1.268-.054-3.71-.054s-2.755 0-3.71.054a6.554 6.554 0 0 0-2.184.42 4.6 4.6 0 0 0-2.633 2.632A6.585 6.585 0 0 0 3.058 8.3c-.043.962-.056 1.267-.056 3.71 0 2.442 0 2.753.056 3.71.015.748.156 1.486.419 2.187a4.61 4.61 0 0 0 2.634 2.632 6.583 6.583 0 0 0 2.185.45c.963.042 1.268.055 3.71.055s2.755 0 3.71-.055a6.616 6.616 0 0 0 2.186-.42 4.613 4.613 0 0 0 2.633-2.632c.263-.7.404-1.438.419-2.186.043-.962.056-1.267.056-3.71s0-2.753-.056-3.71a6.583 6.583 0 0 0-.421-2.217Zm-1.218 9.532a5.046 5.046 0 0 1-.311 1.688 2.987 2.987 0 0 1-1.712 1.71c-.535.2-1.1.305-1.67.312-.95.044-1.218.055-3.654.055-2.438 0-2.687 0-3.655-.055a4.961 4.961 0 0 1-1.67-.311 2.985 2.985 0 0 1-1.718-1.711 5.08 5.08 0 0 1-.311-1.67c-.043-.95-.053-1.217-.053-3.653 0-2.437 0-2.686.053-3.655a5.038 5.038 0 0 1 .311-1.687c.305-.79.93-1.41 1.719-1.712a5.01 5.01 0 0 1 1.669-.311c.95-.043 1.218-.055 3.655-.055s2.687 0 3.654.055a4.96 4.96 0 0 1 1.67.31 2.99 2.99 0 0 1 1.712 1.713 5.06 5.06 0 0 1 .311 1.669c.043.95.054 1.218.054 3.655 0 2.436 0 2.698-.043 3.654h-.011v-.001Z">
+                                    </path>
+                                </svg>
+                            </a>
+                        </li>
+                        <li>
+                            <a target="_blank" href="https://www.tiktok.com/@keyauth"
+                                class="hover:text-white text-gray-400">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1h-.04Z">
+                                    </path>
+                                </svg>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="lg:mx-auto">
+                    <h3 class="mb-6 text-sm font-semibold uppercase text-white">Links</h3>
+                    <ul class="text-gray-400">
+                        <li class="mb-4">
+                            <a href="https://www.youtube.com/keyauth" target="_blank"
+                                class="hover:underline">Youtube</a>
+                        </li>
+                        <li class="mb-4">
+                            <a href="https://github.com/keyauth" target="_blank" class="hover:underline">GitHub</a>
+                        </li>
+                        <li class="mb-4">
+                            <a href="https://keyauth.readme.io" target="_blank"
+                                class="hover:underline">Documentation</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="lg:mx-auto">
+                    <h2 class="mb-6 text-sm font-semibold uppercase text-white">
+                        Most Used Examples
+                    </h2>
+                    <ul class="text-gray-400">
+                        <li class="mb-4">
+                            <a target="_blank" href="https://github.com/KeyAuth/KeyAuth-CPP-Example"
+                                class="hover:underline">
+                                C++ <span class="text-xs">(CPP)</span>
+                            </a>
+                        </li>
+                        <li class="mb-4">
+                            <a target="_blank" href="https://github.com/KeyAuth/KeyAuth-CSHARP-Example"
+                                class="hover:underline">C# <span class="text-xs">(CSharp)</span></a>
+                        </li>
+                        <li class="mb-4">
+                            <a target="_blank" href="https://github.com/mazkdevf/KeyAuth-JS-Example"
+                                class="hover:underline">JavaScript <span class="text-xs">(JS)</span></a>
+                        </li>
+                        <li class="mb-4">
+                            <a target="_blank" href="https://github.com/KeyAuth/KeyAuth-Python-Example"
+                                class="hover:underline">Python <span class="text-xs">(PY)</span></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="lg:mx-auto">
+                    <h2 class="mb-6 text-sm font-semibold uppercase text-white">Other & Support</h2>
+                    <ul class="text-gray-400">
+                        <li class="mb-4">
+                            <a target="_blank" href="https://keyauth.tawk.help" class="hover:underline">
+                                Support Center
+                            </a>
+                        </li>
+                        <li class="mb-4">
+                            <a target="_blank" href="./free-trial/" class="hover:underline">
+                                Demo Accounts
+                            </a>
+                        </li>
+                        <li class="mb-4">
+                            <a target="_blank" href="https://t.me/keyauth" class="hover:underline">
+                                Telegram
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="lg:mx-auto">
+                    <h2 class="mb-6 text-sm font-semibold uppercase text-white">Legal</h2>
+                    <ul class="text-gray-400">
+                        <li class="mb-4">
+                            <a target="_blank" href="./terms" class="hover:underline">Terms of Service</a>
+                        </li>
+                        <li class="mb-4">
+                            <a target="_blank" href="./terms#privacy" class="hover:underline">Privacy Policy</a>
+                        </li>
+                        <li class="mb-4">
+                            <a target="_blank" href="https://github.com/KeyAuth/KeyAuth-Source-Code/blob/main/LICENSE"
+                                class="hover:underline">Licensing</a>
+                        </li>
+                        <li class="mb-4">
+                            <a target="_blank" href="./gdpr" class="hover:underline">GDPR</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-6 border-[#0f0f17] sm:mx-auto lg:my-8">
+
+            <span class="block mb-6 text-sm text-gray-400 lg:mb-0 text-center">© 2020 - <script>document.write(new Date().getFullYear())</script> <a href="#"
+                    class="hover:underline">KeyAuth LLC</a>. All Rights Reserved.
+            </span>
+        </div>
+    </footer>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdn.keyauth.cc/v3/dist/flowbite.js"></script>
+
+    <!-- JQuery -->
+    <script src="https://cdn.keyauth.cc/v3/scripts/jquery.min.js"></script>
+
+    <!-- Landing Page JS -->
+    <script src="https://cdn.keyauth.cc/v3/dist/main.min.js"></script>
+
+    <script>
+        function relocate(url, target) {
+            window.open(url, target);
+        }
+
+        window.onload = function () {
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function () {
+                const json = JSON.parse(this.responseText);
+                document.getElementById("accs").textContent = json.accounts;
+                document.getElementById("apps").textContent = json.applications;
+                document.getElementById("licenses").textContent = json.licenses;
+                document.getElementById("activeUsers").textContent = json.activeUsers;
+            }
+            xhttp.open("GET", "./stats.php");
+            xhttp.send();
+        }
+
+        $('a[href*="#"]').not('[href="#"]').not('[href="#0"]').click(function (event) { if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) { var target = $(this.hash); target = target.length ? target : $('[name=' + this.hash.slice(1) + ']'); if (target.length) { event.preventDefault(); $('html, body').animate({ scrollTop: target.offset().top }, 1000, function () { var $target = $(target); $target.focus(); if ($target.is(":focus")) { return false; } else { $target.attr('tabindex', '-1'); $target.focus(); }; }); } } });
+    </script>
 </body>
 
 </html>
