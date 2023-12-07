@@ -1,7 +1,8 @@
 <?php
 if ($_SESSION['username'] == "demodeveloper" || $_SESSION['username'] == "demoseller") 
 {
-    die("OwnerID: " . $row['ownerid'] . "<br>that's the only thing you need on this page.");
+   dashboard\primary\error("Demo accounts do not have access here... view manage apps for your owner ID!");
+   die();
 }
 
 $twofactor = $row['twofactor'];
@@ -19,29 +20,20 @@ else
 }
 
 $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2factor, 'KeyAuth');
-?>
 
-<!--begin::Container-->
-<div id="kt_content_container" class="container-xxl">
-    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-    <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
-    <script src="https://cdn.keyauth.cc/dashboard/webauthn.js"></script>
-    <?php
+$query = misc\mysql\query("SELECT * FROM `accounts` WHERE `username` = ?", [$_SESSION['username']]);
 
-    $query = misc\mysql\query("SELECT * FROM `accounts` WHERE `username` = ?", [$_SESSION['username']]);
-
-    if ($query->num_rows > 0) 
+if ($query->num_rows > 0) 
+{
+    while ($row = mysqli_fetch_array($query->result)) 
     {
-        while ($row = mysqli_fetch_array($query->result)) 
-        {
-            $acclogs = $row['acclogs'];
-            $expiry = $row["expires"];
-            $emailVerify = $row["emailVerify"];
-        }
+        $acclogs = $row['acclogs'];
+        $expiry = $row["expires"];
+        $emailVerify = $row["emailVerify"];
     }
+}
 
-    if (isset($_POST['updatesettings'])) 
+if (isset($_POST['updatesettings'])) 
     {
         $pfp = misc\etc\sanitize($_POST['pfp']);
         $acclogs = misc\etc\sanitize($_POST['acclogs']);
@@ -75,12 +67,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
 
     if (isset($_POST['submit_code'])) 
     {
-        if (empty($_POST['scan_code'])) 
-        {
-            dashboard\primary\error("You forgot to enter 2FA code!");
-        }
-
-        $code = misc\etc\sanitize($_POST['scan_code']);
+        $code = misc\etc\sanitize($_POST['scan_code1'] . ($_POST['scan_code2']) . ($_POST['scan_code3']) . ($_POST['scan_code4']) . ($_POST['scan_code5']) . ($_POST['scan_code6']));
 
         $query = misc\mysql\query("SELECT `googleAuthCode` from `accounts` WHERE `username` = ?", [$_SESSION['username']]);
 
@@ -115,12 +102,7 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
 
     if (isset($_POST['submit_code_disable'])) 
     {
-        if (empty($_POST['scan_code'])) 
-        {
-            dashboard\primary\error("You forgot to enter 2FA code!");
-        }
-
-        $code = misc\etc\sanitize($_POST['scan_code']);
+        $code = misc\etc\sanitize($_POST['scan_code1'] . ($_POST['scan_code2']) . ($_POST['scan_code2']) . ($_POST['scan_code3']) . ($_POST['scan_code4']) . ($_POST['scan_code5']));
 
         $query = misc\mysql\query("SELECT `googleAuthCode` from `accounts` WHERE `username` = ?", [$_SESSION['username']]);
 
@@ -170,329 +152,343 @@ $google_QR_Code = $gauth->getQRCodeGoogleUrl($_SESSION['username'], $code_2facto
             dashboard\primary\error("Failed to delete security key!");
         }
     }
-    ?>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <form method="POST">
-                        <div class="form-group row">
-                            <label for="example-text-input" class="col-2 col-form-label">Username</label>
-                            <div class="col-10">
-                                <label class="form-control"><?php echo $_SESSION['username']; ?></label>
-                            </div>
-                        </div>
+?>
 
-                        <br>
-
-                        <div class="form-group row">
-                            <label for="example-text-input" class="col-2 col-form-label">OwnerID</label>
-                            <div class="col-10">
-                                <label class="form-control"><?php echo $_SESSION['ownerid'] ?? "Manager or Reseller accounts don't have OwnerIDs as they can't create apps"; ?></label>
-                            </div>
-                        </div>
-
-                        <br>
-
-                        <div class="form-group row">
-                            <label for="example-text-input" class="col-2 col-form-label">Subscription Expires</label>
-                            <div class="col-10">
-                                <label class="form-control">
-                                    <script>
-                                        document.write(convertTimestamp(<?php echo $expiry; ?>));
-                                    </script>
-                                </label>
-                            </div>
-                        </div>
-
-                        <br>
-
-                        <div class="form-group row">
-                            <label for="example-tel-input" class="col-2 col-form-label">Account logs</label>
-                            <div class="col-10">
-                                <select class="form-control" name="acclogs">
+<div class="p-4 bg-[#09090d] block sm:flex items-center justify-between lg:mt-1.5">
+    <div class="mb-1 w-full bg-[#0f0f17] rounded-xl">
+        <div class="mb-4 p-4">
+            <?php require '../app/layout/breadcrumb.php'; ?>
+            <h1 class="text-xl font-semibold text-white-900 sm:text-2xl">Account Settings</h1>
+            <p class="text-xs text-gray-500">Manage your account.</p>
+            <br>
+            <div class="p-4 flex flex-col">
+                <div class="overflow-x-auto">
+                    <br>
+                    <form method="post">
+                        <div id="lol" class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-8 gap-2">
+                            <div class="relative mb-4">
+                                <select id="acclogs" name="acclogs"
+                                    class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                     <option value="1" <?= $acclogs == 1 ? ' selected="selected"' : ''; ?>>Enabled
                                     </option>
                                     <option value="0" <?= $acclogs == 0 ? ' selected="selected"' : ''; ?>>Disabled
                                     </option>
                                 </select>
+                                <label for="acclogs"
+                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Account
+                                    Logs</label>
                             </div>
-                        </div>
 
-                        <br>
-
-                        <div class="form-group row">
-                            <label for="example-tel-input" class="col-2 col-form-label">New Login Location Verification</label>
-                            <div class="col-10">
-                                <select class="form-control" name="emailVerify">
+                            <div class="relative mb-4">
+                                <select id="emailVerify" name="emailVerify"
+                                    class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                     <option value="1" <?= $emailVerify == 1 ? ' selected="selected"' : ''; ?>>Enabled
                                     </option>
                                     <option value="0" <?= $emailVerify == 0 ? ' selected="selected"' : ''; ?>>Disabled
                                     </option>
                                 </select>
+                                <label for="emailVerify"
+                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">New
+                                    Location Alerts
+                                </label>
                             </div>
                         </div>
 
-                        <br>
-
-                        <div class="form-group row">
-                            <label for="example-tel-input" class="col-2 col-form-label">Password</label>
-                            <div class="col-10">
-                                <div class="form-control">Change password here
-                                    <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/forgot/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/forgot/</a>'; ?>
-                                </div>
-                            </div>
+                        <div class="relative mb-4 mt-4">
+                            <input type="text" name="username"
+                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                placeholder=" " autocomplete="on" value="<?= $_SESSION['username'];?>" readonly>
+                            <label for="username"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Username</label>
                         </div>
 
-                        <br>
+                        <?php 
+                            if ($_SESSION["role"] != "Reseller"){ ?>
+                        <div class="relative mb-4 mt-4">
+                            <input type="text" name="ownerid"
+                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                placeholder=" " autocomplete="on"
+                                value="<?= $_SESSION['ownerid'] ?? "Manager or Reseller accounts do not have OwnerIDs as they can't create applications.";?>"
+                                readonly>
+                            <label for="ownerid"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">OwnerID
+                            </label>
+                        </div>
+                        <?php } ?>
 
-                        <div class="form-group row">
-                            <label for="example-password-input" class="col-2 col-form-label">Profile Image</label>
-                            <div class="col-10">
-                                <input class="form-control" name="pfp" type="url" maxlength="200" placeholder="Enter link to image for profile picture">
-                            </div>
+                        <div class="relative mb-4 mt-4">
+                            <input type="text" name="expires"
+                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                placeholder=" " value="<?php if ($_SESSION["role"] == "tester")?> Free Forever "
+                                autocomplete="on" readonly>
+                            <?php if($_SESSION["role"] == "tester"){ ?>
+                            <label for="expires"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Subscription
+                                Expires: </label>
+                            <?php } ?>
+                            <label for="expires"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Subscription
+                                Expires </label>
                         </div>
 
-                        <br>
+                        <script>
+                        var expiryInput = document.querySelector('input[name="expires"]');
+                        var expiryValue = <?= $expiry ?>;
+                        expiryInput.value = convertTimestamp(expiryValue);
+                        </script>
 
-                        <div class="form-group row">
-                            <label for="example-password-input" class="col-2 col-form-label">Email</label>
-                            <div class="col-10">
-                                <div class="form-control">Change email here
-                                    <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeEmail/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeEmail/</a>'; ?>
-                                </div>
-                            </div>
+                        <div class="relative mb-4 mt-4">
+                            <input type="url" name="pfp" id="pfp"
+                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                placeholder=" " max="200" value="<?= $_SESSION['img']; ?>" autocomplete="on">
+                            <label for="pfp"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Profile
+                                Picture URL</label>
                         </div>
 
-                        <br>
+                        <!-- Button Functions -->
+                        <button
+                            class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                            name="updatesettings">
+                            <i class="lni lni-circle-plus mr-2 mt-1"></i>Save
+                        </button>
 
-                        <div class="form-group row">
-                            <label for="example-password-input" class="col-2 col-form-label">Username</label>
-                            <div class="col-10">
-                                <div class="form-control">Change username here
-                                    <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeUsername/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/changeUsername/</a>'; ?>
-                                </div>
-                            </div>
-                        </div>
-
-                        <br>
-
-                        <div class="form-group row">
-                            <label for="example-password-input" class="col-2 col-form-label">Account Deletion</label>
-                            <div class="col-10">
-                                <div class="form-control">Delete account here
-                                    <?php echo '<a href="https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/deleteAccount/" target="_blank">https://' . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) . '/deleteAccount/</a>'; ?>
-                                </div>
-                            </div>
-                        </div>
-
-                        <br>
-
-                        <button name="updatesettings" class="btn btn-success"> <i class="fa fa-check"></i> Save</button>
-                        <?php if (!$twofactor) 
-                        {
-                            echo '                <a class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#twofa"><i class="fa fa-lock"></i>Enable 2FA</a>';
-                        } 
-                        else 
-                        {
-                            echo '                <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#disabletwofa"><i class="fa fa-lock"></i>Disable 2FA</a>';
-                        } 
+                        <?php if (!$twofactor){
+                            echo '<a class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200 cursor-pointer"
+                            data-modal-target="enable-2fa-modal" data-modal-toggle="enable-2fa-modal"><i class="lni lni-shield mr-2 mt-1"></i>Enable 2FA</a>';
+                        } else {
+                            echo '<a class="inline-flex text-white bg-red-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200 cursor-pointer" 
+                            data-modal-target="disable-2fa-modal" data-modal-toggle="disable-2fa-modal"><i class="lni lni-shield mr-2 mt-1"></i>Disable 2FA</a>';
+                        }
                         ?>
-                        <a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#webauthn"><i class="fab fa-usb"></i>FIDO2 WebAuthn (Security Keys)</a>
+
+                        <button type="button"
+                            class="inline-flex text-white bg-purple-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                            data-modal-target="fido2-modal" data-modal-toggle="fido2-modal">
+                            <i class="lni lni-shield mr-2 mt-1"></i>FIDO2 Webauthn (Security Key)
+                        </button>
+
+                        <a href="https://<?= $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?>/forgot/"
+                            target="_blank" type="button"
+                            class="inline-flex text-white bg-orange-500 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">
+                            <i class="lni lni-reload mr-2 mt-1"></i>Change Password
+                        </a>
+                        <a href="https://<?= $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']?>/changeEmail/"
+                            target="_blank" type="button"
+                            class="inline-flex text-white bg-orange-500 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">
+                            <i class="lni lni-reload mr-2 mt-1"></i>Change Email
+                        </a>
+                        <a href="https://<?= $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']?>/changeUsername/"
+                            target="_blank" type="button"
+                            class="inline-flex text-white bg-orange-500 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">
+                            <i class="lni lni-reload mr-2 mt-1"></i>Change Username
+                        </a>
+                        <a href="https://<?= $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']?>/deleteAccount/"
+                            target="_blank" type="button"
+                            class="inline-flex text-white bg-red-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">
+                            <i class="lni lni-trash-can mr-2 mt-1"></i>Delete Account
+                        </a>
                     </form>
+                    <!-- End Button Functions -->
 
+                    <?php 
+                    if (!$twofactor) {?>
+                    <!-- Enable 2fa Modal -->
+                    <div id="enable-2fa-modal" tabindex="-1" aria-hidden="true"
+                        class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <!-- Modal content -->
+                            <div class="relative bg-[#0f0f17] rounded-lg border-[#1d4ed8] shadow">
+                                <div class="px-6 py-6 lg:px-8">
+                                    <h3 class="mb-4 text-xl font-medium text-white-900">Enable 2FA (Two Factor
+                                        Authentication)</h3>
+                                    <form class="space-y-6" method="POST">
+                                        <div>
+                                            <label class="mb-5">Scan this QR code into your 2FA App.</label>
+                                            <img class="mb-5 mt-5" src="<?= $google_QR_Code ?>" />
+                                            <label class="mb-5">Can't scan the QR code? Manually set it instead, code:
+                                                <code class="text-blue-700"><?= $code_2factor ?></code></label>
+                                            <br><br>
+                                            <div id="otp" class="tfa-container">
+                                                <input type="text" inputmode="numeric" maxlength="1" id="scan_code1"
+                                                    name="scan_code1"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-lg text-white bg-transparent rounded-lg border-1 border-gray-600 appearance-none focus:ring-0 peer"
+                                                    placeholder=" " autocomplete="on" onpaste="handlePaste(event)"
+                                                    required>
 
-                    <?php
-                    if (!$twofactor) 
-                    {
-                    ?>
-                        <!--begin::Modal - 2fa App-->
-                        <div class="modal fade" id="twofa" tabindex="-1" aria-hidden="true">
-                            <!--begin::Modal dialog-->
-                            <div class="modal-dialog modal-dialog-centered mw-900px">
-                                <!--begin::Modal content-->
-                                <div class="modal-content">
-                                    <!--begin::Modal header-->
-                                    <div class="modal-header">
-                                        <h2 class="modal-title">2 Factor Authentication</h2>
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                                            <span class="svg-icon svg-icon-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                                    <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                                                </svg>
-                                            </span>
-                                        </div>
-                                        <!--end::Close-->
-                                    </div>
-                                    <form method="post">
-                                        <div class="modal-body">
-                                            <div class="current" data-kt-stepper-element="content">
-                                                <div class="w-100">
-                                                    <!--begin::Input group-->
-                                                    <div class="fv-row mb-10">
-                                                        <!--begin::Label-->
-                                                        <label class="d-flex align-items-center fs-5 fw-bold mb-2">
-                                                            <span class="required">2FA Code</span>
-                                                        </label>
-                                                        <!--end::Label-->
-                                                        <!--begin::Input-->
-                                                        <label>Scan this QR code into your 2FA App.</label>
-                                                        </br>
-                                                        </br>
+                                                <input type="text" inputmode="numeric" maxlength="1" id="scan_code2"
+                                                    name="scan_code2"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-lg text-white bg-transparent rounded-lg border-1 border-gray-600 appearance-none focus:ring-0 peer"
+                                                    placeholder=" " autocomplete="on" required>
 
-                                                        <img src="<?php echo $google_QR_Code ?>" />
-                                                        </br>
-                                                        </br>
-                                                        <label>Alternatively, you can set it manually, code:
-                                                            <code><?php echo $code_2factor ?></code></label>
-                                                        </br>
-                                                        </br>
-                                                        <input type="text" name="scan_code" id="scan_code" maxlength="6" placeholder="6 Digit Code from 2FA app" class="form-control mb-4" required>
-                                                        <!--end::Input-->
-                                                    </div>
-                                                    <!--end::Input group-->
-                                                </div>
+                                                <input type="text" inputmode="numeric" maxlength="1" id="scan_code3"
+                                                    name="scan_code3"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-lg text-white bg-transparent rounded-lg border-1 border-gray-600 appearance-none focus:ring-0 peer"
+                                                    placeholder=" " autocomplete="on" required>
+
+                                                <input type="text" inputmode="numeric" maxlength="1" id="scan_code4"
+                                                    name="scan_code4"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-lg text-white bg-transparent rounded-lg border-1 border-gray-600 appearance-none focus:ring-0 peer"
+                                                    placeholder=" " autocomplete="on" required>
+
+                                                <input type="text" inputmode="numeric" maxlength="1" id="scan_code5"
+                                                    name="scan_code5"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-lg text-white bg-transparent rounded-lg border-1 border-gray-600 appearance-none focus:ring-0 peer"
+                                                    placeholder=" " autocomplete="on" required>
+
+                                                <input type="text" inputmode="numeric" maxlength="1" id="scan_code6"
+                                                    name="scan_code6"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-lg text-white bg-transparent rounded-lg border-1 border-gray-600 appearance-none focus:ring-0 peer"
+                                                    placeholder=" " autocomplete="on" required>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button name="submit_code" class="btn btn-primary">Submit</button>
-                                            </div>
+
+                                            <script
+                                                src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+                                            </script>
+                                            <script>
+
+
+
+                                            </script>
                                         </div>
+                                        <button name="submit_code" id="submit_code"
+                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                            disabled>Enable
+                                            2FA</button>
                                     </form>
-                                    <!--end::Modal header-->
                                 </div>
-                                <!--end::Modal content-->
                             </div>
-                            <!--end::Modal dialog-->
                         </div>
-                        <!--end::Modal - 2fa App-->
-                    <?php
-                    }
-                    ?>
+                    </div>
+                    <!-- End Enable 2fa Modal -->
+                    <?php } ?>
 
-                    <!--begin::Modal - disable 2fa App-->
-                    <div class="modal fade" id="disabletwofa" tabindex="-1" aria-hidden="true">
-                        <!--begin::Modal dialog-->
-                        <div class="modal-dialog modal-dialog-centered mw-900px">
-                            <!--begin::Modal content-->
-                            <div class="modal-content">
-                                <!--begin::Modal header-->
-                                <div class="modal-header">
-                                    <h2 class="modal-title">Disable 2 Factor Authentication</h2>
-
-                                    <!--begin::Close-->
-                                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                                        <span class="svg-icon svg-icon-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                    <!--end::Close-->
-                                </div>
-                                <form method="post">
-                                    <div class="modal-body">
-                                        <div class="current" data-kt-stepper-element="content">
-                                            <div class="w-100">
-                                                <!--begin::Input group-->
-                                                <div class="fv-row mb-10">
-                                                    <!--begin::Label-->
-                                                    <label class="d-flex align-items-center fs-5 fw-bold mb-2">
-                                                        <span class="required">2FA Code</span>
-                                                    </label>
-                                                    <!--end::Label-->
-                                                    <!--begin::Input-->
-                                                    <input type="text" name="scan_code" id="scan_code" maxlength="6" placeholder="6 Digit Code from 2FA app" class="form-control mb-4" required>
-                                                    <!--end::Input-->
-                                                </div>
-                                                <!--end::Input group-->
+                    <!-- Disable 2fa Modal -->
+                    <div id="disable-2fa-modal" tabindex="-1" aria-hidden="true"
+                        class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <!-- Modal content -->
+                            <div class="relative bg-[#0f0f17] rounded-lg border-[#1d4ed8] shadow">
+                                <button type="button"
+                                    class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center"
+                                    data-modal-hide="disable-2fa-modal">
+                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                    <span class="sr-only">Close modal</span>
+                                </button>
+                                <div class="px-6 py-6 lg:px-8">
+                                    <h3 class="mb-4 text-xl font-medium text-white-900">Disable 2FA (Two Factor
+                                        Authentication)</h3>
+                                    <form class="space-y-6" method="POST">
+                                        <div>
+                                            <div class="relative mb-4 mt-5">
+                                                <input type="text" id="scan_code" name="scan_code"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-600 appearance-none focus:ring-0  peer"
+                                                    placeholder=" " autocomplete="on" required="">
+                                                <label for="scan_code"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">6
+                                                    Digit Code from your 2FA app</label>
                                             </div>
                                         </div>
-                                        <div class="modal-footer">
-                                            <button name="submit_code_disable" class="btn btn-primary">Submit</button>
-                                        </div>
-                                    </div>
-                                </form>
-                                <!--end::Modal header-->
-                            </div>
-                            <!--end::Modal content-->
-                        </div>
-                        <!--end::Modal dialog-->
-                    </div>
-                    <!--end::Modal - disable 2fa App-->
-
-                    <!--begin::Modal - disable 2fa App-->
-                    <div class="modal fade" id="webauthn" tabindex="-1" aria-hidden="true">
-                        <!--begin::Modal dialog-->
-                        <div class="modal-dialog modal-dialog-centered mw-900px">
-                            <!--begin::Modal content-->
-                            <div class="modal-content">
-                                <!--begin::Modal header-->
-                                <div class="modal-header">
-                                    <h2 class="modal-title">FIDO2 WebAuthn (Security Keys)</h2>
-
-                                    <!--begin::Close-->
-                                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                                        <span class="svg-icon svg-icon-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black" />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                    <!--end::Close-->
+                                        <button name="submit_code_disable"
+                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Disable
+                                            2FA</button>
+                                    </form>
                                 </div>
-                                <form method="post">
-                                    <div class="modal-body">
-                                        <div class="current" data-kt-stepper-element="content">
-                                            <div class="w-100">
-                                                <!--begin::Input group-->
-                                                <div class="fv-row mb-10">
-                                                    <!--begin::Label-->
-                                                    <?php
-                                                    $query = misc\mysql\query("SELECT * FROM `securityKeys` WHERE `username` = ?", [$_SESSION['username']]);
-                                                    if ($query->num_rows > 0) 
-                                                    {
-                                                        while ($row = mysqli_fetch_array($query->result)) 
-                                                        {
-                                                            echo $row["name"] . "  <button style=\"border: none;padding:0;background:0;color:#FF0000;padding-left:5px;\" value=\"" . $row["name"] . "\"name=\"deleteWebauthn\" onclick=\"return confirm('Are you sure you want to delete security key? This can not be undone.')\">Delete</button><br>";
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Disable 2fa Modal -->
+
+                    <!-- FIDO2 Modal -->
+                    <form class="space-y-6" method="POST">
+                        <div id="fido2-modal" tabindex="-1" aria-hidden="true"
+                            class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                            <div class="relative w-full max-w-md max-h-full">
+                                <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+                                    <div class="px-6 py-6 lg:px-8">
+                                        <h3 class="mb-4 text-xl font-medium text-white-900">FIDO2 WebAuthn (Security
+                                            Keys)</h3>
+                                        <hr class="h-px mb-4 mt-4 bg-gray-700 border-0">
+                                        <div>
+                                            <div class="relative mb-4">
+                                                <input type="text" id="webauthn_name" name="webauthn_name"
+                                                    placeholder=" " maxlength="99"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0 peer"
+                                                    autocomplete="on">
+                                                <label for="webauthn_name"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">
+                                                    New Security Key Name</label>
+                                            </div>
+                                        </div>
+                                        <button type="button" onclick="newregistration()"
+                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-5">Register
+                                            New Security Key</button>
+
+                                        <h3 class="mb-4 text-xl font-medium text-white-900">Existing Security Keys</h3>
+                                        <?php
+                                                $query = misc\mysql\query("SELECT * FROM `securityKeys` WHERE `username` = ?", [$_SESSION['username']]);
+                                                    if ($query->num_rows > 0) {
+                                                        while ($row = mysqli_fetch_array($query->result)) {
+                                                            ?>
+                                        <button type="submit" name="deleteWebauthn" value="<?= $row["name"]; ?>"
+                                            onclick="return confirm('Are you sure you want to delete your security key? This cannot be undone.')"
+                                            class="w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Delete
+                                            Security Key: <?= $row["name"]; ?></button>
+                                        <?php
+                                                            }
                                                         }
-                                                        echo "<br>";
-                                                    }
-                                                    ?>
-                                                    <label class="d-flex align-items-center fs-5 fw-bold mb-2">
-                                                        <span class="required">Name</span>
-                                                    </label>
-                                                    <!--end::Label-->
-                                                    <!--begin::Input-->
-                                                    <input type="text" name="webauthn_name" id="webauthn_name" maxlength="99" placeholder="Pick a name for security key" class="form-control mb-4">
-                                                    <!--end::Input-->
-                                                </div>
-                                                <!--end::Input group-->
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" onclick="newregistration()" class="btn btn-primary">Register</button>
-                                        </div>
+                                            ?>
                                     </div>
-                                </form>
-                                <!--end::Modal header-->
+                                </div>
                             </div>
-                            <!--end::Modal content-->
                         </div>
-                        <!--end::Modal dialog-->
-                    </div>
-                    <!--end::Modal - disable 2fa App-->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Show / hide columns dynamically -->
-    <!-- Column rendering -->
-    <!-- Row grouping -->
-    <!-- Multiple table control element -->
-</div>
-<!--end::Container-->
+                    </form>
+                    <!-- End FIDO2 Modal -->
+
+                    <!-- Include the jQuery library -->
+                    
+
+                    <script>
+                    function handlePaste(event) {
+                        event.preventDefault();
+                        var clipboardData = event.clipboardData || window.clipboardData;
+                        var pastedData = clipboardData.getData('text');
+                        var inputs = document.querySelectorAll(".tfa-container input");
+
+                        // Check if the pasted data is exactly 6 digits long
+                        if (/^\d{6}$/.test(pastedData)) {
+                            for (var i = 0; i < 6; i++) {
+                                inputs[i].value = pastedData.charAt(i);
+                            }
+                        }
+                    }
+
+                    function updateButtonState(inputs) {
+                        var allNumeric = true;
+
+                        // Check if all input fields have numeric values
+                        for (var i = 0; i < inputs.length; i++) {
+                            if (!/^\d$/.test(inputs[i].value)) {
+                                allNumeric = false;
+                                break;
+                            }
+                        }
+
+                        // Enable or disable the button based on the input values
+                        var button = document.getElementById('submit_code');
+                        button.disabled = !allNumeric;
+                    }
+
+                    // Add event listeners to each input field to monitor changes
+                    var inputs = document.querySelectorAll(".tfa-container input");
+                    for (var i = 0; i < inputs.length; i++) {
+                        inputs[i].addEventListener('input', function() {
+                            updateButtonState(inputs);
+                        });
+                    }
+                    </script>
