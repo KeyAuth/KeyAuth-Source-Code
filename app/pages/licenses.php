@@ -1,63 +1,64 @@
 <?php
 if ($_SESSION['role'] == "Reseller") {
     header("location: ./?page=reseller-licenses");
-        die();
+    die();
 }
-if($role == "Manager" && !($permissions & 1)) {
-        die('You weren\'t granted permissions to view this page.');
+
+if ($role == "Manager" && !($permissions & 1)) {
+    misc\auditLog\send("Attempted (and failed) to view licenses.");
+    dashboard\primary\error("You weren't granted permission to view this page!");
+    die();
 }
-if(!isset($_SESSION['app'])) {
-        die("Application not selected.");
+if (!isset($_SESSION['app'])) {
+    dashboard\primary\error("You must select an app first.");
+    header("location: ./?page=manage-apps");
+    die();
 }
-if (isset($_POST['deletekey'])) {
-    if($_SESSION['role'] == "tester") {
-        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-        return;
-    }
-    $userToo = ($_POST['delUserToo'] == "on") ? 1 : 0;
-    $resp = misc\license\deleteSingular($_POST['deletekey'], $userToo);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to delete license!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully deleted license!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
-}
-if (isset($_POST['bankey'])) {
-    $userToo = ($_POST['banUserToo'] == "on") ? 1 : 0;
-    $resp = misc\license\ban($_POST['bankey'], $_POST['reason'], $userToo);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to ban license!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully banned license!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
-}
+
 if (isset($_POST['unbankey'])) {
     $resp = misc\license\unban($_POST['unbankey']);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to unban license!");
-            break;
-        case 'success':
-            dashboard\primary\success("Successfully unbanned license!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
+    match ($resp) {
+        'failure' => dashboard\primary\error("Failed to unban license!"),
+        'success' => dashboard\primary\success("Successfully unbanned license!"),
+        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+    };
+}
+
+if (isset($_POST['genkeys'])) {
+    if (empty(trim($_POST['mask']))) {
+        dashboard\primary\error("You must specify a key mask.");
+    } else {
+        $key = misc\license\createLicense($_POST['amount'], $_POST['mask'], $_POST['duration'], $_POST['level'], $_POST['note'], $_POST['expiry']);
+        switch ($key) {
+            case 'max_keys':
+                dashboard\primary\error("You can only generate 100 licenses at a time");
+                break;
+            case 'tester_limit':
+                dashboard\primary\error("Tester plan only allows for 10 licenses, please upgrade!");
+                break;
+            case 'dupe_custom_key':
+                dashboard\primary\error("Can't do custom key with amount greater than one");
+                break;
+            default:
+                $mask = misc\etc\sanitize($_POST['mask']);
+                $amount = intval($_POST['amount']);
+                $level = misc\etc\sanitize($_POST['level']);
+                $note = misc\etc\sanitize($_POST['note']);
+                $duration = misc\etc\sanitize($_POST['duration']);
+                $expiry = misc\etc\sanitize($_POST['expiry']);
+
+                misc\mysql\query("UPDATE `apps` SET `format` = ?,`amount` = ?,`lvl` = ?,`note` = ?,`duration` = ?,`unit` = ? WHERE `secret` = ?", [$mask, $amount, $level, $note, $duration, $expiry, $_SESSION['app']]);
+                if ($_POST['amount'] > 1) {
+                    $_SESSION['keys_array'] = $key;
+                } else {
+                    echo "<script>navigator.clipboard.writeText('" . array_values($key)[0] . "');</script>";
+                    dashboard\primary\success("License Created And Copied To Clipboard!");
+                }
+                break;
+        }
     }
 }
+
 if (isset($_POST['editkey'])) {
     $key = misc\etc\sanitize($_POST['editkey']);
     $query = misc\mysql\query("SELECT * FROM `keys` WHERE `key` = ? AND `app` = ?",[$key, $_SESSION['app']]);
@@ -68,316 +69,132 @@ if (isset($_POST['editkey'])) {
     }
     $row = mysqli_fetch_array($query->result);
 ?>
-<div id="edit-key" class="modal show" role="dialog" aria-labelledby="myModalLabel" style="display: block;"
-        aria-modal="true">
+<!-- Edit User Modal -->
+<div id="edit-key-modal" tabindex="-1" aria-hidden="true"
+    class="fixed grid place-items-center h-screen bg-black bg-opacity-60 z-50 p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+            <div class="px-6 py-6 lg:px-8">
+                <h3 class="mb-4 text-xl font-medium text-white-900">Edit License</h3>
+                <form class="space-y-6" method="POST">
+                    <div>
 
-        <div class="modal-dialog">
-                <div class="modal-content">
-                        <div class="modal-header d-flex align-items-center">
-                                <h4 class="modal-title">Edit License</h4>
-                                <!--begin::Close-->
-                                <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                        onClick="window.location.href=window.location.href">
-                                        <span class="svg-icon svg-icon-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                        viewBox="0 0 24 24" fill="none">
-                                                        <rect opacity="0.5" x="6" y="17.3137" width="16" height="2"
-                                                                rx="1" transform="rotate(-45 6 17.3137)" fill="black" />
-                                                        <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                transform="rotate(45 7.41422 6)" fill="black" />
-                                                </svg>
-                                        </span>
-                                </div>
-                                <!--end::Close-->
+                        <div class="relative mb-4">
+                            <input type="text" id="level" name="level"
+                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                placeholder=" " value="<?= $row['level']; ?>" autocomplete="on">
+                            <label for="level"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Level:</label>
                         </div>
-                        <div class="modal-body">
-                                <form method="post">
-                                        <div class="form-group">
-                                                <label for="recipient-name" class="control-label">Key Level:</label>
-                                                <input type="text" class="form-control" name="level"
-                                                        value="<?php echo $row['level']; ?>" required>
-                                        </div>
-                                        <div class="form-group">
-                                                <label for="recipient-name" class="control-label">License Duration
-                                                        Unit:</label>
-                                                <select name="expiry" class="form-control">
-                                                        <option value="86400">Days</option>
-                                                        <option value="60">Minutes</option>
-                                                        <option value="3600">Hours</option>
-                                                        <option value="1">Seconds</option>
-                                                        <option value="604800">Weeks</option>
-                                                        <option value="2629743">Months</option>
-                                                        <option value="31556926">Years</option>
-                                                        <option value="315569260">Lifetime</option>
-                                                </select>
-                                        </div>
-                                        <div class="form-group">
-                                                <label for="recipient-name" class="control-label">License Duration: <i
-                                                                class="fas fa-question-circle fa-lg text-white-50"
-                                                                data-toggle="tooltip" data-placement="top"
-                                                                title="Editing license duration after the license has been used will do nothing. Used licenses become users so you need to go to users tab and click extend user(s) instead"></i></label>
-                                                <input name="duration" type="number" class="form-control"
-                                                        placeholder="Multiplied by selected Expiry unit" required>
-                                        </div>
-                                        <div class="form-group">
-                                                <label for="recipient-name" class="control-label">New Note:</label>
-                                                <textarea class="form-control" name="editNote" placeholder="New Note"
-                                                        required rows="3"></textarea>
-                                        </div>
+
+                        <div class="relative mb-4">
+                            <select id="expiry" name="expiry"
+                                class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="1">Seconds</option>
+                                <option value="60">Minutes</option>
+                                <option value="3600">Hours</option>
+                                <option value="86400">Days</option>
+                                <option value="604800">Weeks</option>
+                                <option value="2629743">Months</option>
+                                <option value="31556926">Years</option>
+                                <option value="315569260">Lifetime</option>
+                            </select>
                         </div>
-                        <div class="modal-footer">
-                                <button type="button" onClick="window.location.href=window.location.href"
-                                        class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                <button class="btn btn-danger" name="savekey" value="<?php echo $key; ?>">Save</button>
-                                </form>
+
+                        <div class="relative mb-4">
+                            <input type="text" id="duration" name="duration"
+                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                placeholder=" ">
+                            <label for="duration"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Duration:</label>
                         </div>
-                </div>
+
+                        <div class="relative mb-4">
+                            <input type="text" id="editNote" name="editNote"
+                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                placeholder=" ">
+                            <label for="editNote"
+                                class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">New
+                                Note:</label>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+
+                        <button name="savekey"
+                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                            value="<?= $key; ?>">Save Changes</button>
+
+                        <button
+                            class="w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                            onClick="window.location.href=window.location.href">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
+    </div>
 </div>
+<!-- End Edit User Modal -->
 <?php
 }
-if (isset($_POST['savekey'])) {
-    $key = misc\etc\sanitize($_POST['savekey']);
-    $level = misc\etc\sanitize($_POST['level']);
-    $duration = misc\etc\sanitize($_POST['duration']);
-    $note = misc\etc\sanitize($_POST['editNote']);
-    if (!empty($duration)) {
-        $expiry = misc\etc\sanitize($_POST['expiry']);
-        $duration = $duration * $expiry;
-        misc\mysql\query("UPDATE `keys` SET `expires` = ? WHERE `key` = ? AND `app` = ?",[$duration, $key, $_SESSION['app']]);
-        misc\mysql\query("UPDATE `keys` SET `note` = ? WHERE `key` = ? AND `app` = ?",[$note, $key, $_SESSION['app']]);
-    }
-    misc\mysql\query("UPDATE `keys` SET `level` = ? WHERE `key` = ? AND `app` = ?",[$level, $key, $_SESSION['app']]);
-    misc\mysql\query("UPDATE `keys` SET `note` = ? WHERE `key` = ? AND `app` = ?",[$note, $key, $_SESSION['app']]);
-    dashboard\primary\success("Successfully Updated Settings!");
-}
-
-if (isset($_POST['importkeys'])) {
-        
-        if(!empty($_POST['authgg'])) {
-                $json = $_POST['authgg'];
-                $data = json_decode($json);
-
-                $levels = array();
-                foreach($data as $key => $row) {
-            if (empty($row->token)) {
-                                dashboard\primary\error("Invalid Format!");
-                                echo "<meta http-equiv='Refresh' Content='2;'>";
-                                return;
-                        }
-                        $license = misc\etc\sanitize($row->token);
-                        $level = misc\etc\sanitize($row->rank) + 1;
-                        $usedby = misc\etc\sanitize($row->used_by);
-                        $expires = misc\etc\sanitize($row->days) * 86400; // convert num of days to unix
-                        $status = "Not Used";
-                        if(!empty($usedby)) {
-                                $status = "Used";
-                        }
-                        else {
-                                if(!in_array($level, $levels)) {
-                    misc\mysql\query("INSERT INTO `subscriptions`(`name`, `level`, `app`) VALUES (?, ?, ?)",["rank " . $level, $level, $_SESSION['app']]);
-                                        $levels[] = $level; // prevent doing an insert statement for the same level twice
-                                }
-                                $usedby = NULL;
-                        }
-                        
-                        misc\mysql\query("INSERT INTO `keys`(`key`, `expires`, `status`, `level`, `genby`, `gendate`, `usedby`, `app`) VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP(), NULLIF(?, ''), ?)",[$license, $expires, $status, $level, $_SESSION['username'], $usedby, $_SESSION['app']]);
-                }
-        }
-        else {
-                $keys = misc\etc\sanitize($_POST['keys']);
-                $text = explode("|", $keys);
-                str_replace('"', "", $text);
-                str_replace("'", "", $text);
-                foreach ($text as $line) {
-                        $array = explode(',', $line);
-                        $first = $array[0];
-                        if (!isset($first) || $first == '') {
-                                dashboard\primary\error("Invalid Format!");
-                                echo "<meta http-equiv='Refresh' Content='2;'>";
-                                return;
-                        }
-                        $second = $array[1];
-                        if (!isset($second) || $second == '') {
-                                dashboard\primary\error("Invalid Format!");
-                                echo "<meta http-equiv='Refresh' Content='2;'>";
-                                return;
-                        }
-                        $third = $array[2];
-                        if (!isset($third) || $third == '') {
-                                dashboard\primary\error("Invalid Format!");
-                                echo "<meta http-equiv='Refresh' Content='2;'>";
-                                return;
-                        }
-            $forth = $array[3]; // there shouldn't be a forth, it wouldn't be following the format
-            if(isset($forth)) {
-                dashboard\primary\error("Invalid Format!");
-                                echo "<meta http-equiv='Refresh' Content='2;'>";
-                                return;
-            }
-                        $expiry = $third * 86400;
-            misc\mysql\query("INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES (?, ?,'Not Used', ?, ?, ?, ?)",[$first, $expiry, $second, $_SESSION['username'], time(), $_SESSION['app']]);
-        }
-        }
-    dashboard\primary\success("Successfully imported licenses!");
-}
-if (isset($_POST['addtime'])) {
-    $resp = misc\license\addTime($_POST['time'], $_POST['expiry']);
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Failed to add time!");
-            break;
-        case 'success':
-            dashboard\primary\success("Added time to unused licenses!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
-}
-if (isset($_POST['dlkeys'])) {
-    echo "<meta http-equiv='Refresh' Content='0; url=license-download.php?type=licenses'>";
-    // get all rows, put in text file, download text file, delete text file.
-
-}
-if (isset($_POST['delkeys'])) {
-    if($_SESSION['role'] == "tester") {
-        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-        return;
-    }
-    $resp = misc\license\deleteAll();
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Didn't find any keys!");
-            break;
-        case 'success':
-            dashboard\primary\success("Deleted All Keys!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
-}
-if (isset($_POST['deleteallunused'])) {
-    if($_SESSION['role'] == "tester") {
-        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-        return;
-    }
-    $resp = misc\license\deleteAllUnused();
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Didn't find any unused keys!");
-            break;
-        case 'success':
-            dashboard\primary\success("Deleted All Unused Keys!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
-}
-if (isset($_POST['deleteallused'])) {
-    if($_SESSION['role'] == "tester") {
-        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
-        echo "<meta http-equiv='Refresh' Content='2'>";
-        return;
-    }
-    $resp = misc\license\deleteAllUsed();
-    switch ($resp) {
-        case 'failure':
-            dashboard\primary\error("Didn't find any used keys!");
-            break;
-        case 'success':
-            dashboard\primary\success("Deleted All Used Keys!");
-            break;
-        default:
-            dashboard\primary\error("Unhandled Error! Contact us if you need help");
-            break;
-    }
-}
-
-if (isset($_POST['genkeys'])) {
-    if(empty(trim($_POST['mask']))) {
-        dashboard\primary\error("You must specify a key mask.");
-    }
-    else {
-    $key = misc\license\createLicense($_POST['amount'], $_POST['mask'], $_POST['duration'], $_POST['level'], $_POST['note'], $_POST['expiry']);
-    switch ($key) {
-        case 'max_keys':
-            dashboard\primary\error("You can only generate 100 licenses at a time");
-            break;
-        case 'tester_limit':
-            dashboard\primary\error("Tester plan only allows for 10 licenses, please upgrade!");
-            break;
-        case 'dupe_custom_key':
-            dashboard\primary\error("Can't do custom key with amount greater than one");
-            break;
-        default:
-            $mask = misc\etc\sanitize($_POST['mask']);
-            $amount = intval($_POST['amount']);
-            $level = misc\etc\sanitize($_POST['level']);
-            $note = misc\etc\sanitize($_POST['note']);
-            $duration = misc\etc\sanitize($_POST['duration']);
-            $expiry = misc\etc\sanitize($_POST['expiry']);
-            misc\mysql\query("UPDATE `apps` SET `format` = ?,`amount` = ?,`lvl` = ?,`note` = ?,`duration` = ?,`unit` = ? WHERE `secret` = ?",[$mask, $amount, $level, $note, $duration, $expiry, $_SESSION['app']]);
-            if ($_POST['amount'] > 1) {
-                $_SESSION['keys_array'] = $key;
-            } else {
-                echo "<script>navigator.clipboard.writeText('" . array_values($key)[0] . "');</script>";
-                dashboard\primary\success("License Created And Copied To Clipboard!");
-            }
-            break;
-    }
-}
-}
 ?>
-<!-- Include the jQuery library -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script>
-$(document).ready(function() {
-        $('div.modal-content').css('border', '2px solid #1b8adb');
-});
-</script>
-<!--begin::Container-->
-<div id="kt_content_container" class="container-xxl">
-        <script src="https://cdn.keyauth.cc/dashboard/unixtolocal.js"></script>
-        <div class="alert alert-primary" role="alert">
-                Please join Telegram group <a href="https://t.me/keyauth"
-                        target="_blank">https://t.me/keyauth</a>
-        </div>
-        <form method="POST">
-                <button type="button" data-bs-toggle="modal" data-bs-target="#create-keys"
-                        class="dt-button buttons-print btn btn-primary mr-1"><i
-                                class="fas fa-plus-circle fa-sm text-white-50"></i>
-                        Create keys</button>
-                <button data-bs-toggle="modal" type="button" data-bs-target="#import-keys"
-                        class="dt-button buttons-print btn btn-primary mr-1"><i
-                                class="fas fa-cloud-upload-alt fa-sm text-white-50"></i> Import keys</button>
-                <button data-bs-toggle="modal" type="button" data-bs-target="#comp-keys"
-                        class="dt-button buttons-print btn btn-primary mr-1"><i
-                                class="fas fa-clock fa-sm text-white-50"></i> Add
-                        Time</button>
-                <button name="dlkeys" class="dt-button buttons-print btn btn-primary mr-1"><i
-                                class="fas fa-download fa-sm text-white-50"></i> Download All keys</button><br><br>
-                <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allkeys"
-                        class="dt-button buttons-print btn btn-danger mr-1"><i
-                                class="fas fa-trash-alt fa-sm text-white-50"></i>
-                        Delete All keys</button>
-                <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allunusedkeys"
-                        class="dt-button buttons-print btn btn-danger mr-1"><i
-                                class="fas fa-trash-alt fa-sm text-white-50"></i>
-                        Delete All Unused Keys</button>
-                <button type="button" data-bs-toggle="modal" data-bs-target="#delete-allusedkeys"
-                        class="dt-button buttons-print btn btn-danger mr-1"><i
-                                class="fas fa-trash-alt fa-sm text-white-50"></i>
-                        Delete All Used Keys</button>
+<div class="p-4 bg-[#09090d] block sm:flex items-center justify-between lg:mt-1.5">
+    <div class="mb-1 w-full bg-[#0f0f17] rounded-xl">
+        <div class="mb-4 p-4">
+            <?php require '../app/layout/breadcrumb.php'; ?>
+            <h1 lang class="text-xl font-semibold text-white-900 sm:text-2xl">Licenses</h1>
+            <p class="text-xs text-gray-500">Licenses allow your users to register on your application.</p>
+            <br>
+            <div class="p-4 flex flex-col">
+                <div class="overflow-x-auto">
+                    <form method="POST">
+                        <!-- Key Functions -->
+                        <button type="button"
+                            class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                            data-modal-toggle="create-key-modal" data-modal-target="create-key-modal">
+                            <i class="lni lni-circle-plus mr-2 mt-1"></i> Create Keys
+                        </button>
 
-        </form>
-        <br>
-        <?php
+                        <button type="button"
+                            class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                            data-modal-toggle="add-time-modal" data-modal-target="add-time-modal">
+                            <i class="lni lni-timer mr-2 mt-1"></i>Add Time To Unused Keys
+                        </button>
+
+                        <button type="button"
+                            class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                            data-modal-toggle="import-key-modal" data-modal-target="import-key-modal">
+                            <i class="lni lni-upload mr-2 mt-1"></i>Import Keys
+                        </button>
+
+                        <button name="dlkeys"
+                            class="inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">
+                            <i class="lni lni-download mr-2 mt-1"></i>Export Keys
+                        </button>
+                    </form>
+                    <!-- End Key Functions -->
+
+                    <!-- Delete Key Functions -->
+                    <button
+                        class="inline-flex text-white bg-red-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                        data-modal-toggle="delete-all-keys-modal" data-modal-target="delete-all-keys-modal">
+                        <i class="lni lni-trash-can mr-2 mt-1"></i>Delete All Keys
+                    </button>
+                    <button
+                        class="inline-flex text-white bg-red-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                        data-modal-toggle="delete-all-used-keys-modal" data-modal-target="delete-all-used-keys-modal">
+                        <i class="lni lni-trash-can mr-2 mt-1"></i>Delete All Used Keys
+                    </button>
+                    <button
+                        class="inline-flex text-white bg-red-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200"
+                        data-modal-toggle="delete-all-unused-keys-modal"
+                        data-modal-target="delete-all-unused-keys-modal">
+                        <i class="lni lni-trash-can mr-2 mt-1"></i></i>Delete All Unused Keys
+                    </button>
+                    <!-- End Delete Key Functions -->
+
+                    <?php
     if (isset($_SESSION['keys_array'])) {
         $list = $_SESSION['keys_array'];
         $keys = NULL;
@@ -385,626 +202,656 @@ $(document).ready(function() {
             $keys .= "" . $list[$i] . "<br>";
         }
         echo "<div class=\"card\"> <div class=\"card-body\" id=\"multi-keys\"> $keys </div> </div> <br>";
-        echo "<button onclick=\"copyToClipboard()\" class=\"dt-button buttons-print btn btn-primary mr-1\"><i class=\"fas fa-paste fa-sm text-white-50\"></i>Copy new licenses</button>";
+        echo "<button onclick=\"copyToClipboard()\" class=\"inline-flex text-white bg-blue-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200\">Copy new licenses</button>";
         unset($_SESSION['keys_array']);
     }
     ?>
 
-        <div class="modal fade" tabindex="-1" id="create-keys">
-                <div class="modal-dialog">
-                        <div class="modal-content">
-                                <div class="modal-header d-flex align-items-center">
-                                        <h4 class="modal-title">Add Licenses</h4>
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                                data-bs-dismiss="modal">
-                                                <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                viewBox="0 0 24 24" fill="none">
-                                                                <rect opacity="0.5" x="6" y="17.3137" width="16"
-                                                                        height="2" rx="1"
-                                                                        transform="rotate(-45 6 17.3137)"
-                                                                        fill="black" />
-                                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                        transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                </span>
-                                        </div>
-                                        <!--end::Close-->
-                                </div>
-                                <?php
-                $query = misc\mysql\query("SELECT `format`, `amount`, `lvl`, `note`, `duration`, `unit` FROM `apps` WHERE `secret` = ?",[$_SESSION['app']]);
-                $row = mysqli_fetch_array($query->result);
+                    <!-- Create Key Modal -->
+                    <div id="create-key-modal" tabindex="-1" aria-hidden="true"
+                        class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <?php
+                            $query = misc\mysql\query("SELECT `format`, `amount`, `lvl`, `note`, `duration`, `unit` FROM `apps` WHERE `secret` = ?", [$_SESSION['app']]);
+                            $row = mysqli_fetch_array($query->result);
 
-                $format = $row['format'];
-                $amt = $row['amount'];
-                $lvl = $row['lvl'];
-                $note = $row['note'];
-                $dur = $row['duration'];
-                $unit = $row['unit'];
-                ?>
-                                <div class="modal-body">
-                                        <form method="post">
-                                                <div class="form-group">
-                                                        <label for="recipient-name"
-                                                                class="control-label">Amount:</label>
-                                                        <input type="number" min="1" class="form-control" name="amount"
-                                                                placeholder="Default 1"
-                                                                value="<?php if (!is_null($amt)) {
-                                                                                                                        echo $amt;
-                                                                                                                    } ?>" required>
+                            $format = $row['format'];
+                            $amt = $row['amount'];
+                            $lvl = $row['lvl'];
+                            $note = $row['note'];
+                            $dur = $row['duration'];
+                            $unit = $row['unit'];
+                            ?>
+                            <!-- Modal content -->
+                            <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+                                <div class="px-6 py-6 lg:px-8">
+                                    <h3 class="text-xl font-medium text-white-900">Create A New Key</h3>
+                                    <hr class="h-px mb-4 mt-4 bg-gray-700 border-0">
+                                    <form class="space-y-6" method="POST">
+                                        <div>
+                                            <div class="relative mb-4">
+                                                <input type="text" inputmode="numeric" min="1" max="100" id="amount"
+                                                    name="amount"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                    placeholder=" " autocomplete="on"
+                                                    value="<?php if (!is_null($amt)) {                                                                                                                                                                                                                                                                                echo $amt;                                                                                                                                                                                                                                                                         } ?>"
+                                                    required data-popover-target="amount-popover">
+                                                <label for="amount"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">License
+                                                    Amount</label>
+
+                                                <?php dashboard\primary\popover("amount-popover", "License Amount", "The amount of licenses you would like to create."); ?>
+                                            </div>
+
+                                            <div class="relative mb-4">
+                                                <input type="text" maxlength="49" id="mask" name="mask"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                    placeholder="*****-*****-*****-*****" autocomplete="on"
+                                                    value="<?php if (!is_null($format)) { echo $format; } else { echo "*****-*****-*****-*****-*****"; } ?>"
+                                                    required data-popover-target="mask-popover">
+                                                <label for="mask"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">License
+                                                    Mask</label>
+
+                                                <?php dashboard\primary\popover("mask-popover", "License Mask", "The format of the license. You can use * to generate random characters."); ?>
+                                            </div>
+
+                                            <div class="flex items-center mb-4">
+                                                <input id="lowercaseLetters" name="lowercaseLetters" type="checkbox"
+                                                    class="w-4 h-4 text-blue-600 bg-[#0f0f17] border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                                    checked data-popover-target="lowercase-popover">
+                                                <label for="lowercaseLetters"
+                                                    class="ml-2 text-sm font-medium text-white-900">Include
+                                                    Lowercase Letters</label>
+
+                                                <?php dashboard\primary\popover("lowercase-popover", "Lowercase Letters", "Include lowercase letters in your license."); ?>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input checked id="capitalLetters" name="capitalLetters" type="checkbox"
+                                                    class="w-4 h-4 text-blue-600 bg-[#0f0f17] border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                                    checked data-popover-target="capital-popover">
+                                                <label for="capitalLetters"
+                                                    class="ml-2 text-sm font-medium text-white-900">Include
+                                                    Uppercase Letters</label>
+
+                                                <?php dashboard\primary\popover("capital-popover", "Capital Letters", "Include capital letters in your license."); ?>
+                                            </div>
+
+                                            <div class="relative mb-4 pt-3">
+                                                <select id="level" name="level"
+                                                    class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                                    data-popover-target="level-popover">
+                                                    <?php
+                                                    $query = misc\mysql\query("SELECT DISTINCT `level` FROM `subscriptions` WHERE `app` = ? ORDER BY `level` ASC", [$_SESSION['app']]);
+                                                    if ($query->num_rows > 0) {
+                                                        while ($row = mysqli_fetch_array($query->result)) {
+                                                            $queryName = misc\mysql\query("SELECT `name` FROM `subscriptions` WHERE `level` = ? AND `app` = ?", [$row["level"], $_SESSION['app']]);
+                                                            $name = " (";
+                                                            $count = 0;
+                                                            while ($rowSubs = mysqli_fetch_array($queryName->result)) {
+                                                                $count++;
+                                                                if ($count > 1) {
+                                                                    $name .= ", " . $rowSubs["name"];
+                                                                } else {
+                                                                    $name .= $rowSubs["name"];
+                                                                }
+                                                            }
+                                                            $name .= ")";
+                                                    ?>
+
+                                                    <option <?= $lvl == $row["level"] ? 'selected="selected"' : ''; ?>
+                                                        value="<?= $row["level"]; ?>">
+                                                        <?= $row["level"] . $name; ?></option>
+                                                    <?php
+                                                        }
+                                                    }
+                                                    ?>
+                                                </select>
+
+                                                <?php dashboard\primary\popover("level-popover", "License Level", "The level/subscription you would like to assign to your license(s)."); ?>
+                                            </div>
+
+                                            <div class="relative mb-4">
+                                                <input type="text" maxlength="69" id="note" name="note"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                    placeholder=" " autocomplete="on"
+                                                    value="<?php if (!is_null($note)) {                                                                                                                                                                                                                                               } ?>"
+                                                    data-popover-target="note-popover">
+                                                <label for="note"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">License
+                                                    Note</label>
+
+                                                <?php dashboard\primary\popover("note-popover", "License Note", "A unique message for a license."); ?>
+                                            </div>
+
+                                            <div class="relative mb-4">
+                                                <select id="expiry" name="expiry"
+                                                    class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                                    data-popover-target="expiry-popover">
+                                                    <option value="1" <?= $unit == 1 ? 'selected="selected"' : ''; ?>>
+                                                        Seconds
+                                                    </option>
+                                                    <option value="60" <?= $unit == 60 ? 'selected="selected"' : ''; ?>>
+                                                        Minutes
+                                                    </option>
+                                                    <option value="3600"
+                                                        <?= $unit == 3600 ? 'selected="selected"' : ''; ?>>
+                                                        Hours
+                                                    </option>
+                                                    <option value="86400"
+                                                        <?= $unit == 86400 ? 'selected="selected"' : ''; ?>>
+                                                        Days
+                                                    </option>
+                                                    <option value="604800"
+                                                        <?= $unit == 604800 ? 'selected="selected"' : ''; ?>>
+                                                        Weeks
+                                                    </option>
+                                                    <option value="2629743"
+                                                        <?= $unit == 2629743 ? 'selected="selected"' : ''; ?>>
+                                                        Months
+                                                    </option>
+                                                    <option value="31556926"
+                                                        <?= $unit == 31556926 ? 'selected="selected"' : ''; ?>>
+                                                        Years
+                                                    </option>
+                                                    <option value="315569260"
+                                                        <?= $unit == 315569260 ? 'selected="selected"' : ''; ?>>
+                                                        Lifetime
+                                                    </option>
+                                                </select>
+                                                <label for="expiry"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">License
+                                                    Expiry Unit</label>
+
+                                                <?php dashboard\primary\popover("expiry-popover", "License Expiry (unit)", "The unit the license will expire in."); ?>
+                                            </div>
+
+                                            <div class="relative mb-4">
+                                                <input type="text" inputmode="numeric" maxlength="4" id="duration"
+                                                    name="duration"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                    placeholder=" " autocomplete="on" pattern="\d*"
+                                                    value="<?php if (!is_null($dur)) {                                                                                                                                                                                                                                                                                 } ?>"
+                                                    required data-popover-target="duration-popover">
+                                                <label for="duration"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">License
+                                                    Duration</label>
+
+                                                <?php dashboard\primary\popover("duration-popover", "License Expiry (duration)", "The duration the license will expire in. (Unit * Duration = Expiry)"); ?>
+                                            </div>
+                                        </div>
+                                        <button type="submit" name="genkeys"
+                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Generate
+                                            Keys</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Create Key Modal -->
+
+                    <!-- Add Time To Key Modal -->
+                    <div id="add-time-modal" tabindex="-1" aria-hidden="true"
+                        class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <!-- Modal content -->
+                            <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+                                <div class="px-6 py-6 lg:px-8">
+                                    <h3 class="mb-4 text-xl font-medium text-white-900">Add Time To Unused Licenses</h3>
+                                    <hr class="h-px mb-4 mt-4 bg-gray-700 border-0">
+                                    <form class="space-y-6" method="POST">
+                                        <div>
+
+                                            <div class="relative mb-4  ">
+                                                <select id="expiry" name="expiry"
+                                                    class="bg-[#0f0f17] border border-gray-700 text-white-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                                    <option value="1" selected>Seconds</option>
+                                                    <option value="60">Minutes</option>
+                                                    <option value="3600">Hours</option>
+                                                    <option value="86400">Days</option>
+                                                    <option value="604800">Weeks</option>
+                                                    <option value="2629743">Months</option>
+                                                    <option value="31556926">Years</option>
+                                                    <option value="315569260">Lifetime</option>
+                                                </select>
+                                                <label for="expiry"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Unit
+                                                    of Time To Add</label>
+                                            </div>
+
+                                            <div class="relative mb-4">
+                                                <input type="text" inputmode="numeric" min="1" id="time" name="time"
+                                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0  peer"
+                                                    autocomplete="on" placeholder="" required>
+                                                <label for="time"
+                                                    class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Time
+                                                    To Add</label>
+                                            </div>
+
+                                        </div>
+                                        <button name="addtime"
+                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Add
+                                            Time</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Add Time To Key Modal -->
+
+                    <!-- Import Keys Modal -->
+                    <div id="import-key-modal" tabindex="-1" aria-hidden="true"
+                        class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <!-- Modal content -->
+                            <div class="relative bg-[#0f0f17] rounded-lg border border-[#1d4ed8] shadow">
+                                <div class="px-6 py-6 lg:px-8">
+                                    <h3 class="mb-4 text-xl font-medium text-white-900">Import Licenses .json</h3>
+                                    <hr class="h-px mb-4 mt-4 bg-gray-700 border-0">
+                                    <form class="space-y-6" method="POST" enctype="multipart/form-data">
+                                        <div class="relative">
+                                            <input
+                                                class="block w-full text-sm text-gray-400 border border-gray-700 rounded-lg cursor-pointer focus:outline-none"
+                                                id="file_input" name="file_input" type="file">
+                                        </div>
+                                        <button type="submit" name="importkeysFile"
+                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Import
+                                            Licenses</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Import Keys Modal -->
+
+                    <!-- Delete All Keys Modal -->
+                    <div id="delete-all-keys-modal" tabindex="-1"
+                        class="fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                                <div class="p-6 text-center">
+                                    <div class="flex items-center p-4 mb-4 text-sm text-white border border-yellow-500 rounded-lg bg-[#0f0f17]"
+                                        role="alert">
+                                        <span class="sr-only">Info</span>
+                                        <div>
+                                            <span class="font-medium">Notice!</span> This will not delete users (prevent
+                                            them from logging in). Go to https://keyauth.cc/app/?page=users for that.
+                                            </b>
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to delete
+                                        all of your keys? This can not be undone.</h3>
+                                    <form method="POST">
+                                        <button data-modal-hide="delete-all-keys-modal" name="delkeys"
+                                            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                                            Yes, I'm sure
+                                        </button>
+                                        <button data-modal-hide="delete-all-keys-modal" type="button"
+                                            class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                            cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Delete All Keys Modal -->
+
+                    <!-- Delete All Used Keys Modal -->
+                    <div id="delete-all-used-keys-modal" tabindex="-1"
+                        class="fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                                <div class="p-6 text-center">
+                                    <div class="flex items-center p-4 mb-4 text-sm text-white border border-yellow-500 rounded-lg bg-[#0f0f17]"
+                                        role="alert">
+                                        <span class="sr-only">Info</span>
+                                        <div>
+                                            <span class="font-medium">Notice!</span> This will not delete users (prevent
+                                            them from logging in). Go to https://keyauth.cc/app/?page=users for that.
+                                            </b>
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to delete
+                                        all of your used keys? This can not be undone.</h3>
+                                    <form method="POST">
+                                        <button data-modal-hide="delete-all-used-keys-modal" name="deleteallused"
+                                            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                                            Yes, I'm sure
+                                        </button>
+                                        <button data-modal-hide="delete-all-used-keys-modal" type="button"
+                                            class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                            cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Delete All Used Keys Modal -->
+
+                    <!-- Delete All Unused Keys Modal -->
+                    <div id="delete-all-unused-keys-modal" tabindex="-1"
+                        class="fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                                <div class="p-6 text-center">
+                                    <div class="flex items-center p-4 mb-4 text-sm text-white border border-yellow-500 rounded-lg bg-[#0f0f17]"
+                                        role="alert">
+                                        <span class="sr-only">Info</span>
+                                        <div>
+                                            <span class="font-medium">Notice!</span> This will not delete users (prevent
+                                            them from logging in). Go to https://keyauth.cc/app/?page=users for that.
+                                            </b>
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to delete
+                                        all of your unused keys? This can not be undone.</h3>
+                                    <form method="POST">
+                                        <button data-modal-hide="delete-all-unused-keys-modal" name="deleteallunused"
+                                            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                                            Yes, I'm sure
+                                        </button>
+                                        <button data-modal-hide="delete-all-unused-keys-modal" type="button"
+                                            class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                            cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Delete All Unused Keys Modal -->
+
+                    <!-- Delete Key Modal -->
+                    <div id="del-key" tabindex="-1"
+                        class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                                <div class="p-6 text-center">
+                                    <div class="flex items-center p-4 mb-4 text-sm text-white border border-yellow-500 rounded-lg bg-[#0f0f17]"
+                                        role="alert">
+                                        <span class="sr-only">Info</span>
+                                        <div>
+                                            <span class="font-medium">Notice!</span> This will not delete the user
+                                            (prevent them from logging in) unless you check Delete User Too
+                                            </b>
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to delete
+                                        this key? This can not be undone.</h3>
+                                    <form method="POST">
+                                        <div class="flex items-center mb-4">
+                                            <input id="delUserToo" name="delUserToo" type="checkbox"
+                                                class="w-4 h-4 text-blue-600 bg-[#0f0f17] border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                                checked>
+                                            <label for="delUserToo"
+                                                class="ml-2 text-sm font-medium text-white-900">Delete user too</label>
+                                        </div>
+
+                                        <button name="deletekey"
+                                            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2 delkey">
+                                            Yes, I'm sure
+                                        </button>
+                                        <button type="button" onclick="closeModal('del-key')"
+                                            class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                            cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Delete Key Modal -->
+
+                    <!-- Ban License Modal Actions-->
+                    <div id="ban-key-modal" tabindex="-1"
+                        class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+                        <div class="relative w-full max-w-md max-h-full">
+                            <div class="relative bg-[#0f0f17] border border-red-700 rounded-lg shadow">
+                                <div class="p-6 text-center">
+                                    <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-700 rounded-lg bg-[#0f0f17]"
+                                        role="alert">
+                                        <span class="sr-only">Info</span>
+                                        <div>
+                                            <span class="font-medium text-red-400">Notice! This will not ban the user
+                                                (prevent them from logging in) unless you check Ban User Too</b></span>
+                                        </div>
+                                    </div>
+                                    <h3 class="mb-5 text-lg font-normal text-gray-200">Are you sure you want to ban this
+                                        license?
+                                        <form method="POST">
+                                            <div>
+                                                <div class="relative mb-4 pt-4">
+                                                    <input type="text" id="reason" name="reason"
+                                                        class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border-1 border-gray-700 appearance-none focus:ring-0 peer focus:border-red-700"
+                                                        placeholder=" " autocomplete="on" required>
+                                                    <label for="reason"
+                                                        class="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-[#0f0f17] px-2 peer-focus:px-2 peer-focus:text-red-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1">Ban
+                                                        Reason</label>
                                                 </div>
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Key Mask: <i
-                                                                        class="fas fa-question-circle fa-lg text-white-50"
-                                                                        data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                        title="Format keys are in. You can do custom by putting whatever, or do * for random character"></i></label>
-                                                        <input type="text" class="form-control" value="<?php if (!is_null($format)) {
-                                                                                echo $format;
-                                                                            } else {
-                                                                                echo "******-******-******-******-******-******";
-                                                                            } ?>"
-                                                                placeholder="Using * will assign a random character."
-                                                                name="mask" required maxlength="49">
-                                                </div>
-                                                <br>
-                                                <div class="row">
-                                                        <div class="col">
-                                                                <div class="form-check">
-                                                                        <input class="form-check-input"
-                                                                                name="lowercaseLetters" type="checkbox"
-                                                                                id="flexCheckChecked" checked>
-                                                                        <label class="form-check-label"
-                                                                                for="flexCheckChecked">
-                                                                                Lowercase Letters <i
-                                                                                        class="fas fa-question-circle fa-lg text-white-50"
-                                                                                        data-toggle="tooltip"
-                                                                                        data-placement="top"
-                                                                                        title="If checked, lowercase letters will be added to generated keys."></i>
-                                                                        </label>
-                                                                </div>
-                                                        </div>
-                                                        <div class="col">
-                                                                <div class="form-check">
-                                                                        <input class="form-check-input"
-                                                                                name="capitalLetters" type="checkbox"
-                                                                                id="flexCheckChecked" checked>
-                                                                        <label class="form-check-label"
-                                                                                for="flexCheckChecked">
-                                                                                Capital Letters <i
-                                                                                        class="fas fa-question-circle fa-lg text-white-50"
-                                                                                        data-toggle="tooltip"
-                                                                                        data-placement="top"
-                                                                                        title="If checked, capital letters will be added to generated keys."></i>
-                                                                        </label>
-                                                                </div>
-                                                        </div>
-                                                </div>
-                                                <br>
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License Level:
-                                                                <i class="fas fa-question-circle fa-lg text-white-50"
-                                                                        data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                        title="This needs to coordinate to the level of subscription you want to give to user when they redeem license. If it's blank, go to subscriptions tab and create subscription"></i></label>
-                                                        <select name="level" class="form-control">
-                                                                <?php
-                                $query = misc\mysql\query("SELECT DISTINCT `level` FROM `subscriptions` WHERE `app` = ? ORDER BY `level` ASC",[$_SESSION['app']]);
-                                if ($query->num_rows > 0) {
-                                    while ($row = mysqli_fetch_array($query->result)) {
-                                                                                
-                                        $queryName = misc\mysql\query("SELECT `name` FROM `subscriptions` WHERE `level` = ? AND `app` = ?",[$row["level"], $_SESSION['app']]);
-                                                                                
-                                                                                $name = " (";
-                                                                                $count = 0;
-                                                                                while ($rowSubs = mysqli_fetch_array($queryName->result)) {
-                                                                                        $count++;
-                                                                                        if($count > 1) {
-                                                                                                $name .= ", " . $rowSubs["name"];
-                                                                                        }
-                                                                                        else {
-                                                                                                $name .= $rowSubs["name"];
-                                                                                        }
-                                                                                }
-                                                                                $name .= ")";
-                                                                                
-                                ?>
-                                                                <option <?= $lvl == $row["level"] ? ' selected="selected"' : ''; ?>
-                                                                        value="<?php echo $row["level"]; ?>">
-                                                                        <?php echo $row["level"] . $name; ?></option>
-                                                                <?php
-                                    }
+                                            </div>
+                                            <div class="flex items-center mb-4 pt-4">
+                                                <input id="banUserToo" name="banUserToo" type="checkbox"
+                                                    class="w-4 h-4 text-blue-600 bg-[#0f0f17] border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                                    checked>
+                                                <label for="banUserToo"
+                                                    class="ml-2 text-sm font-medium text-white-900">Ban User
+                                                    Too?</label>
+                                            </div>
+                                            <button name="bankey"
+                                                class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2 bankey">
+                                                Yes, I'm sure
+                                            </button>
+                                            <button type="button" onclick="closeModal('ban-key-modal')"
+                                                class="inline-flex text-white bg-gray-700 hover:opacity-60 focus:ring-0 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 transition duration-200">No,
+                                                cancel</button>
+                                        </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Ban License Modal Actions-->
+
+                    <!-- START TABLE -->
+                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg pt-5">
+                        <table id="kt_datatable_licenses" class="w-full text-sm text-left text-white">
+                            <thead>
+                                <tr class="border-2 border-gray-200 text-blue-700 px-7">
+                                    <th scope="col" class="px-6 py-3">Key</th>
+                                    <th scope="col" class="px-6 py-3">Creation Date</th>
+                                    <th scope="col" class="px-6 py-3">Generated By</th>
+                                    <th scope="col" class="px-6 py-3">Duration</th>
+                                    <th scope="col" class="px-6 py-3">Note</th>
+                                    <th scope="col" class="px-6 py-3">Used On</th>
+                                    <th scope="col" class="px-6 py-3">Used By</th>
+                                    <th scope="col" class="px-6 py-3">Status</th>
+                                    <th scope="col" class="px-6 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <p class="text-xs text-red-600">Dropdown actions in <b>RED</b> do not show a confirmation!<a
+                            class="text-blue-700"> Dropdown actions in <b>BLUE</b> will show a confirmation!</a></p>
+
+                    <!-- Include the jQuery library -->
+
+
+                    <script>
+                    $(document).keydown(function(event) {
+                        if (event.key === 'Escape') {
+                            $('[data-modal]').each(function() {
+                                if (!$(this).hasClass('hidden')) {
+                                    const modalName = $(this).data('modal');
+                                    closeModal(modalName);
                                 }
-                                ?>
-                                                        </select>
-                                                </div>
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License
-                                                                Note:</label>
-                                                        <input type="text" maxlength="69" class="form-control"
-                                                                name="note"
-                                                                placeholder="Optional, e.g. this license was for Joe"
-                                                                value="<?php if (!is_null($note)) {
-                                                                                                                                                    echo $note;
-                                                                                                                                                } ?>">
-                                                </div>
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License Expiry
-                                                                Unit:</label>
-                                                        <select name="expiry" class="form-control">
-                                                                <option value="86400"
-                                                                        <?= $unit == 86400 ? ' selected="selected"' : ''; ?>>
-                                                                        Days</option>
-                                                                <option value="60"
-                                                                        <?= $unit == 60 ? ' selected="selected"' : ''; ?>>
-                                                                        Minutes</option>
-                                                                <option value="3600"
-                                                                        <?= $unit == 3600 ? ' selected="selected"' : ''; ?>>
-                                                                        Hours</option>
-                                                                <option value="1"
-                                                                        <?= $unit == 1 ? ' selected="selected"' : ''; ?>>
-                                                                        Seconds</option>
-                                                                <option value="604800"
-                                                                        <?= $unit == 604800 ? ' selected="selected"' : ''; ?>>
-                                                                        Weeks
-                                                                </option>
-                                                                <option value="2629743"
-                                                                        <?= $unit == 2629743 ? ' selected="selected"' : ''; ?>>
-                                                                        Months
-                                                                </option>
-                                                                <option value="31556926"
-                                                                        <?= $unit == 31556926 ? ' selected="selected"' : ''; ?>>
-                                                                        Years
-                                                                </option>
-                                                                <option value="315569260"
-                                                                        <?= $unit == 315569260 ? ' selected="selected"' : ''; ?>>
-                                                                        Lifetime</option>
-                                                        </select>
-                                                </div>
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">License
-                                                                Duration: <i
-                                                                        class="fas fa-question-circle fa-lg text-white-50"
-                                                                        data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                        title="When the key is redeemed, a subscription with the duration of the key will be added to the user who redeemed the key."></i></label>
-                                                        <input name="duration" type="text" class="form-control"
-                                                                placeholder="Multiplied by selected Expiry unit"
-                                                                value="<?php if (!is_null($dur)) {
-                                                                                                                                                    echo $dur;
-                                                                                                                                                } ?>" required
-                                                                pattern="\d*" maxlength="4">
-                                                </div>
-                                </div>
-                                <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                        <button class="btn btn-danger" name="genkeys">Add</button>
-                                        </form>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <div class="modal fade" tabindex="-1" id="import-keys">
-                <div class="modal-dialog">
-                        <div class="modal-content">
-                                <div class="modal-header d-flex align-items-center">
-                                        <h4 class="modal-title">Import Licenses</h4>
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                                data-bs-dismiss="modal">
-                                                <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                viewBox="0 0 24 24" fill="none">
-                                                                <rect opacity="0.5" x="6" y="17.3137" width="16"
-                                                                        height="2" rx="1"
-                                                                        transform="rotate(-45 6 17.3137)"
-                                                                        fill="black" />
-                                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                        transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                </span>
-                                        </div>
-                                        <!--end::Close-->
-                                </div>
-                                <div class="modal-body">
-                                        <form method="post">
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Keys: <i
-                                                                        class="fas fa-question-circle fa-lg text-white-50"
-                                                                        data-toggle="tooltip" data-placement="top"
-                                                                        title="Make sure you have a subscription created that matches each level of the keys you're importing."></i></label>
-                                                        <input class="form-control" name="keys"
-                                                                placeholder="Format: KEYHERE,LVLHERE,DAYSHERE|KEYHERE,LVLHERE,DAYSHERE">
-                                                </div>
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Import from
-                                                                auth.gg:</label>
-                                                        <input class="form-control" name="authgg"
-                                                                placeholder="Paste in JSON from developers.auth.gg">
-                                                </div>
-                                                <br>
-                                                <div class="alert alert-primary" role="alert">
-                                                        Watch this tutorial for auth.gg import <a
-                                                                href="https://youtu.be/BkW0vu5e5UI?t=218"
-                                                                target="_blank">https://youtu.be/BkW0vu5e5UI?t=218</a>
-                                                </div>
-                                </div>
-                                <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                        <button class="btn btn-danger" name="importkeys">Import</button>
-                                        </form>
-                                </div>
-                        </div>
-                </div>
-        </div>
+                            });
+                        }
+                    });
 
-        <div class="modal fade" tabindex="-1" id="comp-keys">
-                <div class="modal-dialog">
-                        <div class="modal-content">
-                                <div class="modal-header d-flex align-items-center">
-                                        <h4 class="modal-title">Add Time</h4>
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                                data-bs-dismiss="modal">
-                                                <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                viewBox="0 0 24 24" fill="none">
-                                                                <rect opacity="0.5" x="6" y="17.3137" width="16"
-                                                                        height="2" rx="1"
-                                                                        transform="rotate(-45 6 17.3137)"
-                                                                        fill="black" />
-                                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                        transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                </span>
-                                        </div>
-                                        <!--end::Close-->
-                                </div>
-                                <div class="modal-body">
-                                        <form method="post">
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Unit Of Time
-                                                                To Add:</label>
-                                                        <select name="expiry" class="form-control">
-                                                                <option value="86400">Days</option>
-                                                                <option value="60">Minutes</option>
-                                                                <option value="3600">Hours</option>
-                                                                <option value="1">Seconds</option>
-                                                                <option value="604800">Weeks</option>
-                                                                <option value="2629743">Months</option>
-                                                                <option value="31556926">Years</option>
-                                                                <option value="315569260">Lifetime</option>
-                                                        </select>
-                                                </div>
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Time To Add:
-                                                                <i class="fas fa-question-circle fa-lg text-white-50"
-                                                                        data-toggle="tooltip" data-placement="top"
-                                                                        title="If the key is used, this will do nothing. Used keys are turned into users so if you want to add time to a user, go to users tab and click extend user(s)"></i></label>
-                                                        <input class="form-control" name="time" type="number"
-                                                                placeholder="Multiplied by selected unit of time"
-                                                                required>
-                                                </div>
-                                </div>
-                                <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                        <button class="btn btn-danger" name="addtime">Add</button>
-                                        </form>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <div class="modal fade" tabindex="-1" id="ban-key">
-                <div class="modal-dialog">
-                        <div class="modal-content">
-                                <div class="modal-header d-flex align-items-center">
-                                        <h4 class="modal-title">Ban License</h4>
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                                data-bs-dismiss="modal">
-                                                <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                viewBox="0 0 24 24" fill="none">
-                                                                <rect opacity="0.5" x="6" y="17.3137" width="16"
-                                                                        height="2" rx="1"
-                                                                        transform="rotate(-45 6 17.3137)"
-                                                                        fill="black" />
-                                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                        transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                </span>
-                                        </div>
-                                        <!--end::Close-->
-                                </div>
-                                <div class="modal-body">
-                                        <form method="post">
-                                                <div class="alert alert-warning" role="alert">
-                                                        This will not ban the user (prevent them from logging in)
-                                                        <u>unless</u> you check <b>Ban User Too</b>
-                                                </div>
-                                                <div class="form-group">
-                                                        <label for="recipient-name" class="control-label">Ban
-                                                                reason:</label>
-                                                        <br>
-                                                        <br>
-                                                        <input type="text" class="form-control" name="reason"
-                                                                placeholder="Reason for ban" required>
-                                                        <br>
-                                                        <input class="form-check-input"
-                                                                style="color:white;border-color:white;"
-                                                                name="banUserToo" type="checkbox" id="flexCheckChecked">
-                                                        <label class="form-check-label" for="flexCheckChecked">
-                                                                Ban User Too <i
-                                                                        class="fas fa-question-circle fa-lg text-white-50"
-                                                                        data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                        title="Delete both the key and the user"></i>
-                                                        </label>
-                                                </div>
-                                </div>
-                                <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                        <button class="btn btn-danger bankey" name="bankey">Ban</button>
-                                        </form>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <div class="modal fade" tabindex="-1" id="del-key">
-                <div class="modal-dialog">
-                        <div class="modal-content">
-                                <div class="modal-header d-flex align-items-center">
-                                        <h4 class="modal-title">Delete License</h4>
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                                data-bs-dismiss="modal">
-                                                <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                viewBox="0 0 24 24" fill="none">
-                                                                <rect opacity="0.5" x="6" y="17.3137" width="16"
-                                                                        height="2" rx="1"
-                                                                        transform="rotate(-45 6 17.3137)"
-                                                                        fill="black" />
-                                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                        transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                </span>
-                                        </div>
-                                        <!--end::Close-->
-                                </div>
-                                <div class="modal-body">
-                                        <form method="post">
-                                                <div class="alert alert-warning" role="alert">
-                                                        This will not delete the user (prevent them from logging in)
-                                                        <u>unless</u> you check <b>Delete User Too</b>
-                                                </div>
-                                                <div class="form-group">
-                                                        <div class="form-check">
-                                                                <input class="form-check-input"
-                                                                        style="color:white;border-color:white;"
-                                                                        name="delUserToo" type="checkbox"
-                                                                        id="flexCheckChecked">
-                                                                <label class="form-check-label" for="flexCheckChecked">
-                                                                        Delete User Too <i
-                                                                                class="fas fa-question-circle fa-lg text-white-50"
-                                                                                data-bs-toggle="tooltip"
-                                                                                data-bs-placement="top"
-                                                                                title="Delete both the key and the user"></i>
-                                                                </label>
-                                                        </div>
-                                                </div>
-                                </div>
-                                <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                        <button class="btn btn-danger delkey" name="deletekey">Delete</button>
-                                        </form>
-                                </div>
-                        </div>
-                </div>
-        </div>
+                    function bankey(key) {
+                        var bankey = $('.bankey');
+                        bankey.attr('value', key);
 
-        <!--begin::Modal - Delete all keys-->
-        <div class="modal fade" tabindex="-1" id="delete-allkeys">
-                <!--begin::Modal dialog-->
-                <div class="modal-dialog modal-dialog-centered mw-900px">
-                        <!--begin::Modal content-->
-                        <div class="modal-content">
-                                <!--begin::Modal header-->
-                                <div class="modal-header">
-                                        <h2 class="modal-title">Delete All Keys</h2>
+                        openModal('ban-key-modal');
+                    }
 
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                                data-bs-dismiss="modal">
-                                                <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                viewBox="0 0 24 24" fill="none">
-                                                                <rect opacity="0.5" x="6" y="17.3137" width="16"
-                                                                        height="2" rx="1"
-                                                                        transform="rotate(-45 6 17.3137)"
-                                                                        fill="black" />
-                                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                        transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                </span>
-                                        </div>
-                                        <!--end::Close-->
-                                </div>
-                                <div class="modal-body">
-                                        <div class="alert alert-warning" role="alert">
-                                                This will not delete users (prevent them from logging in). Go to <a
-                                                        href="https://keyauth.cc/app/?page=users">https://keyauth.cc/app/?page=users</a>
-                                                for that.
-                                        </div>
-                                        <label class="fs-5 fw-bold mb-2">
-                                                <p> Are you sure you want to delete all keys? This can not be undone.
-                                                </p>
-                                        </label>
-                                </div>
-                                <div class="modal-footer">
-                                        <form method="post">
-                                                <button type="button" class="btn btn-light"
-                                                        data-bs-dismiss="modal">No</button>
-                                                <button name="delkeys" class="btn btn-danger">Yes</button>
-                                        </form>
-                                </div>
-                        </div>
+                    function delkey(key) {
+                        var delkey = $('.delkey');
+                        delkey.attr('value', key);
+
+                        openModal('del-key');
+                    }
+
+                    function copyToClipboard() {
+                        const cardBodyContent = document.getElementById('multi-keys').innerText;
+
+                        const formattedContent = cardBodyContent.replace(/<br>/g, '\n');
+
+                        const textarea = document.createElement('textarea');
+                        textarea.value = formattedContent;
+
+                        textarea.style.position = 'fixed';
+                        textarea.style.opacity = 0;
+
+                        document.body.appendChild(textarea);
+
+                        textarea.select();
+                        document.execCommand('copy');
+
+                        document.body.removeChild(textarea);
+
+                        alert('Copied new licenses!');
+                    }
+                    </script>
+                    <!-- END TABLE -->
+
                 </div>
-        </div>
-        <!--end::Modal - Delete all keys-->
-        <!--begin::Modal - Delete all unused keys-->
-        <div class="modal fade" tabindex="-1" id="delete-allunusedkeys">
-                <!--begin::Modal dialog-->
-                <div class="modal-dialog modal-dialog-centered mw-900px">
-                        <!--begin::Modal content-->
-                        <div class="modal-content">
-                                <!--begin::Modal header-->
-                                <div class="modal-header">
-                                        <h2 class="modal-title">Delete All Unused Keys</h2>
 
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                                data-bs-dismiss="modal">
-                                                <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                viewBox="0 0 24 24" fill="none">
-                                                                <rect opacity="0.5" x="6" y="17.3137" width="16"
-                                                                        height="2" rx="1"
-                                                                        transform="rotate(-45 6 17.3137)"
-                                                                        fill="black" />
-                                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                        transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                </span>
-                                        </div>
-                                        <!--end::Close-->
-                                </div>
-                                <div class="modal-body">
-                                        <div class="alert alert-warning" role="alert">
-                                                This will not delete users (prevent them from logging in). Go to <a
-                                                        href="https://keyauth.cc/app/?page=users">https://keyauth.cc/app/?page=users</a>
-                                                for that.
-                                        </div>
-                                        <label class="fs-5 fw-bold mb-2">
-                                                <p> Are you sure you want to delete all unused keys? This can not be
-                                                        undone.</p>
-                                        </label>
-                                </div>
-                                <div class="modal-footer">
-                                        <form method="post">
-                                                <button type="button" class="btn btn-light"
-                                                        data-bs-dismiss="modal">No</button>
-                                                <button name="deleteallunused" class="btn btn-danger">Yes</button>
-                                        </form>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <!--end::Modal - Delete all unused keys-->
-        <!--begin::Modal - Delete all used keys-->
-        <div class="modal fade" tabindex="-1" id="delete-allusedkeys">
-                <!--begin::Modal dialog-->
-                <div class="modal-dialog modal-dialog-centered mw-900px">
-                        <!--begin::Modal content-->
-                        <div class="modal-content">
-                                <!--begin::Modal header-->
-                                <div class="modal-header">
-                                        <h2 class="modal-title">Delete All Used Keys</h2>
+                <?php
+                if (isset($_POST['delkeys'])) {
+                    if ($_SESSION['role'] == "tester") {
+                        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
+                        echo "<meta http-equiv='Refresh' Content='2'>";
+                        return;
+                    }
+                    $resp = misc\license\deleteAll();
+                    match ($resp) {
+                        'failure' => dashboard\primary\error("Didn't find any keys!"),
+                        'success' => dashboard\primary\success("Deleted All Keys!"),
+                        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+                    };
+                }
 
-                                        <!--begin::Close-->
-                                        <div class="btn btn-sm btn-icon btn-active-color-primary"
-                                                data-bs-dismiss="modal">
-                                                <span class="svg-icon svg-icon-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                viewBox="0 0 24 24" fill="none">
-                                                                <rect opacity="0.5" x="6" y="17.3137" width="16"
-                                                                        height="2" rx="1"
-                                                                        transform="rotate(-45 6 17.3137)"
-                                                                        fill="black" />
-                                                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
-                                                                        transform="rotate(45 7.41422 6)" fill="black" />
-                                                        </svg>
-                                                </span>
-                                        </div>
-                                        <!--end::Close-->
-                                </div>
-                                <div class="modal-body">
-                                        <div class="alert alert-warning" role="alert">
-                                                This will not delete users (prevent them from logging in). Go to <a
-                                                        href="https://keyauth.cc/app/?page=users">https://keyauth.cc/app/?page=users</a>
-                                                for that.
-                                        </div>
-                                        <label class="fs-5 fw-bold mb-2">
-                                                <p> Are you sure you want to delete all used keys? This can not be
-                                                        undone.</p>
-                                        </label>
-                                </div>
-                                <div class="modal-footer">
-                                        <form method="post">
-                                                <button type="button" class="btn btn-light"
-                                                        data-bs-dismiss="modal">No</button>
-                                                <button name="deleteallused" class="btn btn-danger">Yes</button>
-                                        </form>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <!--end::Modal - Delete all used keys-->
-        <table id="kt_datatable_licenses" class="table table-striped table-row-bordered gy-5 gs-7 border rounded">
-                <thead>
-                        <tr class="fw-bolder fs-6 text-gray-800 px-7">
-                                <th>Key</th>
-                                <th>Creation Date</th>
-                                <th>Generated By</th>
-                                <th>Duration</th>
-                                <th>Note</th>
-                                <th>Used On</th>
-                                <th>Used By</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                        </tr>
-                </thead>
-        </table>
-        <script>
-        function bankey(key) {
-                var bankey = $('.bankey');
-                bankey.attr('value', key);
-        }
+                if (isset($_POST['addtime'])) {
+                    $resp = misc\license\addTime($_POST['time'], $_POST['expiry']);
+                    match ($resp) {
+                        'failure' => dashboard\primary\error("Failed to add time!"),
+                        'success' => dashboard\primary\success("Added time to unused licenses!"),
+                        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+                    };
+                }
 
-        function delkey(key) {
-                var delkey = $('.delkey');
-                delkey.attr('value', key);
-        }
+                if (isset($_POST['deleteallunused'])) {
+                    if ($_SESSION['role'] == "tester") {
+                        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
+                        echo "<meta http-equiv='Refresh' Content='2'>";
+                        return;
+                    }
+                    $resp = misc\license\deleteAllUnused();
+                    match ($resp) {
+                        'failure' => dashboard\primary\error("Didn't find any unused keys!"),
+                        'success' => dashboard\primary\success("Deleted all unused keys!"),
+                        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+                    };
+                }
 
-        function copyToClipboard() {
-            // Get the content of the "card-body" div by its ID
-            const cardBodyContent = document.getElementById('multi-keys').innerText;
-            
-            // Replace <br> tags with new lines
-            const formattedContent = cardBodyContent.replace(/<br>/g, '\n');
-            
-            // Create a temporary textarea element to copy the formatted content
-            const textarea = document.createElement('textarea');
-            textarea.value = formattedContent;
-            
-            // Hide the textarea from the user's view
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = 0;
-            
-            // Append the textarea to the document body
-            document.body.appendChild(textarea);
-            
-            // Select and copy the text
-            textarea.select();
-            document.execCommand('copy');
-            
-            // Remove the temporary textarea
-            document.body.removeChild(textarea);
-            
-            // Optionally, you can give the user some feedback that the content was copied
-            alert('Copied new licenses!');
-        }
-        </script>
-</div>
+                if (isset($_POST['deleteallused'])) {
+                    if ($_SESSION['role'] == "tester") {
+                        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
+                        echo "<meta http-equiv='Refresh' Content='2'>";
+                        return;
+                    }
+                    $resp = misc\license\deleteAllUsed();
+                    match ($resp) {
+                        'failure' => dashboard\primary\error("Didn't find any used keys!"),
+                        'success' => dashboard\primary\success("Deleted all used keys!"),
+                        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+                    };
+                }
+
+                if (isset($_POST['savekey'])) {
+                    $key = misc\etc\sanitize($_POST['savekey']);
+                    $level = misc\etc\sanitize($_POST['level']);
+                    $duration = misc\etc\sanitize($_POST['duration']);
+                    $note = misc\etc\sanitize($_POST['editNote']);
+                    if (!empty($duration)) {
+                        $expiry = misc\etc\sanitize($_POST['expiry']);
+                        $duration = $duration * $expiry;
+                        misc\mysql\query("UPDATE `keys` SET `expires` = ? WHERE `key` = ? AND `app` = ?",[$duration, $key, $_SESSION['app']]);
+                    }
+                    misc\mysql\query("UPDATE `keys` SET `note` = ?, `level` = ? WHERE `key` = ? AND `app` = ?",[$note, $level, $key, $_SESSION['app']]);
+                    misc\cache\purge('KeyAuthKey:' . $_SESSION['app'] . ':' . $key);
+                    misc\cache\purge('KeyAuthKeys:' . $_SESSION['app']);
+                    dashboard\primary\success("Successfully Updated Settings!");
+                }
+
+                if (isset($_POST['importkeysFile'])) {
+                    if ($_FILES['file_input']['error'] == UPLOAD_ERR_OK) {
+                        $fileContent = file_get_contents($_FILES['file_input']['tmp_name']);
+                        $jsonArray = json_decode($fileContent, true);
+                
+                        if ($jsonArray === null) {
+                            dashboard\primary\error("Invalid JSON format!");
+                            echo "<meta http-equiv='Refresh' Content='2;'>";
+                            return;
+                        }
+                
+                        foreach ($jsonArray as $keyData) {
+                            $key_format = $keyData['key'];
+                            $level_format = $keyData['level'];
+                            $expiry_format = $keyData['expiry'];
+                
+                            if (!isset($key_format) || $key_format == '' || !isset($level_format) || $level_format == '' || !isset($expiry_format) || $expiry_format == '') {
+                                dashboard\primary\error("Invalid Format!");
+                                echo "<meta http-equiv='Refresh' Content='2;'>";
+                                return;
+                            }
+                
+                            $expiry = $expiry_format * 86400;
+                            misc\mysql\query("INSERT INTO `keys` (`key`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES (?, ?,'Not Used', ?, ?, ?, ?)", [$key_format, $expiry, $level_format, $_SESSION['username'], time(), $_SESSION['app']]);
+                        }
+                
+                        dashboard\primary\success("Successfully imported licenses!");
+                    } else {
+                        dashboard\primary\error("File upload failed!");
+                        echo "<meta http-equiv='Refresh' Content='2;'>";
+                        return;
+                    }
+                }
+
+                if (isset($_POST['deletekey'])) {
+                    if ($_SESSION['role'] == "tester") {
+                        dashboard\primary\error("Free tester accounts can't delete keys, upgrade your account to delete keys!");
+                        echo "<meta http-equiv='Refresh' Content='2'>";
+                        return;
+                    }
+                    $userToo = ($_POST['delUserToo'] == "on") ? 1 : 0;
+                    $resp = misc\license\deleteSingular($_POST['deletekey'], $userToo);
+                    match ($resp) {
+                        'failure' => dashboard\primary\error("Failed to delete license!"),
+                        'success' => dashboard\primary\success("Successfully deleted license!"),
+                        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+                    };
+                }
+
+                if (isset($_POST['dlkeys'])) {
+                    echo "<meta http-equiv='Refresh' Content='0; url=download-types.php?type=licenses'>";
+                    // get all rows, put in text file, download text file, delete text file.
+                }
+
+                if (isset($_POST['bankey'])) {
+                    $userToo = ($_POST['banUserToo'] == "on") ? 1 : 0;
+                    $resp = misc\license\ban($_POST['bankey'], $_POST['reason'], $userToo);
+                    match ($resp) {
+                        'failure' => dashboard\primary\error("Failed to ban license!"),
+                        'success' => dashboard\primary\success("Successfully banned license!"),
+                        default => dashboard\primary\error("Unhandled Error! Contact us if you need help")
+                    };
+                }
