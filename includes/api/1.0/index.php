@@ -115,7 +115,7 @@ function register($un, $key, $pw, $email, $hwid, $secret)
 }
 #endregion
 #region login region
-function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
+function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null, $_2fa = null)
 {
     $row = cache\fetch('KeyAuthUser:' . $secret . ':' . $un, "SELECT * FROM `users` WHERE `username` = ? AND `app` = ?", [$un, $secret], 0);
 
@@ -170,6 +170,22 @@ function login($un, $pw, $hwid, $secret, $hwidenabled, $token = null)
             return 'sub_paused';
         }
         return 'no_active_subs';
+    }
+
+    if ($_2fa) {
+
+        if (is_null($_2fa) || empty($_2fa)) { 
+            return 'missing_2fa_code'; }
+
+        else {
+            require "../../auth/GoogleAuthenticator.php";
+
+            $auth = new \GoogleAuthenticator();
+    
+            if (!$auth->verifyCode($google_secret, $_2fa, 5)) {
+                return 'invalid_2fa';
+            }
+        }
     }
 
     $rowsFinal = array(); 
