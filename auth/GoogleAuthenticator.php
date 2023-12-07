@@ -15,12 +15,12 @@ class GoogleAuthenticator
 
     /**
      * Create new secret.
-     * 16 characters, randomly chosen from the allowed base32 characters.
+     * 40 characters, randomly chosen from the allowed base32 characters.
      *
      * @param int $secretLength
      * @return string
      */
-    public function createSecret($secretLength = 16)
+    public function createSecret($secretLength = 40)
     {
         $validChars = $this->_getBase32LookupTable();
         unset($validChars[32]);
