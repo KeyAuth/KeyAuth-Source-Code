@@ -350,6 +350,13 @@ function ban($key, $reason, $userToo, $secret = null)
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                         cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
                 }
+
+                $query = mysql\query("UPDATE `tokens` SET `banned` = ?, `reason` = NULL WHERE `app` = ? AND `assigned` = ? AND `type` = ?", [1, $secret ?? $_SESSION['app'], $key, "license"]);
+		if ($query->affected_rows > 0) { 
+                        cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); 
+                } else { 
+                        return 'failure'; 
+                }                         
                 return 'success';
         } 
         else 
@@ -385,6 +392,14 @@ function unban($key, $secret = null)
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) 
                 {
                         cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
+                }
+                
+                $query = mysql\query("UPDATE `tokens` SET `banned` = 0, `reason` = NULL WHERE `app` = ? AND `assigned` = ? AND `type` = ?", [$secret ?? $_SESSION['app'], $key, "license"]);
+
+		if ($query->affected_rows > 0) { 
+                        cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app']));    
+                } else { 
+                        return 'failure'; 
                 }
                 return 'success';
         } 
