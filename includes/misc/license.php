@@ -115,6 +115,7 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
                         $threemonth = $balance[3];
                         $sixmonth = $balance[4];
                         $lifetime = $balance[5];
+			$year = $balance[6];
                         switch ($expiry) 
                         {
                                 case '1 Day':
@@ -141,15 +142,19 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
                                         $duration = 8.6391e+8;
                                         $lifetime = $lifetime - $amount;
                                         break;
+				case '1 Year':
+                                        $duration = 3.1536e+7;
+                                        $year = $year - $amount;
+                                        break;
                                 default:
                                         return 'invalid_exp';
                                         break;
                         }
-                        if ($day < 0 || $month < 0 || $week < 0 || $threemonth < 0 || $sixmonth < 0 || $lifetime < 0) 
+                        if ($day < 0 || $month < 0 || $week < 0 || $threemonth < 0 || $sixmonth < 0 || $lifetime < 0 || $year < 0) 
                         {
                                 return 'insufficient_balance';
                         }
-                        $balance = $day . '|' . $week . '|' . $month . '|' . $threemonth . '|' . $sixmonth . '|' . $lifetime;
+                        $balance = $day . '|' . $week . '|' . $month . '|' . $threemonth . '|' . $sixmonth . '|' . $lifetime . '|' . $year;
                         $query = mysql\query("UPDATE `accounts` SET `balance` = ? WHERE `username` = ?",[$balance, $_SESSION['username']]);
                         break;
                 case 'seller':
@@ -163,13 +168,15 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
 
         $licenses = array();
 
-        for ($i = 0; $i < $amount; $i++) 
-        {
+        for ($i = 0; $i < $amount; $i++) {
                 $license = license_masking($mask, $letters);
-                $query = mysql\query("INSERT INTO `keys` (`key`, `note`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES (?, NULLIF(?, ''), ?, 'Not Used', ?, ?, ?, ?)",[$license, $note, $duration, $level, $owner ?? $_SESSION['username'], time(), $secret ?? $_SESSION['app']]);
-                $licenses[] = $license;
+                
+                if (token\ModifyUserToken($license, "License") === "failed") {
+                return "failure";
         }
-
+        $query = mysql\query("INSERT INTO `keys` (`key`, `note`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES (?, NULLIF(?, ''), ?, 'Not Used', ?, ?, ?, ?)", [$license, $note, $duration, $level, $owner ?? $_SESSION['username'], time(), $secret ?? $_SESSION['app']]);
+        $licenses[] = $license;
+        }
         return $licenses;
 }
 
@@ -198,6 +205,10 @@ function deleteAll($secret = null)
         $query = mysql\query("DELETE FROM `keys` WHERE `app` = ?",[$secret ?? $_SESSION['app']]);
         if ($query->affected_rows > 0) 
         {
+		$query = mysql\query("DELETE FROM `tokens` WHERE `app` = ? AND `type` = ?",[$secret ?? $_SESSION['app'], "license"]);
+
+		if ($query->affected_rows > 0) { cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); }
+		
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                         cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
                 }
@@ -213,6 +224,10 @@ function deleteAllUnused($secret = null)
         $query = mysql\query("DELETE FROM `keys` WHERE `app` = ? AND `status` = 'Not Used'",[$secret ?? $_SESSION['app']]);
         if ($query->affected_rows > 0) 
         {
+		$query = mysql\query("DELETE FROM `tokens` WHERE `app` = ? AND `status` = ? AND `type` = ?",[$secret ?? $_SESSION['app'], "Not Used", "license"]);
+
+		if ($query->affected_rows > 0) { cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); }
+		
                 if ($_SESSION['role'] == "seller" || !is_null($secret)) 
                 {
                         cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
@@ -263,17 +278,16 @@ function deleteSingular($key, $userToo, $secret = null)
     }
 
     $query = mysql\query("DELETE FROM `subs` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);// delete any subscriptions created with key
+    $query = mysql\query("DELETE FROM `tokens` WHERE `app` = ? AND `assigned` = ?", [$secret ?? $_SESSION['app'], $key]);
     $query = mysql\query("DELETE FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
-    if ($query->affected_rows > 0) 
-        {
+     if ($query->affected_rows > 0) {
+        cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); 
         if ($_SESSION['role'] == "seller" || !is_null($secret)) {
             cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
             cache\purge('KeyAuthKey:' . ($secret ?? $_SESSION['app']) . ':' . $key);
         }
         return 'success';
-    } 
-        else 
-        {
+    } else {
         return 'failure';
     }
 }
@@ -304,17 +318,15 @@ function deleteMultiple($keys, $userToo, $secret = null) {
         }
 
         $query = mysql\query("DELETE FROM `subs` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);// delete any subscriptions created with key
-        $query = mysql\query("DELETE FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
-        if ($query->affected_rows > 0) 
-                {
-            if ($_SESSION['role'] == "seller" || !is_null($secret)) 
-                        {
+        $query = mysql\query("DELETE FROM `tokens` WHERE `app` = ? AND `assigned` = ?", [$secret ?? $_SESSION['app'], $key]);
+	$query = mysql\query("DELETE FROM `keys` WHERE `app` = ? AND `key` = ?",[$secret ?? $_SESSION['app'], $key]);
+       if ($query->affected_rows > 0) {
+                cache\purgePattern('KeyAuthUserTokens:' . ($secret ?? $_SESSION['app'])); 
+            if ($_SESSION['role'] == "seller" || !is_null($secret)) {
                 cache\purge('KeyAuthKeys:' . ($secret ?? $_SESSION['app']));
                 cache\purge('KeyAuthKey:' . ($secret ?? $_SESSION['app']) . ':' . $key);
             }
-        } 
-                else 
-                {
+        } else {
             return 'failure';
         }
     }
