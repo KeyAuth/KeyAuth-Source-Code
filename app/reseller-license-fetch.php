@@ -4,12 +4,11 @@ include '../includes/misc/autoload.phtml';
 set_exception_handler(function ($exception) {
         error_log("\n--------------------------------------------------------------\n");
         error_log($exception);
-        error_log("\nRequest data:");
-        error_log(print_r($_POST, true));
-        error_log("\n--------------------------------------------------------------");
+            error_log("\nRequest data:");
+            error_log(print_r($_POST, true));
+            error_log("\n--------------------------------------------------------------");
         http_response_code(500);
-        $errorMsg = str_replace($databaseUsername, "REDACTED", $exception->getMessage());
-        die("Error: " . $errorMsg);
+        die("Error: " . $exception->getMessage());
 });
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -17,6 +16,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['app'])) {
+        dashboard\primary\error("Application not selected");
         die("Application not selected.");
 }
 
@@ -53,13 +53,48 @@ if (isset($_POST['draw'])) {
         while ($row = mysqli_fetch_assoc($query->result)) {
                 $data[] = array(
                         "key" => $row['key'],
-                        "gendate" => '<div id="' . $row['key'] . '-gendate"><script>document.getElementById("' . $row['key'] . '-gendate").innerHTML=convertTimestamp(' . $row["gendate"] . ');</script></div>',
+                        "gendate" => '<div id="' . $row['key'] . '-gendate"><script>document.getElementById("' . $row['key'] . '-gendate").textContent=convertTimestamp(' . $row["gendate"] . ');</script></div>',
                         "expires" => ($row["expires"] / 86400) . ' Day(s)',
                         "note" => $row['note'] ?? 'N/A',
-                        "usedon" => (!is_null($row["usedon"])) ? '<div id="' . $row['key'] . '-usedon"><script>document.getElementById("' . $row['key'] . '-usedon").innerHTML=convertTimestamp(' . $row["usedon"] . ');</script></div>' : 'N/A',
+                        "usedon" => (!is_null($row["usedon"])) ? '<div id="' . $row['key'] . '-usedon"><script>document.getElementById("' . $row['key'] . '-usedon").textContent=convertTimestamp(' . $row["usedon"] . ');</script></div>' : 'N/A',
                         "usedby" => ($row["usedby"] == $row['key']) ? 'Same as key' : $row["usedby"] ?? 'N/A',
                         "status" => '<label class="' . (($row['status'] == "Not Used") ? 'badge badge-light-success' : 'badge badge-light-danger') . '">' . $row['status'] . '</label>',
-                        "actions" => '<form method="POST"><td><a class="btn btn-sm btn-light btn-active-light-primary btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="svg-icon svg-icon-5 m-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/></svg></span></a><div class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4"><div class="menu-item px-3"><a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#del-key" onclick="delkey(\'' . $row["key"] . '\')">Delete</a></div><div class="menu-item px-3"><a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#ban-key" onclick="bankey(\'' . $row["key"] . '\')">Ban</a></div><div class="menu-item px-3"><button class="btn menu-link px-3" style="font-size:0.95rem;" name="unbankey" value="' . $row['key'] . '">Unban</button></div></div></td></tr></form>',
+                        "actions" => '
+                        <form method="POST">
+                        <td>
+                                        <div x-data="{ open: false }" class="z-0">
+                                        <button x-on:click="open = true" class="flex items-center border border-gray-700 rounded-lg focus:opacity-60 text-white focus:text-white font-semibold rounded focus:outline-none focus:shadow-inner py-2 px-4" type="button">
+                                                <span class="mr-1">Actions</span>
+                                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"  style="margin-top:3px">
+                                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                                </svg>
+                                        </button>
+                                        <ul x-show="open" x-on:click.away="open = false" class="bg-[#09090d] text-white rounded shadow-lg absolute py-2 mt-1" style="min-width:15rem">
+                                                <li>
+                                                        <button type="button" class="block hover:opacity-60 whitespace-no-wrap py-2 px-4 hover:text-blue-700"
+                                                        onclick="delkey(\'' . $row["key"] . '\')">
+                                                        Delete Key
+                                                        </button>
+                                                </li>
+                                                <li>
+                                                        <button type="button" class="block hover:opacity-60 whitespace-no-wrap py-2 px-4 hover:text-blue-700"
+                                                        onclick="bankey(\'' . $row["key"] . '\')">
+                                                        Ban Key
+                                                        </button>
+                                                </li>
+                                                <li>
+                                                        <button class="block hover:opacity-60 whitespace-no-wrap py-2 px-4 hover:text-blue-700"
+                                                        name="unbankey" value="' . $row['key'] . '">
+                                                        Unban Key
+                                                        </button>
+                                                </li>
+                                        </ul>
+                                        </div>
+
+
+                                        </td>
+                                        </tr>
+                                        </form>',
                 );
         }
 
