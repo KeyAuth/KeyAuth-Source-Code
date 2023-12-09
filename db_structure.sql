@@ -480,6 +480,9 @@ ALTER TABLE `webhooks`
 ALTER TABLE `whitelist`
   ADD PRIMARY KEY (`id`);
 
+ALTER TABLE `tokens`
+  ADD PRIMARY KEY (`id`);
+
 
 ALTER TABLE `acclogs`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
@@ -554,6 +557,9 @@ ALTER TABLE `vars`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `webhooks`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `tokens`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `whitelist`
