@@ -300,7 +300,7 @@ CREATE TABLE `support` (
   `ownerid` varchar(65) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
-CREATE TABLE `token` (
+CREATE TABLE `tokens` (
   `id` int NOT NULL,
   `app` varchar(255) NOT NULL,
   `token` varchar(32) NOT NULL,
