@@ -6,6 +6,7 @@ use misc\etc;
 use misc\cache;
 use misc\user;
 use misc\mysql;
+use misc\token;
 
 function license_masking($mask, $int = null) // substitute random characters for upper-case and lower-case random character variables, X or x
 {
