@@ -306,7 +306,7 @@ CREATE TABLE `tokens` (
   `token` varchar(32) NOT NULL,
   `assigned` varchar(255) NOT NULL,
   `banned` int NOT NULL DEFAULT '0',
-  `reason` varchar(255) NOT NULL,
+  `reason` varchar(255) NOT NULL DEFAULT 'Token is banned',
   `hash` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
   `status` varchar(255) NOT NULL
