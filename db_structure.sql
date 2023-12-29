@@ -309,7 +309,7 @@ CREATE TABLE `tokens` (
   `reason` varchar(255) NOT NULL DEFAULT 'Token is banned',
   `hash` varchar(255) DEFAULT NULL,
   `type` varchar(255) NOT NULL,
-  `status` varchar(255) NOT NULL
+  `status` varchar(255) NOT NULL DEFAULT 'Not Used'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 CREATE TABLE `users` (
