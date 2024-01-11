@@ -172,8 +172,8 @@ function createLicense($amount, $mask, $duration, $level, $note, $expiry = null,
         for ($i = 0; $i < $amount; $i++) {
                 $license = license_masking($mask, $letters);
                 
-                if (token\ModifyUserToken($license, "License") === "failed") {
-                return "failure";
+                if (token\ModifyUserToken($license, "License", null, null, $secret ?? $_SESSION["app"]) === "failed") {
+                        return "failure";
         }
         $query = mysql\query("INSERT INTO `keys` (`key`, `note`, `expires`, `status`, `level`, `genby`, `gendate`, `app`) VALUES (?, NULLIF(?, ''), ?, 'Not Used', ?, ?, ?, ?)", [$license, $note, $duration, $level, $owner ?? $_SESSION['username'], time(), $secret ?? $_SESSION['app']]);
         $licenses[] = $license;

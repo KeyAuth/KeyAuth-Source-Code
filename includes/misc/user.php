@@ -339,8 +339,8 @@ function add($username, $sub, $expiry, $secret = null, $password = null)
                         cache\purge('KeyAuthUsers:' . ($secret ?? $_SESSION['app']));
                         cache\purge('KeyAuthUser:' . ($secret ?? $_SESSION['app']) . ':' . $username);
                 }
-                if (token\ModifyUserToken($username, "User") === "failed") { return "failure"; }
-                return 'success';
+                if (token\ModifyUserToken($username, "User", null, null, $secret ?? $_SESSION["app"]) === "failed") {
+                        return "failure";
         } else {
                 return 'failure';
         }
