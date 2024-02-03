@@ -341,6 +341,7 @@ function add($username, $sub, $expiry, $secret = null, $password = null)
                 }
                 if (token\ModifyUserToken($username, "User", null, null, $secret ?? $_SESSION["app"]) === "failed") {
                         return "failure";
+                }
         } else {
                 return 'failure';
         }
