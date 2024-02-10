@@ -1,4 +1,7 @@
 # KeyAuth Source Code -> Please star :star2:
+
+NOTE! AS OF JANUARY 29th, 2024 - THIS REPOSITORY IS NO LONGER BEING UPDATED!
+
 KeyAuth is an open source authentication system with cloud-hosted subscriptions available aswell https://keyauth.cc
 <br>
 *You're not allowed to sell KeyAuth. source made avaliable only for you to use*
